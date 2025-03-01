@@ -1,0 +1,7 @@
+@import "tailwindcss";
+body {
+    @apply bg-amber-100;
+}
+div {
+    background-color: red;
+}
