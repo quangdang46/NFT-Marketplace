@@ -2,7 +2,6 @@ backend/
 ├── src/
 │   ├── auth/                # Module xác thực (JWT, Passport)
 │   │   ├── dto/             # Data Transfer Objects (DTO) cho xác thực
-│   │   ├── entities/        # Entity cho xác thực (User)
 │   │   ├── guards/          # Guards (JWT guard, roles guard)
 │   │   ├── strategies/      # Passport strategies (JWT strategy)
 │   │   ├── auth.module.ts   # Auth module
@@ -10,13 +9,11 @@ backend/
 │   │   ├── auth.controller.ts # Auth controller
 │   ├── nft/                 # Module quản lý NFT
 │   │   ├── dto/             # DTO cho NFT
-│   │   ├── entities/        # Entity cho NFT
 │   │   ├── nft.module.ts    # NFT module
 │   │   ├── nft.service.ts   # NFT service
 │   │   ├── nft.controller.ts # NFT controller
 │   ├── user/                # Module quản lý người dùng
 │   │   ├── dto/             # DTO cho user
-│   │   ├── entities/        # Entity cho user
 │   │   ├── user.module.ts   # User module
 │   │   ├── user.service.ts  # User service
 │   │   ├── user.controller.ts # User controller
@@ -35,6 +32,16 @@ backend/
 │   │   ├── database.config.ts # Cấu hình database
 │   │   ├── blockchain.config.ts # Cấu hình blockchain
 │   ├── database/            # ✅ Tách thư mục riêng cho database
+│   │   ├── entities/
+│   │   │   ├── user.entity.ts
+│   │   │   ├── nft.entity.ts
+│   │   ├── mongodb/
+│   │   │   ├── schemas/
+│   │   │   │   ├── transaction-log.schema.ts
+│   │   │   ├── mongodb.module.ts
+│   │   ├── redis/
+│   │   │   ├── redis.module.ts
+│   │   │   ├── redis.service.ts
 │   │   ├── migrations/      # Chứa file migration
 │   │   ├── seeds/           # Chứa file seed data
 │   │   ├── prisma.service.ts # (Nếu dùng Prisma)

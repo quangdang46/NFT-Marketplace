@@ -1,0 +1,9 @@
+nest generate module auth
+nest generate controller auth
+nest generate service auth
+
+docker-compose up -d
+
+
+docker ps
+docker exec -it redis redis-cli

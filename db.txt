@@ -17,7 +17,6 @@
   - email (Email, có thể NULL nếu đăng nhập bằng ví)
   - username (Tên người dùng)
   - avatar_url (URL ảnh đại diện)
-  - password_hash (Hash mật khẩu, nếu đăng nhập bằng email)
   - role (Vai trò: user, admin)
   - created_at (Thời gian tạo)
   - updated_at (Thời gian cập nhật)
@@ -169,3 +168,6 @@
 - NFT_Collections:
   - Many-to-One: NFT_Collections → NFTs
   - Many-to-One: NFT_Collections → Collections
+
+
+  PostgreSQL (cho dữ liệu quan hệ), Redis (cho caching), và MongoDB (nếu cần lưu metadata phi cấu trúc như log giao dịch, hoạt động người dùng).

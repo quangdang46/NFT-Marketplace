@@ -1,0 +1,41 @@
+NFT Marketplace Database Schema
+
+PostgreSQL (Quan hệ chính)
+
+Users: id, wallet_address, email, username, avatar_url, role, created_at, updated_at
+
+
+NFTs: id, name, description, image_url, metadata_url, owner_id, creator_id, contract_address, token_id, created_at, updated_at
+
+
+Transactions: id, nft_id, seller_id, buyer_id, price, currency, transaction_hash, created_at
+
+
+Listings: id, nft_id, seller_id, price, currency, status, created_at, updated_at
+
+
+Bids: id, listing_id, bidder_id, amount, currency, created_at
+
+
+Collections: id, name, description, creator_id, created_at, updated_at
+
+
+NFT_Collections (Many-to-Many): nft_id, collection_id
+
+
+
+Redis (Cache, Session, Queue)
+
+Cache NFT phổ biến: {nft_id}: {data}
+
+Session user: {user_id}: {session_data}
+
+Hàng đợi giao dịch: {queue: transactions}
+
+MongoDB (Metadata, Logs, Lịch sử giao dịch)
+
+Metadata NFT: { "nft_id": "123", "attributes": [...] }
+
+Lịch sử hoạt động: { "user_id": "456", "action": "buy", "nft_id": "789", "timestamp": "..." }
+
+Logs giao dịch blockchain
