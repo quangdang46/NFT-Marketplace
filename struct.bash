@@ -69,13 +69,15 @@ backend/
 frontend/
 ├── public/                  # Thư mục chứa các file tĩnh (ảnh, font, favicon, v.v.)
 ├── src/
-│   ├── app/                 # Thư mục chứa các page và layout (Next.js 13+ App Router)
-│   │   ├── (main)/          # Nhóm route chính (dashboard, marketplace, v.v.)
-│   │   ├── (admin)/         # Nhóm route dành cho admin (quản lý người dùng, NFT, v.v.)
-│   │   │   ├── layout.tsx   # Layout riêng cho admin
-│   │   │   ├── page.tsx     # Trang admin chính
-│   │   ├── layout.tsx       # Layout chung cho toàn bộ ứng dụng
-│   │   ├── page.tsx         # Trang chủ (Home)
+│   ├── app/                 
+│   │   ├── (public)/          
+│   │   │   ├── nft/  
+│   │   │   │   ├── page.tsx  
+│   │   ├── admin /        
+│   │   │   │   ├── layout.tsx   
+│   │   │   │   ├── page.tsx    
+│   │   ├── layout.tsx      
+│   │   ├── page.tsx         
 │   ├── components/          # Thư mục chứa các component tái sử dụng
 │   │   ├── ui/              # Các component UI cơ bản (button, card, modal, v.v.)
 │   │   ├── nft/             # Các component liên quan đến NFT (NFT card, NFT detail, v.v.)

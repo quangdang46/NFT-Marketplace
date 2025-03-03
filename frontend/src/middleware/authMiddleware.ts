@@ -8,7 +8,7 @@ export const authMiddleware: MiddlewareFactory = (next) => {
     if (path.startsWith("/admin")) {
       const token = req.cookies.get("authToken")?.value;
       if (!token) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.redirect(new URL("/", req.url));
       }
     }
 
