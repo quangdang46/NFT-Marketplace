@@ -1,0 +1,13 @@
+schema: "${NEXT_PUBLIC_GRAPHQL_ENDPOINT}"
+documents: "src/lib/api/graphql/queries/**/*.graphql"
+generates:
+  src/lib/api/graphql/generated.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      withHooks: true
+      withHOC: false
+      withComponent: false
+      reactApolloVersion: 3

@@ -1,0 +1,4 @@
+
+nest g resource nft --no-spec
+service truy van
+resolver goi service

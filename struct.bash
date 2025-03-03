@@ -100,5 +100,4 @@ frontend/
 ├── middleware.ts            # Global middleware Next.js
 ├── .env.local               # Biến môi trường local
 ├── next.config.js           # Cấu hình Next.js
-├── tailwind.config.js       # Cấu hình Tailwind CSS
 ├── tsconfig.json            # Cấu hình TypeScript
