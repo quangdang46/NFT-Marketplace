@@ -144,3 +144,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.tw-connect-wallet {
+  @apply !px-2 !py-1 !rounded-s-sm !bg-background/40  !font-medium !text-muted-foreground !border-2;
+}

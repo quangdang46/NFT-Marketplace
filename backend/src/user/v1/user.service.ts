@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserInput } from './dto/create-user.input';
-import { UpdateUserInput } from './dto/update-user.input';
+import { CreateUserInput } from '../dto/create-user.input';
+import { UpdateUserInput } from '../dto/update-user.input';
 
 @Injectable()
-export class UserService {
+export class UserV1Service {
   create(createUserInput: CreateUserInput) {
     return 'This action adds a new user';
   }
