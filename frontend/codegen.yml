@@ -1,4 +1,5 @@
-schema: "${NEXT_PUBLIC_GRAPHQL_ENDPOINT}"
+# schema: "${NEXT_PUBLIC_GRAPHQL_URL}"
+schema: "http://localhost:9000/graphql"
 documents: "src/lib/api/graphql/queries/**/*.graphql"
 generates:
   src/lib/api/graphql/generated.ts:
