@@ -1,4 +1,3 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,9 +7,9 @@ import { Model } from 'mongoose';
 import { User } from 'src/database/entities/user.entity';
 import { Log } from 'src/database/mongodb/schemas/log.schema';
 import { Repository } from 'typeorm';
-import { Cache } from 'cache-manager';
+import { InjectRedis } from '@nestjs-modules/ioredis';
 import { ethers } from 'ethers';
-
+import { Redis } from 'ioredis';
 @Injectable()
 export class AuthV1Service {
   constructor(
@@ -18,8 +17,7 @@ export class AuthV1Service {
     private readonly userRepository: Repository<User>,
     @InjectModel(Log.name)
     private readonly logModel: Model<Log>,
-    @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache,
+    @InjectRedis() private readonly redis: Redis,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -48,12 +46,12 @@ export class AuthV1Service {
       throw new BadRequestException('Địa chỉ ví không hợp lệ');
     }
 
-    const storedNonce = await this.cacheManager.get<string>(`nonce:${address}`);
+    const storedNonce = await this.redis.get(`nonce:${address}`);
     if (!storedNonce || storedNonce !== nonce) {
       throw new Error('Nonce không hợp lệ');
     }
 
-    await this.cacheManager.del(`nonce:${address}`);
+    await this.redis.del(`nonce:${address}`);
 
     if (!this.verifySignature(address, message, signature)) {
       throw new Error('Xác thực thất bại verifySignature');
@@ -69,7 +67,7 @@ export class AuthV1Service {
     const payload = { sub: address };
     const token = this.jwtService.sign(payload);
 
-    await this.cacheManager.set(`token:${address}`, token, 24 * 60 * 60);
+    await this.redis.set(`token:${address}`, token, 'EX', 24 * 60 * 60);
 
     // Ghi log vào MongoDB
     await this.logModel.create({
@@ -106,12 +104,12 @@ export class AuthV1Service {
     }
 
     // Kiểm tra nonce trong Redis
-    let nonce = await this.cacheManager.get<string>(`nonce:${address}`);
+    let nonce = await this.redis.get(`nonce:${address}`);
 
     if (!nonce) {
       // Tạo nonce mới nếu chưa có
       nonce = Math.random().toString(36).substring(2, 15);
-      await this.cacheManager.set(`nonce:${address}`, nonce, 300); // TTL: 5 phút
+      await this.redis.set(`nonce:${address}`, nonce, 'EX', 300);
     }
 
     return { address, nonce };

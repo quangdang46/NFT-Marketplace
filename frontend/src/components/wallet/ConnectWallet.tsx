@@ -42,7 +42,6 @@ export default function ConnectWallet() {
       if (!ethers.utils.isAddress(account.address)) {
         throw new Error("Ví không hợp lệ.");
       }
-
       const nonce = await generateNonce(account?.address as string);
       const message = createMessage(account?.address as string, nonce);
       const signature = await signMessage({ message, account });
@@ -95,7 +94,7 @@ export default function ConnectWallet() {
       toast("Loi khi ngat ket noi vi", {
         description: "Xay ra loi khi ngat ket noi vi",
       });
-    },
+    }
   });
   return (
     <ConnectButton

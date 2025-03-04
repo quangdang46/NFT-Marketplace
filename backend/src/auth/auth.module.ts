@@ -4,7 +4,6 @@ import { AuthV1Service } from 'src/auth/v1/auth.service';
 import { JwtStrategyV1 } from 'src/auth/v1/strategies/jwt/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
 import { User } from 'src/database/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MongodbModule } from 'src/database/mongodb/mongodb.module';
@@ -19,7 +18,6 @@ import { MongodbModule } from 'src/database/mongodb/mongodb.module';
         signOptions: { expiresIn: '1h' },
       }),
     }),
-    CacheModule.register(),
     TypeOrmModule.forFeature([User]),
     MongodbModule, // Import module MongoDB vào đây
   ],
