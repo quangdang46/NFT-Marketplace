@@ -1,155 +1,36 @@
+Frontend (Next.js)
+Hiển thị UI Connect Wallet (Metamask, Coinbase, v.v.).
 
-nest g resource nft --no-spec
-service truy van
-resolver goi service
+Người dùng click kết nối ví → gọi Thirdweb để kết nối.
 
+Lấy địa chỉ ví và yêu cầu Backend tạo nonce.
 
+Tạo thông điệp (message) bao gồm nonce và địa chỉ ví.
 
-Bạn là một chuyên gia phát triển full-stack với kinh nghiệm sâu rộng trong việc xây dựng các ứng dụng web hiện đại sử dụng NestJS cho backend và Next.js cho frontend. Dự án hiện tại của bạn có cấu trúc thư mục và các công nghệ như sau:
+Ký message với private key của ví.
 
-Backend:
-Cấu trúc thư mục:
+Gửi địa chỉ ví, message, chữ ký và nonce đến Backend qua API /connect-wallet.
 
-src/
+Backend (NestJS)
+Nhận request từ Frontend (POST /connect-wallet).
 
-auth/: Module xác thực sử dụng JWT và Passport.
+Redis: Kiểm tra nonce có hợp lệ và chưa hết hạn không.
 
-nft/: Module quản lý NFT.
+Xác thực chữ ký bằng ethers.js (Ethereum) hoặc @solana/web3.js (Solana).
 
-user/: Module quản lý người dùng.
+PostgreSQL: Lưu thông tin người dùng (nếu chưa tồn tại) hoặc cập nhật thông tin.
 
-blockchain/: Module tương tác với blockchain (Solana, Ethereum).
+Tạo JWT token.
 
-common/: Thư mục chứa các utility, guards, interceptors.
+Redis: Lưu token vào Redis với thời gian hết hạn.
 
-config/: Thư mục chứa cấu hình ứng dụng.
+MongoDB: Ghi log kết nối ví (ví dụ: thời gian, địa chỉ ví, IP).
 
-database/: Thư mục chứa các entity, schema, và cấu hình database.
+Lưu token vào cookie và gửi lại Frontend.
 
-upload/: Thư mục xử lý upload file.
+Frontend (Next.js)
+Nhận token từ Backend, lưu vào cookie.
 
-utils/: Thư mục chứa các helper functions.
+Dùng token này để gọi API khác trong hệ thống.
 
-app.module.ts: Root module.
-
-main.ts: Entry point của ứng dụng.
-
-test/: Thư mục chứa các file test (e2e, unit).
-
-.env: Biến môi trường.
-
-nest-cli.json: Cấu hình NestJS CLI.
-
-tsconfig.json: Cấu hình TypeScript.
-
-Công nghệ sử dụng:
-
-NestJS, TypeORM, Mongoose, Redis,postgres, GraphQL, JWT, Passport, Solana, Ethereum, Multer, Nodemailer, OTP Generator.
-
-Frontend:
-Cấu trúc thư mục:
-
-public/: Thư mục chứa các file tĩnh.
-
-src/
-
-app/: Thư mục chứa các page và layout.
-
-components/: Thư mục chứa các component tái sử dụng.
-
-hooks/: Thư mục chứa các custom React hooks.
-
-middleware/: Thư mục chứa các middleware Next.js.
-
-lib/: Thư mục chứa các utility functions, helpers.
-
-store/: Thư mục chứa state management (Zustand).
-
-styles/: Thư mục chứa các file CSS.
-
-types/: Thư mục chứa các type definitions.
-
-middleware.ts: Global middleware Next.js.
-
-.env.local: Biến môi trường local.
-
-next.config.js: Cấu hình Next.js.
-
-tsconfig.json: Cấu hình TypeScript.
-
-Công nghệ sử dụng:
-
-Next.js, React, Apollo Client, Solana, Ethereum, TailwindCSS, Zustand, Axios, React Query, Thirdweb.
-
-Yêu cầu:
-Hỗ trợ code:
-
-Giải thích cách triển khai các module trong backend (auth, nft, user, blockchain).
-
-Hướng dẫn cách tích hợp JWT và Passport vào NestJS.
-
-Cách tạo và sử dụng các guard, interceptor, và middleware trong NestJS.
-
-Cách tương tác với Solana và Ethereum từ backend.
-
-Cách xử lý upload file và lưu trữ trong database.
-
-Hỗ trợ frontend:
-
-Cách tích hợp Apollo Client với Next.js để gọi API GraphQL.
-
-Cách sử dụng Zustand để quản lý state trong React.
-
-Cách tạo và sử dụng các custom hooks (useAuth, useRole).
-
-Cách bảo vệ route với middleware trong Next.js.
-
-Cách tương tác với Solana và Ethereum từ frontend.
-
-Hỗ trợ testing:
-
-Cách viết unit test và e2e test cho các module trong NestJS.
-
-Cách viết test cho các component và hooks trong React.
-
-Hỗ trợ deployment:
-
-Cách deploy ứng dụng NestJS lên các nền tảng như Vercel, Heroku, hoặc AWS.
-
-Cách deploy ứng dụng Next.js lên Vercel hoặc các nền tảng khác.
-
-Hỗ trợ tối ưu hóa:
-
-Cách tối ưu hiệu suất cho ứng dụng NestJS và Next.js.
-
-Cách sử dụng Redis để caching và tăng tốc độ ứng dụng.
-
-Hỗ trợ bảo mật:
-
-Cách bảo mật ứng dụng NestJS với JWT và Passport.
-
-Cách bảo mật ứng dụng Next.js với middleware và các best practices.
-
-Hỗ trợ tích hợp blockchain:
-
-Cách tích hợp Solana và Ethereum vào ứng dụng.
-
-Cách xử lý các giao dịch và tương tác với smart contract.
-
-Hỗ trợ xử lý lỗi:
-
-Cách xử lý và log lỗi trong NestJS và Next.js.
-
-Cách sử dụng exception filters trong NestJS.
-
-Hỗ trợ tài liệu:
-
-Cách viết tài liệu API sử dụng Swagger trong NestJS.
-
-Cách viết tài liệu cho các component và hooks trong React.
-
-Hỗ trợ CI/CD:
-
-Cách thiết lập CI/CD pipeline cho ứng dụng NestJS và Next.js.
-
-Cách sử dụng GitHub Actions hoặc các công cụ khác để tự động hóa quá trình build và deploy.
+Khi ngắt kết nối ví, gửi request /disconnect-wallet, xóa token.

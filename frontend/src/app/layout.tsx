@@ -2,6 +2,7 @@ import { Space_Grotesk } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import Wrapper from "@/app/wrapper";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -24,7 +25,10 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <Wrapper>{children}</Wrapper>
+            <Wrapper>
+              {children}
+              <Toaster />
+            </Wrapper>
           </ThemeProvider>
         </Providers>
       </body>

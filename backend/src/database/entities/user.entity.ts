@@ -15,15 +15,11 @@ export class User {
   id: number;
 
   @Field({ nullable: true }) // Cần thêm Field cho GraphQL
-  @Column({ nullable: true })
-  wallet_address: string;
+  @Column({ nullable: true, unique: true })
+  address: string;
 
   @Field({ nullable: true })
-  @Column({ nullable: true })
-  email: string;
-
-  @Field()
-  @Column()
+  @Column({ nullable: true }) // Cho phép username có thể null nếu chỉ đăng nhập bằng ví
   username: string;
 
   @Field({ nullable: true })
@@ -31,7 +27,7 @@ export class User {
   avatar_url: string;
 
   @Field()
-  @Column()
+  @Column({ default: 'user' }) // Đặt mặc định là 'user'
   role: string;
 
   @Field()

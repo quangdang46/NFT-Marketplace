@@ -4,11 +4,13 @@ import {
   TransactionLog,
   TransactionLogSchema,
 } from './schemas/transaction-log.schema';
+import { Log, LogSchema } from './schemas/log.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: TransactionLog.name, schema: TransactionLogSchema },
+      { name: Log.name, schema: LogSchema },
     ]),
   ],
   exports: [MongooseModule],

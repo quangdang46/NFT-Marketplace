@@ -1,19 +1,19 @@
 backend/
 ├── src/
-│   ├── auth/                # Module xác thực (sử dụng JWT và Passport)
-│   │   ├── dto/             # Chứa các Data Transfer Object (DTO) phục vụ xác thực
-│   │   │   ├── login.dto.ts # Định nghĩa dữ liệu đầu vào cho API đăng nhập
-│   │   ├── guards/          # Chứa các Guard để bảo vệ route
-│   │   │   ├── jwt/         # Guard dùng để xác thực JWT
-│   │   │   │   ├── jwt.guard.ts # Kiểm tra JWT có hợp lệ không, chặn truy cập nếu không có token hợp lệ
-│   │   │   ├── roles/       # Guard dùng để kiểm tra quyền (roles) của user
-│   │   │   │   ├── roles.guard.ts # Kiểm tra xem user có quyền truy cập route hay không
-│   │   ├── strategies/      # Chứa các chiến lược xác thực (Passport Strategy)
-│   │   │   ├── jwt/         # Chiến lược xác thực bằng JWT
-│   │   │   │   ├── jwt.ts   # Xử lý trích xuất và kiểm tra JWT từ request
-│   │   ├── auth.module.ts   # Định nghĩa module Auth, import các service và controller cần thiết
-│   │   ├── auth.service.ts  # Xử lý logic xác thực (đăng nhập, tạo token, kiểm tra user)
-│   │   ├── auth.controller.ts # Định nghĩa các API liên quan đến xác thực (đăng nhập, đăng ký, refresh token)
+│   ├── auth/                
+│   │   ├── dto/            
+│   │   │   ├── login.dto.ts 
+│   │   ├── guards/          
+│   │   │   ├── jwt/        
+│   │   │   │   ├── jwt.guard.ts 
+│   │   │   ├── roles/       
+│   │   │   │   ├── roles.guard.ts 
+│   │   ├── strategies/      
+│   │   │   ├── jwt/         
+│   │   │   │   ├── jwt.ts   
+│   │   ├── auth.module.ts   
+│   │   ├── auth.service.ts  
+│   │   ├── auth.controller.ts 
 │   ├── nft/                 # Module quản lý NFT
 │   │   ├── dto/             # DTO cho NFT
 │   │   ├── nft.module.ts    # NFT module

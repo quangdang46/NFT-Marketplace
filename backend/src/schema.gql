@@ -4,9 +4,8 @@
 
 type User {
   id: Int!
-  wallet_address: String
-  email: String
-  username: String!
+  address: String
+  username: String
   avatar_url: String
   role: String!
   createdAt: DateTime!
