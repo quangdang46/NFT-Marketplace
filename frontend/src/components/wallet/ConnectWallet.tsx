@@ -94,10 +94,16 @@ export default function ConnectWallet() {
       toast("Loi khi ngat ket noi vi", {
         description: "Xay ra loi khi ngat ket noi vi",
       });
-    }
+    },
   });
   return (
     <ConnectButton
+      connectButton={{
+        style: {
+          minWidth:"unset",
+          height:"auto",
+        },
+      }}
       client={client}
       wallets={wallets}
       theme={"dark"}

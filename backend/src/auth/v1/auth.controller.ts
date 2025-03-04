@@ -32,34 +32,21 @@ export class AuthV1Controller {
     },
     @Res() res: Response,
   ) {
-    try {
-      const token = await this.authService.authenticateWallet(body);
-      if (!token) {
-        return res
-          .status(401)
-          .send({ message: 'Xác thực thất bại connectWallet' });
-      }
-      this.authService.saveTokenToCookie(res, token);
-      return res.send({ message: 'Kết nối ví thành công', token });
-    } catch (error) {
-      return res.status(401).send({
-        message: 'Xác thực thất bại connectWallet',
-        error: error.message,
-      });
+    const token = await this.authService.authenticateWallet(body);
+    if (!token) {
+      return res.send({ message: 'Xác thực thất bại connectWallet' });
     }
+    this.authService.saveTokenToCookie(res, token);
+    return res.send({ message: 'Kết nối ví thành công', token });
   }
 
-  
-  
-  
+  @UseGuards(JwtGuard)
   @Post('disconnect-wallet')
   disconnectWallet(@Res() res: Response) {
     this.authService.removeTokenFromCookie(res);
 
     return res.send({ message: 'Đã ngắt kết nối ví' });
   }
-
-
 
   @Get('get-nonce')
   async getNonce(@Query('address') address: string) {

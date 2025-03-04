@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,12 +26,8 @@ export class AuthV1Service {
     message: string,
     signature: string,
   ): boolean => {
-    try {
-      const recoveredAddress = ethers.verifyMessage(message, signature);
-      return recoveredAddress.toLowerCase() === address.toLowerCase();
-    } catch (error) {
-      return false; // Nếu verify thất bại, trả về false để tránh lỗi hệ thống
-    }
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+    return recoveredAddress.toLowerCase() === address.toLowerCase();
   };
 
   async authenticateWallet(body: {
@@ -48,13 +44,13 @@ export class AuthV1Service {
 
     const storedNonce = await this.redis.get(`nonce:${address}`);
     if (!storedNonce || storedNonce !== nonce) {
-      throw new Error('Nonce không hợp lệ');
+      throw new UnauthorizedException('Nonce không hợp lệ');
     }
 
     await this.redis.del(`nonce:${address}`);
 
     if (!this.verifySignature(address, message, signature)) {
-      throw new Error('Xác thực thất bại verifySignature');
+      throw new UnauthorizedException('Xác thực thất bại verifySignature');
     }
 
     let user = await this.userRepository.findOne({ where: { address } });

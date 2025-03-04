@@ -9,6 +9,8 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { UserModule } from './user/user.module';
 import { NftModule } from './nft/nft.module';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from 'src/common/filters/AllExceptionsFilter';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // Đọc biến môi trường từ .env
@@ -23,6 +25,12 @@ import { NftModule } from './nft/nft.module';
     NftModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}
