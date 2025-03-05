@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +15,7 @@ import { Repository } from 'typeorm';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import { ethers } from 'ethers';
 import { Redis } from 'ioredis';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class AuthV1Service {
   constructor(
@@ -21,37 +27,9 @@ export class AuthV1Service {
     private readonly jwtService: JwtService,
   ) {}
 
-  verifySignature = (
-    address: string,
-    message: string,
-    signature: string,
-  ): boolean => {
-    const recoveredAddress = ethers.verifyMessage(message, signature);
-    return recoveredAddress.toLowerCase() === address.toLowerCase();
-  };
-
-  async authenticateWallet(body: {
-    address: string;
-    message: string;
-    signature: string;
-    nonce: string;
-  }) {
-    const { address, message, signature, nonce } = body;
-
-    if (!address || !ethers.isAddress(address)) {
-      throw new BadRequestException('Địa chỉ ví không hợp lệ');
-    }
-
-    const storedNonce = await this.redis.get(`nonce:${address}`);
-    if (!storedNonce || storedNonce !== nonce) {
-      throw new UnauthorizedException('Nonce không hợp lệ');
-    }
-
-    await this.redis.del(`nonce:${address}`);
-
-    if (!this.verifySignature(address, message, signature)) {
-      throw new UnauthorizedException('Xác thực thất bại verifySignature');
-    }
+  async authenticateWallet(body: { message: string; signature: string }) {
+    const { message, signature } = body;
+    const address = ethers.verifyMessage(message, signature);
 
     let user = await this.userRepository.findOne({ where: { address } });
     if (!user) {
@@ -94,20 +72,11 @@ export class AuthV1Service {
     });
   }
 
-  async getNonce(address: string) {
-    if (!address || !ethers.isAddress(address)) {
-      throw new BadRequestException('Địa chỉ ví không hợp lệ');
-    }
+  async getNonce() {
+    const nonce = Math.random().toString(36).substring(2, 15);
+    const key = `nonce:${uuidv4()}`; // Key không liên quan đến address
+    await this.redis.set(key, nonce, 'EX', 300);
 
-    // Kiểm tra nonce trong Redis
-    let nonce = await this.redis.get(`nonce:${address}`);
-
-    if (!nonce) {
-      // Tạo nonce mới nếu chưa có
-      nonce = Math.random().toString(36).substring(2, 15);
-      await this.redis.set(`nonce:${address}`, nonce, 'EX', 300);
-    }
-
-    return { address, nonce };
+    return { nonce };
   }
 }

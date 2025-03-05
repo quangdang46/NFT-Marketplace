@@ -3,6 +3,7 @@ import { Providers } from "@/app/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import Wrapper from "@/app/wrapper";
 import { Toaster } from "@/components/ui/sonner";
+import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
