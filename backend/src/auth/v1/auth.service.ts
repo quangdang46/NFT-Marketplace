@@ -38,7 +38,7 @@ export class AuthV1Service {
     }
 
     // Tạo JWT
-    const payload = { sub: address };
+    const payload = { address };
     const token = this.jwtService.sign(payload);
 
     await this.redis.set(`token:${address}`, token, 'EX', 24 * 60 * 60);

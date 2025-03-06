@@ -65,6 +65,9 @@ export class AuthV1Controller {
     return res.send({ message: 'Kết nối ví thành công', token });
   }
 
+
+
+  @UseGuards(JwtGuard)
   @Post('logout')
   @ApiOperation({ summary: 'Ngắt kết nối ví' })
   @ApiResponse({ status: 200, description: 'Đã ngắt kết nối ví' })

@@ -4,7 +4,7 @@ import React from "react";
 export default function ConnectWallet() {
   return (
     <>
-      {/* <ConnectButton.Custom>
+      <ConnectButton.Custom>
         {({
           account,
           chain,
@@ -91,8 +91,7 @@ export default function ConnectWallet() {
             </div>
           );
         }}
-      </ConnectButton.Custom> */}
-      <ConnectButton></ConnectButton>
+      </ConnectButton.Custom>
     </>
   );
 }

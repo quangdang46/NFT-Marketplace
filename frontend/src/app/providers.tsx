@@ -26,15 +26,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   // Fetch user when:
   useEffect(() => {
+    const controller = new AbortController();
     const fetchStatus = async () => {
       if (fetchingStatusRef.current || verifyingRef.current) {
         return;
       }
 
+      if (!Cookies.get("auth_token")) {
+        setAuthStatus("unauthenticated");
+        return;
+      }
       fetchingStatusRef.current = true;
 
       try {
-        const response = await axiosInstance.get("/auth/me");
+        const response = await axiosInstance.get("/auth/me", {
+          signal: controller.signal,
+        });
         console.log("Auth status:", response.data);
         setAuthStatus(
           response.data?.success ? "authenticated" : "unauthenticated"
@@ -51,8 +58,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     fetchStatus();
 
     // 2. window is focused (in case user logs out of another window)
-    window.addEventListener("focus", fetchStatus);
-    return () => window.removeEventListener("focus", fetchStatus);
+    return () => {
+      controller.abort();
+      window.removeEventListener("focus", fetchStatus);
+    };
   }, []);
 
   const authAdapter = useMemo(() => {
@@ -83,17 +92,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         verifyingRef.current = true;
 
         try {
-          const verifyRes = await axiosInstance.post("/auth/verify", {
+          const { data } = await axiosInstance.post("/auth/verify", {
             message,
             signature,
           });
-          const token = verifyRes?.data?.token;
+          if (!data?.token) throw new Error("No token received");
 
-          if (!token) {
-            console.error("No token received from server");
-            return false;
-          }
-          Cookies.set("auth_token", token, {
+          Cookies.set("auth_token", data.token, {
             expires: 1,
             secure: true,
             sameSite: "strict",
@@ -110,7 +115,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       },
 
       signOut: async () => {
-        setAuthStatus("unauthenticated");
         try {
           await axiosInstance.post("/auth/logout");
 
