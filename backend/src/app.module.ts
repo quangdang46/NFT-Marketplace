@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from 'src/database/database.module';
@@ -11,6 +11,7 @@ import { UserModule } from './user/user.module';
 import { NftModule } from './nft/nft.module';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from 'src/common/filters/AllExceptionsFilter';
+import { RateLimitMiddleware } from 'src/common/middlewares/rate-limit.middleware';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // Đọc biến môi trường từ .env
@@ -33,4 +34,8 @@ import { AllExceptionsFilter } from 'src/common/filters/AllExceptionsFilter';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RateLimitMiddleware).forRoutes('/*path'); // Áp dụng middleware cho tất cả các route
+  }
+}

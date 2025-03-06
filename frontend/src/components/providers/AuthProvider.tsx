@@ -54,8 +54,8 @@ export default function AuthProvider({
 
     // 1. page loads
     fetchStatus();
-
     // 2. window is focused (in case user logs out of another window)
+    window.addEventListener("focus", fetchStatus);
     return () => {
       controller.abort();
       window.removeEventListener("focus", fetchStatus);
@@ -100,11 +100,13 @@ export default function AuthProvider({
             expires: 1,
             secure: true,
             sameSite: "strict",
+            httpOnly: true,
           });
           setAuthStatus("authenticated");
           return true;
         } catch (error) {
           console.error("Error verifying signature:", error);
+          Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
           setAuthStatus("unauthenticated");
           return false;
         } finally {

@@ -16,6 +16,7 @@ import { InjectRedis } from '@nestjs-modules/ioredis';
 import { ethers } from 'ethers';
 import { Redis } from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
+import { JwtPayload } from 'src/types/auth.types';
 @Injectable()
 export class AuthV1Service {
   constructor(
@@ -31,6 +32,27 @@ export class AuthV1Service {
     const { message, signature } = body;
     const address = ethers.verifyMessage(message, signature);
 
+    // Parse message SIWE để lấy nonce
+    const nonceMatch = message.match(/Nonce: (\w+)/);
+    if (!nonceMatch) throw new BadRequestException('Message không chứa nonce');
+    const nonce = nonceMatch[1];
+
+    // Tìm key trong Redis chứa nonce này
+    // Vì không biết key chính xác, ta phải dựa vào việc nonce là duy nhất
+    const keys = await this.redis.keys('nonce:*');
+    let foundKey: string | undefined;
+    for (const key of keys) {
+      const storedNonce = await this.redis.get(key);
+      if (storedNonce === nonce) {
+        foundKey = key;
+        break;
+      }
+    }
+
+    if (!foundKey) {
+      throw new BadRequestException('Nonce không hợp lệ hoặc đã hết hạn');
+    }
+
     let user = await this.userRepository.findOne({ where: { address } });
     if (!user) {
       user = this.userRepository.create({ address });
@@ -38,11 +60,10 @@ export class AuthV1Service {
     }
 
     // Tạo JWT
-    const payload = { address };
+    const payload = { ...user } as JwtPayload;
     const token = this.jwtService.sign(payload);
-
     await this.redis.set(`token:${address}`, token, 'EX', 24 * 60 * 60);
-
+    await this.redis.del(foundKey); // Xóa nonce sau khi dùng
     // Ghi log vào MongoDB
     await this.logModel.create({
       address,
@@ -74,9 +95,13 @@ export class AuthV1Service {
 
   async getNonce() {
     const nonce = Math.random().toString(36).substring(2, 15);
-    const key = `nonce:${uuidv4()}`; // Key không liên quan đến address
-    await this.redis.set(key, nonce, 'EX', 300);
+    const nonceKey = `nonce:${uuidv4()}`;
+    await this.redis.set(nonceKey, nonce, 'EX', 300);
 
     return { nonce };
+  }
+
+  async logout(address: string) {
+    await this.redis.del(`token:${address}`);
   }
 }

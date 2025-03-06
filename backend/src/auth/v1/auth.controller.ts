@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   Post,
-  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -15,7 +14,6 @@ import { Response } from 'express';
 import { AuthV1Service } from 'src/auth/v1/auth.service';
 import { JwtGuard } from 'src/auth/v1/guards/jwt/jwt.guard';
 import { JwtPayload } from 'src/types/auth.types';
-import { ethers } from 'ethers';
 import {
   ApiTags,
   ApiOperation,
@@ -55,6 +53,10 @@ export class AuthV1Controller {
     },
     @Res() res: Response,
   ) {
+    if (!body.message || !body.signature) {
+      throw new BadRequestException('Message hoặc signature không hợp lệ');
+    }
+
     const token = await this.authService.authenticateWallet(body);
     if (!token) {
       return res.send({
@@ -65,14 +67,16 @@ export class AuthV1Controller {
     return res.send({ message: 'Kết nối ví thành công', token });
   }
 
-
-
   @UseGuards(JwtGuard)
   @Post('logout')
   @ApiOperation({ summary: 'Ngắt kết nối ví' })
   @ApiResponse({ status: 200, description: 'Đã ngắt kết nối ví' })
   @ApiBearerAuth()
-  disconnectWallet(@Res() res: Response) {
+  async disconnectWallet(
+    @Req() req: Request & { user?: JwtPayload },
+    @Res() res: Response,
+  ) {
+    await this.authService.logout(req?.user?.address || '');
     this.authService.removeTokenFromCookie(res);
 
     return res.send({ message: 'Đã ngắt kết nối ví' });

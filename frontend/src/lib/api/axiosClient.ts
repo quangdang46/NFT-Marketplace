@@ -27,6 +27,7 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
     console.log("Error from client:", error);
+    Cookies.remove("auth_token");
     return Promise.reject(error);
   }
 );
