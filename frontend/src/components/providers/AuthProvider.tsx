@@ -1,11 +1,5 @@
 "use client";
 
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "../lib/api/reactQueryClient";
-import { ApolloProvider } from "@apollo/client";
-import apolloClient from "@/lib/api/apolloClient";
-import { WagmiProvider } from "wagmi";
-import { config } from "@/lib/blockchain/wallet";
 import {
   RainbowKitProvider,
   lightTheme,
@@ -14,12 +8,16 @@ import {
   AuthenticationStatus,
   createAuthenticationAdapter,
 } from "@rainbow-me/rainbowkit";
-import axiosInstance from "@/lib/api/axiosClient";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createSiweMessage } from "viem/siwe";
 import Cookies from "js-cookie";
+import axiosInstance from "@/lib/api/axiosClient";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>("loading");
@@ -130,28 +128,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
       },
     });
   }, []);
+
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitAuthenticationProvider
-          adapter={authAdapter}
-          status={authStatus}
-        >
-          <RainbowKitProvider
-            modalSize="wide"
-            theme={{
-              lightMode: lightTheme(),
-              darkMode: darkTheme(),
-            }}
-            appInfo={{
-              appName: "NFT Marketplace",
-              learnMoreUrl: "https://rainbowkit.com/",
-            }}
-          >
-            <ApolloProvider client={apolloClient}>{children}</ApolloProvider>
-          </RainbowKitProvider>
-        </RainbowKitAuthenticationProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
+      <RainbowKitProvider
+        theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}
+      >
+        {children}
+      </RainbowKitProvider>
+    </RainbowKitAuthenticationProvider>
   );
 }

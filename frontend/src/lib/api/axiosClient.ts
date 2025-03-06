@@ -23,10 +23,10 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error("Error 401:", error);
+      console.log("Error 401:", error);
       return Promise.reject(error);
     }
-    console.error("Error from client:", error);
+    console.log("Error from client:", error);
     return Promise.reject(error);
   }
 );
