@@ -40,7 +40,6 @@ export default function AuthProvider({
         const response = await axiosInstance.get("/auth/me", {
           signal: controller.signal,
         });
-        console.log("Auth status:", response.data);
         setAuthStatus(
           response.data?.success ? "authenticated" : "unauthenticated"
         );
@@ -100,7 +99,6 @@ export default function AuthProvider({
             expires: 1,
             secure: true,
             sameSite: "strict",
-            httpOnly: true,
           });
           setAuthStatus("authenticated");
           return true;

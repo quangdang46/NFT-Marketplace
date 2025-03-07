@@ -70,7 +70,13 @@ frontend/
 ├── public/                  # Thư mục chứa các file tĩnh (ảnh, font, favicon, v.v.)
 ├── src/
 │   ├── app/                 
-│   │   ├── (public)/          
+│   │   ├── (public)/
+│   │   ├── wallet/
+│   │   │   ├── [chain]
+│   │   │   │   ├── [address]
+│   │   │   │   │   ├── nfts/
+│   │   │   │   │   ├── activities/
+│   │   │   │   │   ├── page.tsx
 │   │   │   ├── nft/  
 │   │   │   │   ├── page.tsx  
 │   │   ├── admin /        

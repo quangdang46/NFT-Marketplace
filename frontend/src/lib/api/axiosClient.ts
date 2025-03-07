@@ -24,7 +24,6 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       console.log("Error 401:", error);
-      return Promise.reject(error);
     }
     console.log("Error from client:", error);
     Cookies.remove("auth_token");

@@ -1,4 +1,4 @@
-import Home from "@/components/home";
+// import Home from "@/components/home";
 import { Metadata } from "next";
 import React from "react";
 export const metadata: Metadata = {
@@ -9,7 +9,7 @@ export default function page() {
   return (
     <div>
       page home
-      <Home></Home>
+      {/* <Home></Home> */}
     </div>
   );
 }
