@@ -10,6 +10,16 @@ backend/
 │   │   ├── constants/         # Hằng số toàn cục
 │   ├── modules/              # Tất cả các module nghiệp vụ
 │   │   ├── auth/             # Như hiện tại
+│   │   │   ├── dto/                    # Data Transfer Objects
+│   │   │   ├── interfaces/            # Interfaces cho module
+│   │   │   ├── guards/               # Auth guards
+│   │   │   ├── strategies/          # Passport strategies
+│   │   │   ├── v1/                  # API version 1
+│   │   │   │   ├── controllers/    # Controllers
+│ 
+│   │   │   ├── constants/        # Constants cho auth
+│   │   │   ├── auth.module.ts   # Module definition
+│   │   │   └── auth.types.ts   # Type definitions
 │   │   ├── nft/              # Như hiện tại
 │   │   ├── user/             # Như hiện tại
 │   │   ├── blockchain/       # Module blockchain

@@ -1,17 +1,17 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { DatabaseModule } from 'src/database/database.module';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
-import { UserModule } from './user/user.module';
-import { NftModule } from './nft/nft.module';
 import { APP_FILTER } from '@nestjs/core';
-import { AllExceptionsFilter } from 'src/common/filters/AllExceptionsFilter';
-import { RateLimitMiddleware } from 'src/common/middlewares/rate-limit.middleware';
+import { DatabaseModule } from '@/infrastructure/database/database.module';
+import { AuthModule } from '@/modules/auth/auth.module';
+import { UserModule } from '@/modules/user/user.module';
+import { NftModule } from '@/modules/nft/nft.module';
+import { AllExceptionsFilter } from '@/shared/filters/AllExceptionsFilter';
+import { RateLimitMiddleware } from '@/shared/middlewares/rate-limit.middleware';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // Đọc biến môi trường từ .env
