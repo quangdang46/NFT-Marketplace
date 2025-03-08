@@ -1,5 +1,5 @@
 "use client";
-import Test from "@/components/home/Test";
+import Test from "@/features/home/components/Test";
 import React from "react";
 
 export default function Home() {

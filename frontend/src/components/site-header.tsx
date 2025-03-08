@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/ui/darkmode";
-import ConnectWallet from "@/components/wallet/ConnectWallet";
+import ConnectWallet from "@/features/wallet/components/ConnectWallet";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();

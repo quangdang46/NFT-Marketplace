@@ -67,7 +67,7 @@ backend/
 
 
 frontend/
-├── public/                  # Thư mục chứa các file tĩnh (ảnh, font, favicon, v.v.)
+├── public/
 ├── src/
 │   ├── app/                 
 │   │   ├── (public)/
