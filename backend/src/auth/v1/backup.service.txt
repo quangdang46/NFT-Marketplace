@@ -61,18 +61,8 @@ export class AuthV1Service {
 
     // Tạo JWT
     const payload = { ...user } as JwtPayload;
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-    // Tạo refresh token (hết hạn sau 7 ngày)
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    // Lưu refresh token vào Redis
-    await this.redis.set(
-      `refresh:${address}`,
-      refreshToken,
-      'EX',
-      7 * 24 * 60 * 60,
-    );
-    await this.redis.set(`token:${address}`, accessToken, 'EX', 24 * 60 * 60);
-
+    const token = this.jwtService.sign(payload);
+    await this.redis.set(`token:${address}`, token, 'EX', 24 * 60 * 60);
     await this.redis.del(foundKey); // Xóa nonce sau khi dùng
     // Ghi log vào MongoDB
     await this.logModel.create({
@@ -81,34 +71,22 @@ export class AuthV1Service {
       timestamp: new Date(),
     });
 
-    return { accessToken, refreshToken };
+    return token;
   }
 
   // Lưu token vào cookie
-  saveTokenToCookie(res: Response, accessToken: string, refreshToken: string) {
-    res.cookie('auth_token', accessToken, {
+  saveTokenToCookie(res: Response, token: string) {
+    res.cookie('auth_token', token, {
       maxAge: 24 * 60 * 60 * 1000, // Hết hạn sau 1 ngày
       httpOnly: true, // Cookie không thể truy cập từ JavaScript
       secure: true, // Chỉ gửi qua HTTPS secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict', // Ngăn chặn CSRF
-    });
-
-    res.cookie('refresh_token', refreshToken, {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
     });
   }
 
   // Xóa token khỏi cookie
   removeTokenFromCookie(res: Response) {
     res.clearCookie('auth_token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-    });
-    res.clearCookie('refresh_token', {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
@@ -125,29 +103,5 @@ export class AuthV1Service {
 
   async logout(address: string) {
     await this.redis.del(`token:${address}`);
-    await this.redis.del(`refresh:${address}`); // Xóa refresh token
-  }
-  async refreshToken(refreshToken: string) {
-    let payload: JwtPayload;
-    try {
-      payload = this.jwtService.verify(refreshToken);
-    } catch {
-      throw new UnauthorizedException(
-        'Refresh token không hợp lệ hoặc đã hết hạn',
-      );
-    }
-
-    const address = payload.address;
-    const storedRefreshToken = await this.redis.get(`refresh:${address}`);
-    if (!storedRefreshToken || storedRefreshToken !== refreshToken) {
-      throw new UnauthorizedException('Refresh token không hợp lệ');
-    }
-
-    const newAccessToken = this.jwtService.sign(
-      { address },
-      { expiresIn: '1h' },
-    );
-    await this.redis.set(`token:${address}`, newAccessToken, 'EX', 60 * 60);
-    return { accessToken: newAccessToken };
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -21,9 +20,7 @@ export default function AuthProvider({
 }) {
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
-  const [authStatus, setAuthStatus] = useState<AuthenticationStatus>(
-    Cookies.get("auth_token") ? "authenticated" : "loading"
-  );
+  const [authStatus, setAuthStatus] = useState<AuthenticationStatus>("loading");
 
   // Fetch user when:
   useEffect(() => {
@@ -32,14 +29,11 @@ export default function AuthProvider({
       if (fetchingStatusRef.current || verifyingRef.current) {
         return;
       }
-      const authToken = Cookies.get("auth_token");
-      const refreshToken = Cookies.get("refresh_token");
 
-      if (!authToken && !refreshToken) {
+      if (!Cookies.get("auth_token")) {
         setAuthStatus("unauthenticated");
         return;
       }
-
       fetchingStatusRef.current = true;
 
       try {
@@ -49,17 +43,7 @@ export default function AuthProvider({
         setAuthStatus(
           response.data?.success ? "authenticated" : "unauthenticated"
         );
-      } catch (error: any) {
-        /*
-        if (error.response?.status === 401 && refreshToken) {
-          // Access token hết hạn, thử làm mới
-          console.log("Access token hết hạn, thử làm mới");
-          await refreshAccessToken(refreshToken);
-        } else {
-          console.error("Error fetching auth status:", error);
-          setAuthStatus("unauthenticated");
-        }
-        */
+      } catch (error) {
         console.error("Error fetching auth status:", error);
         setAuthStatus("unauthenticated");
       } finally {
@@ -76,24 +60,7 @@ export default function AuthProvider({
       window.removeEventListener("focus", fetchStatus);
     };
   }, []);
-  // const refreshAccessToken = async (refreshToken: string) => {
-  //   try {
-  //     const { data } = await axiosInstance.post("/auth/refresh", {
-  //       refreshToken,
-  //     });
-  //     Cookies.set("auth_token", data.accessToken, {
-  //       expires: 1 / 24,
-  //       secure: true,
-  //       sameSite: "strict",
-  //     });
-  //     setAuthStatus("authenticated");
-  //   } catch (error) {
-  //     console.error("Error refreshing token:", error);
-  //     Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
-  //     Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
-  //     setAuthStatus("unauthenticated");
-  //   }
-  // };
+
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
@@ -126,26 +93,18 @@ export default function AuthProvider({
             message,
             signature,
           });
-          if (!data?.accessToken || !data?.refreshToken)
-            throw new Error("No tokens received");
-          Cookies.set("auth_token", data.accessToken, {
-            expires: 1 / 24,
+          if (!data?.token) throw new Error("No token received");
+
+          Cookies.set("auth_token", data.token, {
+            expires: 1,
             secure: true,
             sameSite: "strict",
           });
-
-          Cookies.set("refresh_token", data.refreshToken, {
-            expires: 7, // 7 ngày
-            secure: true,
-            sameSite: "strict",
-          });
-
           setAuthStatus("authenticated");
           return true;
         } catch (error) {
           console.error("Error verifying signature:", error);
           Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
-          Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
           setAuthStatus("unauthenticated");
           return false;
         } finally {
@@ -156,9 +115,13 @@ export default function AuthProvider({
       signOut: async () => {
         try {
           await axiosInstance.post("/auth/logout");
-          Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
-          Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
+
+          Cookies.remove("auth_token", {
+            secure: true,
+            sameSite: "strict",
+          });
           setAuthStatus("unauthenticated");
+          console.log("Đã ngắt kết nối ví");
         } catch (error) {
           console.error("Error during sign out:", error);
         }

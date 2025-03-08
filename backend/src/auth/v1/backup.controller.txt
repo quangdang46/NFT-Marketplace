@@ -57,43 +57,14 @@ export class AuthV1Controller {
       throw new BadRequestException('Message hoặc signature không hợp lệ');
     }
 
-    const { accessToken, refreshToken } =
-      await this.authService.authenticateWallet(body);
-    if (!accessToken || !refreshToken) {
-      return res.send({ message: 'Xác thực thất bại connectWallet' });
+    const token = await this.authService.authenticateWallet(body);
+    if (!token) {
+      return res.send({
+        message: 'Xác thực thất bại connectWallet',
+      });
     }
-
-    this.authService.saveTokenToCookie(res, accessToken, refreshToken);
-    return res.send({
-      message: 'Kết nối ví thành công',
-      accessToken,
-      refreshToken,
-    });
-  }
-
-  @Post('refresh')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'Làm mới access token' })
-  @ApiResponse({ status: 200, description: 'Access token mới' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        refreshToken: { type: 'string', example: 'xyz...' },
-      },
-    },
-  })
-  async refresh(
-    @Body('refreshToken') refreshToken: string,
-    @Res() res: Response,
-  ) {
-    if (!refreshToken) {
-      throw new BadRequestException('Refresh token hoặc address không hợp lệ');
-    }
-
-    const { accessToken } = await this.authService.refreshToken(refreshToken);
-    this.authService.saveTokenToCookie(res, accessToken, refreshToken);
-    return res.send({ accessToken });
+    this.authService.saveTokenToCookie(res, token);
+    return res.send({ message: 'Kết nối ví thành công', token });
   }
 
   @UseGuards(JwtGuard)

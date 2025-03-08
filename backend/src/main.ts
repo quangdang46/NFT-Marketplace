@@ -4,7 +4,7 @@ import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,{
-    logger: ['error', 'warn']
+    // logger: ['error', 'warn']
   });
   // Cấu hình Swagger
   const config = new DocumentBuilder()
@@ -18,7 +18,8 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document); // Đường dẫn truy cập docs
 
   app.enableCors({
-    origin: '*', // Hoặc chỉ định cụ thể: ['http://localhost:3000']
+    // origin: 'http://localhost:3000',
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Nếu dùng cookie hoặc token
