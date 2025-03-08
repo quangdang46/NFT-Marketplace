@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import Cookies from "js-cookie";
 const axiosInstance = axios.create({
@@ -78,16 +79,6 @@ axiosInstance.interceptors.response.use(
 );
 
 
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response?.status === 401) {
-//       console.log("Error 401:", error);
-//     }
-//     console.log("Error from client:", error);
-//     Cookies.remove("auth_token");
-//     return Promise.reject(error);
-//   }
-// );
+
 
 export default axiosInstance;

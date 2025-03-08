@@ -50,16 +50,6 @@ export default function AuthProvider({
           response.data?.success ? "authenticated" : "unauthenticated"
         );
       } catch (error: any) {
-        /*
-        if (error.response?.status === 401 && refreshToken) {
-          // Access token hết hạn, thử làm mới
-          console.log("Access token hết hạn, thử làm mới");
-          await refreshAccessToken(refreshToken);
-        } else {
-          console.error("Error fetching auth status:", error);
-          setAuthStatus("unauthenticated");
-        }
-        */
         console.error("Error fetching auth status:", error);
         setAuthStatus("unauthenticated");
       } finally {
@@ -76,24 +66,7 @@ export default function AuthProvider({
       window.removeEventListener("focus", fetchStatus);
     };
   }, []);
-  // const refreshAccessToken = async (refreshToken: string) => {
-  //   try {
-  //     const { data } = await axiosInstance.post("/auth/refresh", {
-  //       refreshToken,
-  //     });
-  //     Cookies.set("auth_token", data.accessToken, {
-  //       expires: 1 / 24,
-  //       secure: true,
-  //       sameSite: "strict",
-  //     });
-  //     setAuthStatus("authenticated");
-  //   } catch (error) {
-  //     console.error("Error refreshing token:", error);
-  //     Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
-  //     Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
-  //     setAuthStatus("unauthenticated");
-  //   }
-  // };
+
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
