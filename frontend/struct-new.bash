@@ -3,10 +3,16 @@ frontend/
 ├── src/
 │   ├── app/                
 │   │   ├── (public)/
+│   │       ├── [chain]/
+│   │       ├── page.tsx
 │   │   ├── wallet/
 │   │   ├── admin/
+│   │   ├── page.tsx
 │   ├── components/          
-│   ├── features/            
+│   ├── features/
+│   │   ├── home/
+│   │       ├── components
+│   │           ├── TabChains.tsx
 │   │   ├── nft/             
 │   │   ├── wallet/          
 │   │   ├── auth/ 

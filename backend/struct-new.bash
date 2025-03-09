@@ -15,8 +15,8 @@ backend/
 │   │   │   ├── guards/               # Auth guards
 │   │   │   ├── strategies/          # Passport strategies
 │   │   │   ├── v1/                  # API version 1
-│   │   │   │   ├── controllers/    # Controllers
-│ 
+│   │   │   │   ├── auth.controller.ts    # Controllers
+│   │   │   │   ├── auth.service.ts       # Services
 │   │   │   ├── constants/        # Constants cho auth
 │   │   │   ├── auth.module.ts   # Module definition
 │   │   │   └── auth.types.ts   # Type definitions
