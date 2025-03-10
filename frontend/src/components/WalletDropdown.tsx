@@ -1,22 +1,28 @@
 import { Wallet, ExternalLink, Link2, Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
+import { useDisconnect } from "wagmi";
 interface WalletDropdownProps {
   isOpen: boolean;
   walletBalance: string;
-  disconnectWallet: () => void;
+  className?: string;
+  address: string | null;
 }
 
 export const WalletDropdown = ({
   isOpen,
   walletBalance,
-  disconnectWallet,
+  className,
+  address,
 }: WalletDropdownProps) => {
+  const { disconnect } = useDisconnect();
+  const truncatedAddress = address
+    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+    : "0x35F...7e8";
   return (
     <div
       className={cn(
-        "absolute top-full right-0 mt-2 w-80 bg-[#1A1F2C]/95 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden transition-all duration-300 dropdown-slide-down",
+        `absolute top-full right-0 mt-2 w-80 bg-[#1A1F2C]/95 border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden transition-all duration-300 dropdown-slide-down ${className}`,
         isOpen
           ? "opacity-100 translate-y-0"
           : "opacity-0 -translate-y-2 pointer-events-none"
@@ -31,7 +37,7 @@ export const WalletDropdown = ({
             <div>
               <div className="text-sm text-white/60">Wallet Address</div>
               <div className="text-white flex items-center">
-                <span className="font-mono">0x35F...7e8</span>
+                <span className="font-mono">{truncatedAddress}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -43,9 +49,7 @@ export const WalletDropdown = ({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[#f97316] font-medium">
-              {walletBalance}
-            </div>
+            <div className="text-[#f97316] font-medium">{walletBalance}</div>
             <div className="text-xs text-white/50">≈ $2,437.84</div>
           </div>
         </div>
@@ -135,7 +139,7 @@ export const WalletDropdown = ({
           <Button
             variant="ghost"
             className="w-full justify-start text-white/70 hover:text-white hover:bg-white/5"
-            onClick={disconnectWallet}
+            onClick={() => disconnect()}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Disconnect

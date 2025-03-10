@@ -208,7 +208,7 @@ export function NFTCollections() {
 
   return (
     <section className="py-8 px-4">
-      <div className="container mx-auto">
+      <div className="mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-6">
             <Button

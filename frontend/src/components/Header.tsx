@@ -14,7 +14,7 @@ export function Header() {
   const isMobile = useIsMobile();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#1A1F2C]/95 backdrop-blur-sm border-b border-white/5 py-3">
+    <header className="bg-[#1A1F2C]/95 backdrop-blur-sm border-b border-white/5 py-3">
       <div className="flex items-center justify-between px-2 sm:px-4">
         {/* Logo */}
         <div className="flex items-center">
@@ -67,5 +67,6 @@ export function Header() {
         </div>
       </div>
     </header>
+ 
   );
 }

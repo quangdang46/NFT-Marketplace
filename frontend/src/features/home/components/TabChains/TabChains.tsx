@@ -3,6 +3,7 @@ import { BrickWall, GalleryVerticalEnd, Wallet } from "lucide-react";
 import DesktopTabs from "./DesktopTabs";
 import MobileDropdown from "./MobileDropdown";
 import { useNftStore } from "@/store/useNftStore";
+import { useParams } from "next/navigation";
 
 const chains = [
   { name: "All", icon: GalleryVerticalEnd, href: "/" },
@@ -11,7 +12,15 @@ const chains = [
 ];
 
 export default function TabChains() {
+  const params = useParams();
   const activeChain = useNftStore((state) => state.selectedBlockchain);
+
+  const currentPath = params?.chain ? `/${params.chain}` : "/";
+  const isPathMatched = chains.some((chain) => chain.href === currentPath);
+
+  if (!isPathMatched) {
+    return null;
+  }
   return (
     <div className="w-full bg-gray-100 dark:bg-[#120C18]">
       <DesktopTabs chains={chains} activeChain={activeChain} />

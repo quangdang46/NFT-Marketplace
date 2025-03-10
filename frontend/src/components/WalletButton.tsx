@@ -6,10 +6,9 @@ import { useAccount, useBalance } from "wagmi";
 export const WalletButton = () => {
   const [isWalletDropdownOpen, setIsWalletDropdownOpen] = useState(false);
   const walletRef = useRef<HTMLDivElement>(null);
-  const { address, isConnected } = useAccount(); // Trạng thái kết nối ví
-  const { data: balance } = useBalance({ address }); // Số dư ví
+  const { address, isConnected } = useAccount();
+  const { data: balance } = useBalance({ address });
 
-  // Xử lý click ngoài để đóng dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -28,18 +27,20 @@ export const WalletButton = () => {
 
   return (
     <div
-      className="relative"
+      className="relative inline-block"
       ref={walletRef}
       onMouseEnter={() => isConnected && setIsWalletDropdownOpen(true)}
       onMouseLeave={() => isConnected && setIsWalletDropdownOpen(false)}
     >
-      <ConnectWallet></ConnectWallet>
-
+      <ConnectWallet />
       {isConnected && (
         <WalletDropdown
           isOpen={isWalletDropdownOpen}
-          walletBalance={`${balance || "0"} ${balance?.symbol || "ETH"}`}
-          disconnectWallet={() => setIsWalletDropdownOpen(false)} // Có thể bỏ nếu không cần
+          walletBalance={`${balance?.formatted || "0"} ${
+            balance?.symbol || "ETH"
+          }`}
+          address={address || ""}
+          className="absolute top-full right-0 mt-0 z-10" // Di chuyển className vào WalletDropdown
         />
       )}
     </div>

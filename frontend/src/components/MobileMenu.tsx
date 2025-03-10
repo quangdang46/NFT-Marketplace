@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { MenuIcon } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import Link from "next/link";
 
 interface NavItem {
@@ -27,28 +32,32 @@ export const MobileMenu = ({ navItems }: MobileMenuProps) => {
         side="right"
         className="bg-[#1A1F2C]/95 border-white/10 pt-12"
       >
+        <SheetTitle className="visually-hidden">Menu</SheetTitle>
         <nav className="flex flex-col space-y-4">
           {navItems.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-            >
-              {item.label}
+            <div key={item.id} className="flex flex-col">
+              {/* Parent link */}
+              <Link
+                href={item.href}
+                className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+              >
+                {item.label}
+              </Link>
+              {/* Dropdown items với lùi vào */}
               {item.hasDropdown && (
                 <div className="pl-4 mt-2 space-y-2">
                   {item.dropdownItems?.map((dropItem) => (
-                    <a
+                    <Link
                       key={dropItem.label}
                       href={dropItem.href}
                       className="block px-2 py-1 text-sm text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors"
                     >
                       {dropItem.label}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               )}
-            </Link>
+            </div>
           ))}
           <Link
             href="/wallet"
