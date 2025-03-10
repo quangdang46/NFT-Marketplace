@@ -20,13 +20,16 @@ export default function ChainItem({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-1 transition-all duration-200 ${
+      className={`flex items-center gap-1 transition-all duration-200 px-3 py-1 sm:px-6 sm:py-2${
         isActive
-          ? "px-3 py-1 sm:px-6 sm:py-2 bg-gray-200 dark:bg-[#40324E] text-black dark:text-white hover:opacity-80"
-          : "px-2 py-1 sm:px-4 sm:py-1 hover:opacity-80"
+          ? " bg-gray-200 dark:bg-[#40324E] text-black dark:text-white hover:opacity-80"
+          : ""
       }`}
     >
-      <Icon size={25} className={`${!isActive && "text-gray-500"}`} />
+      <Icon
+        size={25}
+        className={`${!isActive && "text-gray-500 hover:opacity-80"}`}
+      />
       {isActive && showName && <span className="text-base">{name}</span>}
     </Link>
   );
