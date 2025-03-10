@@ -2,7 +2,7 @@
 import { BrickWall, GalleryVerticalEnd, Wallet } from "lucide-react";
 import DesktopTabs from "./DesktopTabs";
 import MobileDropdown from "./MobileDropdown";
-import { useInfoStore } from "@/store/infoStore";
+import { useNftStore } from "@/store/useNftStore";
 
 const chains = [
   { name: "All", icon: GalleryVerticalEnd, href: "/" },
@@ -11,7 +11,7 @@ const chains = [
 ];
 
 export default function TabChains() {
-  const activeChain = useInfoStore((state) => state.chain);
+  const activeChain = useNftStore((state) => state.selectedBlockchain);
   return (
     <div className="w-full bg-gray-100 dark:bg-[#120C18]">
       <DesktopTabs chains={chains} activeChain={activeChain} />

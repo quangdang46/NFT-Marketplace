@@ -112,3 +112,66 @@ export const menuLists = {
     },
   ],
 };
+
+
+
+
+export interface NavItem {
+  id: string;
+  label: string;
+  href: string;
+  hasDropdown: boolean;
+  dropdownItems?: { label: string; href: string }[];
+}
+
+export const navItems: NavItem[] = [
+  {
+    id: "collections",
+    label: "Collections",
+    href: "/",
+    hasDropdown: true,
+    dropdownItems: [
+      { label: "Trending", href: "/trending" },
+      { label: "Top Collections", href: "/top-collections" },
+      { label: "New Releases", href: "/new-releases" },
+    ],
+  },
+  {
+    id: "runes",
+    label: "Runes",
+    href: "/runes",
+    hasDropdown: true,
+    dropdownItems: [
+      { label: "Runes Marketplace", href: "/runes-marketplace" },
+      { label: "Runes Explorer", href: "/runes-explorer" },
+    ],
+  },
+  {
+    id: "discover",
+    label: "Discover",
+    href: "/discover",
+    hasDropdown: true,
+    dropdownItems: [
+      { label: "Featured", href: "/featured" },
+      { label: "Upcoming", href: "/upcoming" },
+      { label: "Live Auctions", href: "/auctions" },
+    ],
+  },
+  {
+    id: "mint",
+    label: "Mint",
+    href: "/mint",
+    hasDropdown: false,
+  },
+  {
+    id: "create",
+    label: "Create",
+    href: "/create",
+    hasDropdown: true,
+    dropdownItems: [
+      { label: "Create Collection", href: "/create-collection" },
+      { label: "My Collections", href: "/my-collections" },
+      { label: "Creator Hub", href: "/creator-hub" },
+    ],
+  },
+];
