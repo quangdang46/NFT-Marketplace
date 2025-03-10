@@ -249,9 +249,7 @@ export function NFTCollections() {
                   variant="ghost"
                   size="sm"
                   className={`px-3 ${
-                    timeRange === range
-                      ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
-                      : ""
+                    timeRange === range ? "text-primary " : ""
                   }`}
                   onClick={() => setTimeRange(range)}
                 >

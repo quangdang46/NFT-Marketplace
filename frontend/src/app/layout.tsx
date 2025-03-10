@@ -1,4 +1,4 @@
-import { Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import Wrapper from "@/app/wrapper";
 import { Toaster } from "@/components/ui/sonner";
@@ -6,10 +6,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
@@ -18,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${spaceGrotesk.variable} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <Providers>
           <ThemeProvider
             attribute="class"
