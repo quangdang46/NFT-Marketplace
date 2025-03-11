@@ -8,6 +8,8 @@ import NFTCollectionsv2 from "@/features/home/components/NftCollections/NFTColle
 import NFTDetails from "@/features/home/components/mintnft/NFTDetails";
 import NFTDetailsSkeleton from "@/features/home/components/mintnft/NFTDetailsSkeleton";
 import NFTCreationForm from "@/features/home/components/createnft/CreateNft";
+import CaroselV2 from "@/features/home/components/caroselv2/Caroselv2";
+import { Marketplace } from "@/features/home/components/shop/Marketplace";
 
 export default function Home() {
   const { chain } = useParams(); // chain là string hoặc undefined
@@ -33,7 +35,14 @@ export default function Home() {
         </Suspense>
       </div>
       <div className="mt-5">
+        <CaroselV2 />
+      </div>
+      <div className="mt-5">
         <NFTCreationForm />
+      </div>
+
+      <div className="mt-5">
+        <Marketplace />
       </div>
     </>
   );

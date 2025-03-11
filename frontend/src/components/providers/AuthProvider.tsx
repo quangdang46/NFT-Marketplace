@@ -13,6 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createSiweMessage } from "viem/siwe";
 import Cookies from "js-cookie";
 import axiosInstance from "@/lib/api/axiosClient";
+import axios from "axios";
 
 export default function AuthProvider({
   children,
@@ -50,6 +51,10 @@ export default function AuthProvider({
           response.data?.success ? "authenticated" : "unauthenticated"
         );
       } catch (error: any) {
+        if (axios.isCancel(error)) {
+          // Request was canceled, no need to log or update state
+          return;
+        }
         console.error("Error fetching auth status:", error);
         setAuthStatus("unauthenticated");
       } finally {
