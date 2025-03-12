@@ -1,5 +1,5 @@
 "use client";
-import { LucideIcon, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -8,22 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-
-interface Chain {
-  name: string;
-  icon: LucideIcon;
-  href: string;
-}
+import { chains } from "@/lib/constant/chains";
 
 interface MobileDropdownProps {
-  chains: Chain[];
   activeChain?: string;
 }
 
-export default function MobileDropdown({
-  chains,
-  activeChain,
-}: MobileDropdownProps) {
+export default function MobileDropdown({ activeChain }: MobileDropdownProps) {
   const selectedChain = activeChain
     ? chains.find(
         (chain) => chain.name.toLowerCase() === activeChain.toLowerCase()

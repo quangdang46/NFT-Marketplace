@@ -1,17 +1,19 @@
 "use client";
+import { Blockchain, useNftStore } from "@/store/useNftStore";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  // const { chain } = useParams(); // chain là string hoặc undefined
-
-  // const setChain = useNftStore((state) => state.setSelectedBlockchain); // Lấy setChain từ store
-  // useEffect(() => {
-  //   const newChain = typeof chain === "string" ? chain.toUpperCase() : "ALL";
-  //   setChain(newChain as Blockchain | "ALL");
-  // }, [chain, setChain]);
+  const { chain } = useParams();
+  const setChain = useNftStore((state) => state.setSelectedBlockchain);
+  useEffect(() => {
+    const newChain = typeof chain === "string" ? chain.toUpperCase() : "ALL";
+    setChain(newChain as Blockchain | "ALL");
+  }, [chain, setChain]);
   return (
     <>
       home
-      {/* {chain} */}
+      {chain}
       {/* <div className="mt-5">
         <NFTCarousel />
       </div>

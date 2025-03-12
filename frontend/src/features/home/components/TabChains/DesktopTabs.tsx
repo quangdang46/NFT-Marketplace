@@ -1,19 +1,12 @@
 "use client";
-import { LucideIcon } from "lucide-react";
 import ChainItem from "./ChainItem";
-
-interface Chain {
-  name: string;
-  icon: LucideIcon;
-  href: string;
-}
+import { chains } from "@/lib/constant/chains";
 
 interface DesktopTabsProps {
-  chains: Chain[];
   activeChain?: string;
 }
 
-export default function DesktopTabs({ chains, activeChain }: DesktopTabsProps) {
+export default function DesktopTabs({ activeChain }: DesktopTabsProps) {
   return (
     <div className="hidden sm:flex flex-wrap gap-2 items-center">
       {chains.map((chain) => {

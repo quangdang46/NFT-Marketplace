@@ -1,15 +1,9 @@
 "use client";
-import { BrickWall, GalleryVerticalEnd, Wallet } from "lucide-react";
+import { chains } from "@/lib/constant/chains";
 import DesktopTabs from "./DesktopTabs";
 import MobileDropdown from "./MobileDropdown";
 import { useNftStore } from "@/store/useNftStore";
 import { useParams } from "next/navigation";
-
-const chains = [
-  { name: "All", icon: GalleryVerticalEnd, href: "/" },
-  { name: "Base", icon: BrickWall, href: "/base" },
-  { name: "Ethereum", icon: Wallet, href: "/ethereum" },
-];
 
 export default function TabChains() {
   const params = useParams();
@@ -23,8 +17,8 @@ export default function TabChains() {
   }
   return (
     <div className="w-full bg-gray-100 dark:bg-[#120C18]">
-      <DesktopTabs chains={chains} activeChain={activeChain} />
-      <MobileDropdown chains={chains} activeChain={activeChain} />
+      <DesktopTabs activeChain={activeChain} />
+      <MobileDropdown activeChain={activeChain} />
     </div>
   );
 }

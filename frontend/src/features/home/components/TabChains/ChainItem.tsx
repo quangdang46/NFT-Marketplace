@@ -1,13 +1,13 @@
-"use client";
 import Link from "next/link";
 import { LucideIcon } from "lucide-react";
+import { ComponentType } from "react";
 
 interface ChainItemProps {
   name: string;
   href: string;
-  icon: LucideIcon;
+  icon: LucideIcon | ComponentType<{ size?: number; className?: string }>;
   isActive: boolean;
-  showName?: boolean; // Tùy chọn hiển thị tên (dùng cho tabs ngang)
+  showName?: boolean;
 }
 
 export default function ChainItem({

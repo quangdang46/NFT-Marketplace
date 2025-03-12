@@ -1,3 +1,4 @@
+import Home from "@/features/home/Home";
 import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Chain",
@@ -6,9 +7,7 @@ export const metadata: Metadata = {
 export default function ChainPage() {
   return (
     <>
-      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nulla nemo illo
-      voluptates quod similique non, at asperiores beatae fugiat tenetur modi
-      autem iusto, consequatur possimus eius quidem voluptatem? Odit, vero?
+      <Home />
     </>
   );
 }
