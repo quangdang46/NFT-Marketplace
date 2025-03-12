@@ -22,7 +22,7 @@ interface FilterSidebarProps {
   onPriceRangeChange: (range: [number, number]) => void;
 }
 
-export function FilterSidebar({
+export default function FilterSidebar({
   onClose,
   priceRange,
   onPriceRangeChange,

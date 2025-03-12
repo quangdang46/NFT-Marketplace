@@ -5,23 +5,17 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-
-interface CartItem {
-  id: string;
-  image: string;
-  price: string;
-  background: string;
-}
+import type { NFT } from "@/types/nft";
 
 interface CartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  items: CartItem[];
+  items: NFT[];
   onRemoveItem: (id: string) => void;
   onBuy: () => void;
 }
 
-export function CartModal({
+export default function CartModal({
   open,
   onOpenChange,
   items,
@@ -146,7 +140,7 @@ export function CartModal({
             Connect wallet to buy
           </Button>
           <div className="text-[10px] text-center text-muted-foreground">
-            By clicking , you agree to the{" "}
+            By clicking buy, you agree to the{" "}
             <a href="#" className="text-primary hover:underline">
               Magic Eden Terms of Service
             </a>

@@ -3,22 +3,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { NFT } from "@/types/nft";
 
 interface NFTCardProps {
-  nft: {
-    id: string;
-    image: string;
-    price: string;
-    lastPrice: string;
-    selected: boolean;
-    background: string;
-  };
+  nft: NFT;
   compact?: boolean;
   isSliding?: boolean;
   onSelect: () => void;
 }
 
-export function NFTCard({
+export default function NFTCard({
   nft,
   compact = false,
   isSliding = false,

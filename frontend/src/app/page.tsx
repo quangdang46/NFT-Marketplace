@@ -1,4 +1,4 @@
-import Home from "@/features/home/components";
+import Home from "@/features/home/Home";
 import { Metadata } from "next";
 import React from "react";
 export const metadata: Metadata = {
