@@ -14,6 +14,8 @@ import {
   Globe,
   X,
   ShoppingCart,
+  Moon,
+  Sun,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ import { Slider } from "@/components/ui/slider";
 import { FilterSidebar } from "./filteredTraits";
 import { NFTCard } from "./NFTCard";
 import { NFTListItem } from "./NFTListItem";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { CartModal } from "./CartModal";
 
@@ -134,6 +137,7 @@ export function Marketplace() {
   const [filteredNFTs, setFilteredNFTs] = useState(allNFTs);
   const [visibleNFTs, setVisibleNFTs] = useState(allNFTs);
   const [priceRange, setPriceRange] = useState<[number, number]>([0.02, 0.04]);
+  const { theme, setTheme } = useTheme();
   const [cartOpen, setCartOpen] = useState(false);
   const [itemCount, setItemCount] = useState("0");
 
@@ -158,6 +162,7 @@ export function Marketplace() {
   };
 
   const handleNFTSelection = (id: string) => {
+    // Cập nhật trạng thái selected của NFT mà không đóng modal
     setVisibleNFTs((prev) =>
       prev.map((nft) =>
         nft.id === id ? { ...nft, selected: !nft.selected } : nft
@@ -166,10 +171,13 @@ export function Marketplace() {
     updateItemCount();
   };
 
+  // Cập nhật số lượng item được chọn
   const updateItemCount = () => {
-    const selectedCount = visibleNFTs.filter((nft) => nft.selected).length;
-    setItemCount(selectedCount.toString());
-    setSliderValue([Math.floor((selectedCount / filteredNFTs.length) * 100)]);
+    setTimeout(() => {
+      const selectedCount = visibleNFTs.filter((nft) => nft.selected).length;
+      setItemCount(selectedCount.toString());
+      setSliderValue([Math.floor((selectedCount / filteredNFTs.length) * 100)]);
+    }, 0);
   };
 
   // Xử lý tìm kiếm và sắp xếp
@@ -243,7 +251,7 @@ export function Marketplace() {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Main Content */}
-      <main className="container mx-auto p-0">
+      <main className="container mx-auto p-0 relative">
         {/* Header */}
         <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center justify-between p-4">
@@ -284,6 +292,17 @@ export function Marketplace() {
                 </div>
               </div>
             </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-7 px-4 py-2 text-xs text-muted-foreground">
@@ -655,8 +674,9 @@ export function Marketplace() {
         onOpenChange={setCartOpen}
         items={visibleNFTs.filter((nft) => nft.selected)}
         onRemoveItem={(id) => {
-          setVisibleNFTs(
-            visibleNFTs.map((nft) =>
+          // Cập nhật trạng thái selected của NFT mà không đóng modal
+          setVisibleNFTs((prev) =>
+            prev.map((nft) =>
               nft.id === id ? { ...nft, selected: false } : nft
             )
           );

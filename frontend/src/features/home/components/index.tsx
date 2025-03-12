@@ -1,7 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
-import { NFTCollections } from "@/features/home/components/NftCollections/NftCollections";
 import { Blockchain, useNftStore } from "@/store/useNftStore";
 import { NFTCarousel } from "@/features/home/components/nftchains/nft-carousel";
 import NFTCollectionsv2 from "@/features/home/components/NftCollections/NFTCollectionsv2";
@@ -22,7 +21,7 @@ export default function Home() {
   return (
     <>
       {chain}
-      <NFTCollections />
+      {/* <NFTCollections /> */}
       <div className="mt-5">
         <NFTCarousel />
       </div>
