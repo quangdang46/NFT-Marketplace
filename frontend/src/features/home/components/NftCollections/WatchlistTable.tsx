@@ -1,12 +1,15 @@
 "use client";
 
-import { NFTCollectionsTable } from "@/features/home/components/NftCollections/NFTCollectionsTable";
+import { NFTCollectionsTable } from "./NFTCollectionsTable";
 
+interface WatchlistTableProps {
+  timeframe: string;
+}
 
-export function WatchlistTable() {
+export function WatchlistTable({ timeframe }: WatchlistTableProps) {
   return (
     <div className="space-y-4">
-      <NFTCollectionsTable />
+      <NFTCollectionsTable timeframe={timeframe} />
     </div>
   );
 }

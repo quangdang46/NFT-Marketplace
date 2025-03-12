@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -22,7 +23,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, ChevronDown } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { TimeFrameToggle } from "@/features/home/components/NftCollections/TimeFrameToggle";
+
+interface NFTCollectionsTableProps {
+  timeframe: string;
+}
 
 // Types
 interface NFTCollection {
@@ -61,11 +65,10 @@ const generateFakeData = (): NFTCollection[] => {
   }));
 };
 
-export function NFTCollectionsTable() {
+export function NFTCollectionsTable({ timeframe }: NFTCollectionsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [data, setData] = useState<NFTCollection[]>([]);
   const [loading, setLoading] = useState(true);
-  const [timeframe, setTimeframe] = useState("1d");
 
   useEffect(() => {
     setLoading(true);
@@ -261,10 +264,6 @@ export function NFTCollectionsTable() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-10 w-[200px]" />
-          <Skeleton className="h-10 w-[150px]" />
-        </div>
         {Array.from({ length: 10 }).map((_, i) => (
           <Skeleton key={i} className="h-16 w-full" />
         ))}
@@ -274,10 +273,6 @@ export function NFTCollectionsTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <TimeFrameToggle value={timeframe} onValueChange={setTimeframe} />
-      </div>
-
       <div className="rounded-md border">
         <Table>
           <TableHeader>

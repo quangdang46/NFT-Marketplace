@@ -3,13 +3,12 @@ import { useParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 import { Blockchain, useNftStore } from "@/store/useNftStore";
 import { NFTCarousel } from "@/features/home/components/nftchains/nft-carousel";
-import NFTCollectionsv2 from "@/features/home/components/NftCollections/NFTCollectionsv2";
 import NFTDetails from "@/features/home/components/mintnft/NFTDetails";
 import NFTDetailsSkeleton from "@/features/home/components/mintnft/NFTDetailsSkeleton";
 import NFTCreationForm from "@/features/home/components/createnft/CreateNft";
 import CaroselV2 from "@/features/home/components/caroselv2/Caroselv2";
 import { Marketplace } from "@/features/home/components/shop/Marketplace";
-
+import NFTCollections from "@/features/home/components/NftCollections/NFTCollections";
 export default function Home() {
   const { chain } = useParams(); // chain là string hoặc undefined
 
@@ -21,12 +20,11 @@ export default function Home() {
   return (
     <>
       {chain}
-      {/* <NFTCollections /> */}
       <div className="mt-5">
         <NFTCarousel />
       </div>
       <div className="mt-5">
-        <NFTCollectionsv2 />
+        <NFTCollections />
       </div>
       <div className="mt-5">
         <Suspense fallback={<NFTDetailsSkeleton />}>
