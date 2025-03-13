@@ -113,9 +113,6 @@ export const menuLists = {
   ],
 };
 
-
-
-
 export interface NavItem {
   id: string;
   label: string;
@@ -160,7 +157,7 @@ export const navItems: NavItem[] = [
   {
     id: "mint",
     label: "Mint",
-    href: "/mint",
+    href: "/create-or-manage",
     hasDropdown: false,
   },
   {

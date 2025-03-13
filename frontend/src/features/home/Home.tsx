@@ -1,15 +1,10 @@
 "use client";
-import { Blockchain, useNftStore } from "@/store/useNftStore";
+
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
 
 export default function Home() {
-  const { chain } = useParams();
-  const setChain = useNftStore((state) => state.setSelectedBlockchain);
-  useEffect(() => {
-    const newChain = typeof chain === "string" ? chain.toUpperCase() : "ALL";
-    setChain(newChain as Blockchain | "ALL");
-  }, [chain, setChain]);
+  const params = useParams();
+  const chain = params.chain;
   return (
     <>
       home
