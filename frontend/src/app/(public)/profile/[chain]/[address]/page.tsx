@@ -1,4 +1,3 @@
-import Account from "@/features/account/Account";
 import { Metadata } from "next";
 import React from "react";
 export const metadata: Metadata = {
@@ -15,7 +14,6 @@ export default async function page({
     <div>
       <h1>Profile {address}</h1>
       <h1>Chain {chain}</h1>
-      <Account />
     </div>
   );
 }

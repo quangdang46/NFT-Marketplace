@@ -1,7 +1,7 @@
 import Base from "@/components/icons/Base";
 import Ethereum from "@/components/icons/Ethereum";
 import Polygon from "@/components/icons/Polygon";
-import { AlignJustify, LucideIcon } from "lucide-react";
+import { Expand, LucideIcon } from "lucide-react";
 import { ComponentType } from "react";
 type ChainIcon =
   | LucideIcon
@@ -13,8 +13,8 @@ interface Chain {
 }
 
 export const chains: Chain[] = [
-  { name: "All", icon: AlignJustify, href: "/" },
-  { name: "Base", icon: Base, href: "/base" },
-  { name: "Ethereum", icon: Ethereum, href: "/ethereum" },
-  { name: "Polygon", icon: Polygon, href: "/polygon" },
+  { name: "All", icon: Expand, href: "/explore" },
+  { name: "Base", icon: Base, href: "/explore/base" },
+  { name: "Ethereum", icon: Ethereum, href: "/explore/ethereum" },
+  { name: "Polygon", icon: Polygon, href: "/explore/polygon" },
 ];
