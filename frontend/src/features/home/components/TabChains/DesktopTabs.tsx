@@ -10,9 +10,7 @@ export default function DesktopTabs({ activeChain }: DesktopTabsProps) {
   return (
     <div className="hidden sm:flex flex-wrap gap-2 items-center">
       {chains.map((chain) => {
-        const isActive = activeChain
-          ? chain.href === `/explore/${activeChain}`
-          : chain.href === "/explore";
+        const isActive = chain.href === `/explore/${activeChain}`;
         return (
           <ChainItem
             key={chain.href}

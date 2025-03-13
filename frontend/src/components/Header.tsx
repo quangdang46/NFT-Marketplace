@@ -8,6 +8,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { NavLink } from "@/components/NavLink";
 import { WalletButton } from "@/components/WalletButton";
 import { ModeToggle } from "@/components/ui/darkmode";
+import Link from "next/link";
 
 export function Header() {
   const [activeTab] = useState("collections");
@@ -17,7 +18,7 @@ export function Header() {
     <header className="bg-[#1A1F2C]/95 backdrop-blur-sm border-b border-white/5 py-3">
       <div className="flex items-center justify-between px-2 sm:px-4">
         {/* Logo */}
-        <div className="flex items-center">
+        <Link href="/" className="flex items-center">
           <span className="text-xl font-bold text-white mr-2">
             <span className="text-[#ec4899]">M</span>
             <span className="text-[#9948ec]">E</span>
@@ -25,7 +26,7 @@ export function Header() {
           <span className="hidden md:block text-sm font-medium text-white">
             MAGIC EDEN
           </span>
-        </div>
+        </Link>
 
         {/* Desktop Nav Links */}
         {!isMobile && (
@@ -67,6 +68,5 @@ export function Header() {
         </div>
       </div>
     </header>
- 
   );
 }

@@ -14,24 +14,19 @@ export default function Account() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Get the tab from search params or default to "profile"
   const tab = searchParams.get("tab") || "profile";
 
-  // Update the URL when tab changes
   const handleTabChange = (value: string) => {
     const params = new URLSearchParams(searchParams);
     params.set("tab", value);
-    router.push(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  // Set default tab if none is specified
   useEffect(() => {
     if (!searchParams.has("tab")) {
-      const params = new URLSearchParams(searchParams);
-      params.set("tab", "profile");
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      router.replace(`${pathname}?tab=profile`, { scroll: false });
     }
-  }, [searchParams, pathname, router]);
+  }, [tab, pathname, router, searchParams]);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -39,31 +34,24 @@ export default function Account() {
 
       <Tabs value={tab} onValueChange={handleTabChange} className="mb-8">
         <TabsList className="bg-transparent border-b border-[#2a2a3a] w-full justify-start rounded-none p-0 h-auto">
-          <TabsTrigger
-            value="profile"
-            className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-[#e91e63] data-[state=active]:text-white data-[state=active]:bg-transparent rounded-none"
-          >
-            Profile
-          </TabsTrigger>
-          <TabsTrigger
-            value="wallets"
-            className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-[#e91e63] data-[state=active]:text-white data-[state=active]:bg-transparent rounded-none"
-          >
-            Wallets
-          </TabsTrigger>
-          <TabsTrigger
-            value="marketplace"
-            className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-[#e91e63] data-[state=active]:text-white data-[state=active]:bg-transparent rounded-none"
-          >
-            Marketplace
-          </TabsTrigger>
-          <TabsTrigger
-            value="security"
-            className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-[#e91e63] data-[state=active]:text-white data-[state=active]:bg-transparent rounded-none"
-          >
-            2FA Settings
-          </TabsTrigger>
+          {["profile", "wallets", "marketplace", "security"].map((t) => (
+            <TabsTrigger
+              key={t}
+              value={t}
+              className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-[#e91e63] data-[state=active]:text-white data-[state=active]:bg-transparent rounded-none"
+            >
+              {t === "profile"
+                ? "Profile"
+                : t === "wallets"
+                ? "Wallets"
+                : t === "marketplace"
+                ? "Marketplace"
+                : "2FA Settings"}
+            </TabsTrigger>
+          ))}
         </TabsList>
+
+
 
         <TabsContent value="profile" className="mt-6">
           <ProfileTab />
