@@ -1,20 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProfileTab from "@/features/account/tabs/profile-tab";
-import WalletsTab from "@/features/account/tabs/wallets-tab";
-import MarketplaceTab from "@/features/account/tabs/marketplace-tab";
-import SecurityTab from "@/features/account/tabs/security-tab";
+
+import { useEffect } from "react";
+import { ProfileTab } from "@/features/account/tabs/profile-tab";
+import { WalletsTab } from "@/features/account/tabs/wallets-tab";
+import { MarketplaceTab } from "@/features/account/tabs/marketplace-tab";
+import { SecurityTab } from "@/features/account/tabs/security-tab";
 
 export default function Account() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Get the tab from search params or default to "profile"
+  const tab = searchParams.get("tab") || "profile";
+
+  // Update the URL when tab changes
+  const handleTabChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", value);
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  // Set default tab if none is specified
+  useEffect(() => {
+    if (!searchParams.has("tab")) {
+      const params = new URLSearchParams(searchParams);
+      params.set("tab", "profile");
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  }, [searchParams, pathname, router]);
 
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Account Settings</h1>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+      <Tabs value={tab} onValueChange={handleTabChange} className="mb-8">
         <TabsList className="bg-transparent border-b border-[#2a2a3a] w-full justify-start rounded-none p-0 h-auto">
           <TabsTrigger
             value="profile"
@@ -35,7 +58,7 @@ export default function Account() {
             Marketplace
           </TabsTrigger>
           <TabsTrigger
-            value="2fa"
+            value="security"
             className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-[#e91e63] data-[state=active]:text-white data-[state=active]:bg-transparent rounded-none"
           >
             2FA Settings
@@ -54,7 +77,7 @@ export default function Account() {
           <MarketplaceTab />
         </TabsContent>
 
-        <TabsContent value="2fa" className="mt-6">
+        <TabsContent value="security" className="mt-6">
           <SecurityTab />
         </TabsContent>
       </Tabs>

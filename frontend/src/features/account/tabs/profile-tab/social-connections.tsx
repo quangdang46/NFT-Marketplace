@@ -1,13 +1,12 @@
-import { Button } from "@/components/ui/button";
-import React from "react";
+"use client"
+
+import { Button } from "@/components/ui/button"
 
 export default function SocialConnections() {
   return (
     <div>
       <h2 className="text-lg font-medium mb-2">Social Connections</h2>
-      <p className="text-gray-400 text-sm mb-2">
-        Social links are displayed on your profile
-      </p>
+      <p className="text-gray-400 text-sm mb-2">Social links are displayed on your profile</p>
 
       <div className="space-y-2">
         <Button
@@ -26,5 +25,6 @@ export default function SocialConnections() {
         </Button>
       </div>
     </div>
-  );
+  )
 }
+

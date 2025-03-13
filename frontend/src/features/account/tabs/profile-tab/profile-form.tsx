@@ -1,65 +1,51 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import UserIdDisplay from "@/features/account/tabs/profile-tab/UserIdDisplay";
-import SocialConnections from "@/features/account/tabs/profile-tab/SocialConnections";
+import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { Form, FormItem, FormLabel, FormControl, FormField } from "@/components/ui/form"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 
-// Define form schema for validation
 const profileFormSchema = z.object({
-  username: z.string().optional(),
-  displayName: z.string().optional(),
-  bio: z.string().max(500, {
-    message: "Bio must not be longer than 500 characters.",
-  }),
-  displayPortfolio: z.boolean().default(true),
+  username: z.string().min(3).max(50),
+  displayName: z.string().min(2).max(50),
+  bio: z.string().max(500),
   email: z.string().email().optional(),
-});
+  displayPortfolio: z.boolean().default(true),
+})
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type ProfileFormValues = z.infer<typeof profileFormSchema>
 
-export default function ProfileTab() {
+export default function ProfileForm() {
   // State for showing input fields
-  const [showUsernameInput, setShowUsernameInput] = useState(false);
-  const [showDisplayNameInput, setShowDisplayNameInput] = useState(false);
-  const [showEmailInput, setShowEmailInput] = useState(false);
-
-  // Default values for the form
-  const defaultValues: Partial<ProfileFormValues> = {
-    username: "",
-    displayName: "",
-    bio: "",
-    displayPortfolio: true,
-    email: "",
-  };
+  const [showUsernameInput, setShowUsernameInput] = useState(false)
+  const [showDisplayNameInput, setShowDisplayNameInput] = useState(false)
+  const [showBioInput, setShowBioInput] = useState(false)
+  const [showEmailInput, setShowEmailInput] = useState(false)
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
-  });
+    defaultValues: {
+      username: "",
+      displayName: "",
+      bio: "",
+      email: "",
+      displayPortfolio: true,
+    },
+  })
 
   function onSubmit(data: ProfileFormValues) {
-    // In a real app, you would send this data to your backend
-    console.log(data);
+    console.log(data)
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Username Field */}
         <div>
           <h2 className="text-lg font-medium mb-2">Username</h2>
           {showUsernameInput ? (
@@ -81,7 +67,10 @@ export default function ProfileTab() {
                 <Button
                   type="button"
                   className="bg-[#e91e63] hover:bg-[#d81b60] rounded"
-                  onClick={() => setShowUsernameInput(false)}
+                  onClick={() => {
+                    form.handleSubmit(onSubmit)()
+                    setShowUsernameInput(false)
+                  }}
                 >
                   Save
                 </Button>
@@ -101,14 +90,15 @@ export default function ProfileTab() {
 
         <div className="text-amber-500 text-sm">
           <p>
-            Note: All your wallets are set to private. At least one wallet must
-            be public for others to see your profile.{" "}
+            Note: All your wallets are set to private. At least one wallet must be public for others to see your
+            profile.{" "}
             <a href="#" className="underline hover:text-amber-400">
               Manage wallet visibility here
             </a>
           </p>
         </div>
 
+        {/* Display Name Field */}
         <div>
           <h2 className="text-lg font-medium mb-2">Display Name</h2>
           {showDisplayNameInput ? (
@@ -130,7 +120,10 @@ export default function ProfileTab() {
                 <Button
                   type="button"
                   className="bg-[#e91e63] hover:bg-[#d81b60] rounded"
-                  onClick={() => setShowDisplayNameInput(false)}
+                  onClick={() => {
+                    form.handleSubmit(onSubmit)()
+                    setShowDisplayNameInput(false)
+                  }}
                 >
                   Save
                 </Button>
@@ -146,53 +139,59 @@ export default function ProfileTab() {
               Add Display Name
             </Button>
           )}
-          <p className="text-gray-400 text-sm mt-1">
-            This is the name displayed on your profile and activities
-          </p>
+          <p className="text-gray-400 text-sm mt-1">This is the name displayed on your profile and activities</p>
         </div>
 
-        <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg font-medium">Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  className="bg-[#2a2a3a] border-[#3a3a4a] resize-none min-h-[120px] mt-2 rounded"
-                  placeholder="Write something about yourself..."
-                />
-              </FormControl>
-              <FormMessage />
-              <div className="flex justify-end gap-2 mt-2">
+        {/* Bio Field */}
+        <div>
+          <h2 className="text-lg font-medium mb-2">Bio</h2>
+          {showBioInput ? (
+            <div className="space-y-2">
+              <Textarea
+                className="bg-[#2a2a3a] border-[#3a3a4a] resize-none min-h-[120px]"
+                placeholder="Write something about yourself..."
+                {...form.register("bio")}
+              />
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   className="bg-[#2a2a3a] border-[#3a3a4a] hover:bg-[#3a3a4a] rounded"
-                  onClick={() => form.setValue("bio", "")}
+                  onClick={() => setShowBioInput(false)}
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
+                  type="button"
                   className="bg-[#e91e63] hover:bg-[#d81b60] rounded"
+                  onClick={() => {
+                    form.handleSubmit(onSubmit)()
+                    setShowBioInput(false)
+                  }}
                 >
                   Save
                 </Button>
               </div>
-            </FormItem>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full bg-[#2a2a3a] border-[#3a3a4a] hover:bg-[#3a3a4a] text-center py-6 rounded"
+              onClick={() => setShowBioInput(true)}
+            >
+              Add Bio
+            </Button>
           )}
-        />
+        </div>
 
+        {/* Portfolio Toggle */}
         <FormField
           control={form.control}
           name="displayPortfolio"
           render={({ field }) => (
             <FormItem className="flex items-center justify-between">
-              <FormLabel className="text-lg font-medium">
-                Display total portfolio value
-              </FormLabel>
+              <FormLabel className="text-lg font-medium">Display total portfolio value</FormLabel>
               <FormControl>
                 <Switch
                   checked={field.value}
@@ -204,6 +203,7 @@ export default function ProfileTab() {
           )}
         />
 
+        {/* Email Field */}
         <div>
           <h2 className="text-lg font-medium mb-2">Email</h2>
           {showEmailInput ? (
@@ -226,7 +226,10 @@ export default function ProfileTab() {
                 <Button
                   type="button"
                   className="bg-[#e91e63] hover:bg-[#d81b60] rounded"
-                  onClick={() => setShowEmailInput(false)}
+                  onClick={() => {
+                    form.handleSubmit(onSubmit)()
+                    setShowEmailInput(false)
+                  }}
                 >
                   Save
                 </Button>
@@ -242,15 +245,10 @@ export default function ProfileTab() {
               Add Email
             </Button>
           )}
-          <p className="text-gray-400 text-sm mt-1">
-            Your email for marketplace notifications
-          </p>
+          <p className="text-gray-400 text-sm mt-1">Your email for marketplace notifications</p>
         </div>
-
-        <SocialConnections />
-
-        <UserIdDisplay id="f214a2a3-8...f07" />
       </form>
     </Form>
-  );
+  )
 }
+
