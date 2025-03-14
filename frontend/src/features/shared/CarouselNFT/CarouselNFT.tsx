@@ -1,19 +1,12 @@
+
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { useState, useEffect } from "react";
-import { type CarouselApi } from "@/components/ui/carousel";
+import { HeaderCarousel } from "@/features/shared/CarouselNFT/components/HeaderCarousel";
+import { NFTCarousel } from "@/features/shared/CarouselNFT/components/NFTCarousel";
+import { NFTItem } from "@/types/nft";
 
-const items = [
+const items: NFTItem[] = [
   {
     id: 1,
     title: "SpiKeys Collection",
@@ -87,119 +80,10 @@ const items = [
 ];
 
 export default function CarouselNFT() {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap());
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
-
   return (
     <div className="px-4 md:px-6">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold tracking-tight">
-          NFT Drops Calendar
-        </h2>
-        <Button variant="outline" size="sm">
-          See all
-        </Button>
-      </div>
-
-      <div className="relative -mx-4 px-4">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          setApi={setApi}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2">
-            {items.map((item) => (
-              <CarouselItem
-                key={item.id}
-                className="pl-2 md:basis-1/3 lg:basis-1/5"
-              >
-                <div
-                  className="relative group cursor-pointer"
-                  onMouseEnter={() => setHoveredId(item.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  <Card className="overflow-hidden border border-border bg-card/50 text-sm">
-                    <div className="relative aspect-square overflow-hidden">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className={`object-cover w-full h-full transition-transform duration-500 ${
-                          hoveredId === item.id ? "scale-110" : "scale-100"
-                        }`}
-                      />
-                      <div
-                        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 h-24 flex items-end transform transition-transform duration-300 ${
-                          hoveredId === item.id
-                            ? "translate-y-0"
-                            : "translate-y-full"
-                        }`}
-                      >
-                        <Button
-                          className="w-full text-xs"
-                          variant="secondary"
-                          size="sm"
-                        >
-                          Mint Now
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="p-2">
-                      <h3 className="font-semibold truncate text-sm">
-                        {item.title}
-                      </h3>
-                      <div className="grid grid-cols-3 gap-1 mt-1">
-                        <div>
-                          <p className="text-xs text-muted-foreground">PRICE</p>
-                          <p className="font-medium text-sm">{item.price}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">ITEMS</p>
-                          <p className="font-medium text-sm">{item.items}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">
-                            MINTED
-                          </p>
-                          <p className="font-medium text-sm">{item.minted}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 mt-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                        <span className="text-xs">
-                          Live
-                          <span className="text-muted-foreground">
-                            ends: {item.endDate}
-                          </span>
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="absolute -left-4 bg-background/80 backdrop-blur-sm hover:bg-background/90" />
-          <CarouselNext className="absolute -right-4 bg-background/80 backdrop-blur-sm hover:bg-background/90" />
-        </Carousel>
-      </div>
+      <HeaderCarousel />
+      <NFTCarousel items={items} />
     </div>
   );
 }
