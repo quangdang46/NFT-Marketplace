@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import TabChains from "@/features/home/components/TabChains/TabChains";
+import TabChains from "@/features/shared/TabChains/TabChains";
 
 export const iframeHeight = "800px";
 
