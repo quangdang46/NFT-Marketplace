@@ -4,6 +4,13 @@ export const metadata = {
   title: "Launchpad",
   description: "Launchpad",
 };
-export default function page() {
+
+export default async function page(props: {
+  params?: Promise<{
+    chain: string;
+    address: string;
+  }>;
+}) {
+  console.log("params", await props.params);
   return <NFTDetails></NFTDetails>;
 }

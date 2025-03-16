@@ -43,3 +43,100 @@ backend/
 │   ├── main.ts
 ├── Dockerfile                # Nếu deploy bằng Docker
 ├── docker-compose.yml        # Nếu dùng microservices
+
+
+
+
+/project-root/
+├── services/                   # Chứa tất cả các microservices
+│   ├── auth-service/          # Microservice xác thực
+│   │   ├── src/
+│   │   │   ├── dto/
+│   │   │   ├── entities/
+│   │   │   ├── guards/
+│   │   │   ├── strategies/
+│   │   │   ├── v1/
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   ├── constants/
+│   │   │   ├── auth.module.ts
+│   │   │   ├── auth.types.ts
+│   │   │   ├── main.ts
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   ├── user-service/         # Microservice quản lý user
+│   │   ├── src/
+│   │   │   ├── dto/
+│   │   │   ├── entities/
+│   │   │   ├── v1/
+│   │   │   │   ├── user.controller.ts
+│   │   │   │   ├── user.service.ts
+│   │   │   ├── user.module.ts
+│   │   │   ├── main.ts
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   ├── nft-service/          # Microservice NFT
+│   │   ├── src/
+│   │   │   ├── dto/
+│   │   │   ├── entities/
+│   │   │   ├── events/       # Thêm để hỗ trợ Saga Pattern
+│   │   │   │   ├── nft-created.event.ts
+│   │   │   │   ├── nft-creation-failed.event.ts
+│   │   │   ├── v1/
+│   │   │   │   ├── nft.controller.ts
+│   │   │   │   ├── nft.service.ts
+│   │   │   ├── nft.module.ts
+│   │   │   ├── main.ts
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   ├── blockchain-service/   # Microservice blockchain
+│   │   ├── src/
+│   │   │   ├── adapters/
+│   │   │   ├── interfaces/
+│   │   │   ├── events/       # Thêm để hỗ trợ Saga Pattern
+│   │   │   │   ├── blockchain-minted.event.ts
+│   │   │   ├── v1/
+│   │   │   │   ├── blockchain.controller.ts
+│   │   │   │   ├── blockchain.service.ts
+│   │   │   ├── blockchain.module.ts
+│   │   │   ├── main.ts
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+├── api-gateway/              # API Gateway cải tiến
+│   ├── src/
+│   │   ├── config/           # Cấu hình Service Discovery
+│   │   │   ├── service-discovery.config.ts
+│   │   ├── v1/
+│   │   │   ├── gateway.controller.ts
+│   │   │   ├── gateway.service.ts
+│   │   ├── gateway.module.ts
+│   │   ├── main.ts
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── tsconfig.json
+├── shared/                   # Thư viện dùng chung
+│   ├── utils/
+│   ├── interfaces/
+│   ├── constants/
+│   ├── middlewares/
+│   ├── exceptions/
+│   ├── decorators/
+│   ├── events/              # Thêm để hỗ trợ Saga Pattern
+│   │   ├── base.event.ts    # Event cơ bản
+│   │   ├── saga.interface.ts # Interface cho Saga
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── index.ts
+├── infrastructure/           # Cơ sở hạ tầng hỗ trợ
+│   ├── consul/              # Service Discovery với Consul
+│   │   ├── consul-config.json
+│   ├── rabbitmq/            # Message Broker cho Saga Pattern
+│   │   ├── rabbitmq.conf
+├── docker-compose.yml        # Quản lý toàn bộ hệ thống
+├── .env
+├── .gitignore
+├── README.md
