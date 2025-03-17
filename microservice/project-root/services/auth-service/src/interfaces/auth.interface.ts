@@ -5,13 +5,13 @@ export interface IAuthService {
     refreshToken: string;
   }>;
 
-  saveTokenToCookie(
-    res: Response,
-    accessToken: string,
-    refreshToken: string,
-  ): void;
+  // saveTokenToCookie(
+  //   res: Response,
+  //   accessToken: string,
+  //   refreshToken: string,
+  // ): void;
 
-  removeTokenFromCookie(res: Response): void;
+  // removeTokenFromCookie(res: Response): void;
 
   getNonce(): Promise<{ nonce: string }>;
 

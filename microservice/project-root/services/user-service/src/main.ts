@@ -1,8 +1,18 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { Transport, MicroserviceOptions } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { UserModule } from './user.module';
+import { getRabbitMQConfig } from '@shared/config/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    UserModule,
+    {
+      transport: Transport.RMQ,
+      options: getRabbitMQConfig(await app.get(ConfigService), 'USER'),
+    },
+  );
+
+  await app.listen();
 }
 bootstrap();
