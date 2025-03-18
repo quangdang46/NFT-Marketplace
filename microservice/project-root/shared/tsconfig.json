@@ -5,14 +5,14 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "moduleResolution": "node",
     "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,
-    "paths": {
-      "@project/shared": ["../../shared/dist/index"],
-      "@project/shared/*": ["../../shared/dist/*"]
-    }
-  }
+    "rootDir": "./",
+    "incremental": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
