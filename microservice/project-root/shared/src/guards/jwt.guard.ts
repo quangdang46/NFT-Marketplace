@@ -6,13 +6,13 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { AuthRequest, JwtPayload } from "interfaces/auth.interface";
+import { AuthRequest, JwtPayload } from "../interfaces/auth.interface";
 
 @Injectable()
 export class JwtGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService 
+    private readonly configService: ConfigService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

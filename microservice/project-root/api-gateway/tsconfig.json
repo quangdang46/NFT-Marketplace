@@ -11,9 +11,14 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@project/shared": ["../shared/dist/index"],
-      "@project/shared/*": ["../shared/dist/*"],
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      // "@project/shared": ["../shared/dist"],
+      // "@project/shared/*": ["../shared/dist/*"],
+      // "interfaces/*": ["../shared/dist/interfaces/*"]
+
+      "@project/shared": ["/app/shared/dist"],
+      "@project/shared/*": ["/app/shared/dist/*"],
+      "interfaces/*": ["/app/shared/dist/interfaces/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

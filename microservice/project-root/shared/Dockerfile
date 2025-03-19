@@ -14,7 +14,8 @@ COPY package*.json ./
 RUN npm install --verbose && npm install -g rimraf
 
 # Copy source code
-COPY . .
+COPY src/ ./src/
+COPY tsconfig.json package.json ./
 
 # Build thư viện shared
 RUN npm run build

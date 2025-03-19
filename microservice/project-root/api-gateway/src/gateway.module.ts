@@ -1,11 +1,10 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService ,ConfigModule} from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './v1/auth/auth.controller';
 import { GatewayService } from './v1/gateway.service';
 import { ServiceDiscovery } from './config/service-discovery.config';
 import {
-  ConfigModule,
   getRedisConfig,
   JwtGuard,
   RateLimitMiddleware,
@@ -14,7 +13,7 @@ import { getJwtConfig } from '@project/shared';
 import { RedisModule } from '@nestjs-modules/ioredis';
 
 const IMPORTS = [
-  ConfigModule, // Dùng ConfigModule từ shared
+  ConfigModule,
   JwtModule.registerAsync({
     useFactory: (configService: ConfigService) => getJwtConfig(configService),
     inject: [ConfigService],

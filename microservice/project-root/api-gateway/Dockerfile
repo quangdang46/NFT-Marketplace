@@ -11,15 +11,20 @@ COPY shared/ /app/shared/
 WORKDIR /app/shared
 RUN npm install --verbose && npm run build
 
-# Switch back to auth-service directory
+# Switch back to api-gateway directory
 WORKDIR /app
 
-COPY services/user-service/package*.json ./
+# Copy package files from api-gateway directory
+COPY api-gateway/package*.json ./
 
+# Install api-gateway dependencies
 RUN npm install --verbose
 
-COPY services/user-service/ .
+# Copy api-gateway source code
+COPY api-gateway/ .
 
+# Biên dịch TypeScript
 RUN npm run build
 
+# Chạy ứng dụng
 CMD ["node", "dist/main.js"]

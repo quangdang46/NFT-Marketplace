@@ -60,6 +60,50 @@ services:
     networks:
       - app-network
 
+  user-service:
+    build:
+      context: . # Context là project-root/ để bao gồm shared
+      dockerfile: services/user-service/Dockerfile
+    depends_on:
+      - rabbitmq
+      - redis
+      - consul
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+    networks:
+      - app-network
+
+  api-gateway:
+    build:
+      context: . # Context là project-root/ để bao gồm shared
+      dockerfile: api-gateway/Dockerfile
+    depends_on:
+      - auth-service
+      - user-service
+      - rabbitmq
+      - redis
+      - consul
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
 volumes:
   rabbitmq_data:
   redis_data:

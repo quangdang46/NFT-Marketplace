@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService,ConfigModule } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserController } from './v1/user.controller';
 import { UserService } from './v1/user.service';
 import { ConsulService } from './v1/consul.service';
 import { User } from './entities/user.entity';
-import { ConfigModule, getTypeOrmConfig } from '@project/shared';
+import {  getTypeOrmConfig } from '@project/shared';
 
 const IMPORTS = [
-  ConfigModule,
+    ConfigModule.forRoot({
+    isGlobal: true,
+    envFilePath: '.env',
+  }),
   TypeOrmModule.forRootAsync({
     useFactory: (configService: ConfigService) => {
       const config = getTypeOrmConfig(configService);

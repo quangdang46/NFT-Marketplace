@@ -51,6 +51,9 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @Post('logout')
   async logout(@Req() req: AuthRequest, @Res() res: Response) {
+    if (!req.user) {
+      throw new Error('User not authenticated');
+    }
     await this.gatewayService.sendToService<void>(
       'auth-service',
       { cmd: 'logout' },
