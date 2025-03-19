@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import Consul from 'consul';
-import { getConsulConfig } from '@project/shared';
+import { getConsulConfig, ConfigService } from '@project/shared';
 import { Logger } from '@nestjs/common';
 
 // Định nghĩa interface cho response của Consul

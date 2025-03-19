@@ -21,12 +21,10 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
-    "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/microservices": "^11.0.11",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
-    "@project/shared": "file:../../shared",
     "amqplib": "^0.10.5",
     "consul": "^2.0.1",
     "pg": "^8.14.0",

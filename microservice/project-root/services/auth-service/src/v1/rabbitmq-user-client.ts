@@ -4,9 +4,8 @@ import {
   ClientProxyFactory,
   Transport,
 } from '@nestjs/microservices';
-import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { getRabbitMQConfig, UserClient } from '@project/shared';
+import { getRabbitMQConfig, UserClient,ConfigService } from '@project/shared';
 
 @Injectable()
 export class RabbitMQUserClient implements UserClient {

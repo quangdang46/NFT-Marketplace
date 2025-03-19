@@ -7,3 +7,4 @@ export * from "./middlewares/rate-limit.middleware";
 export * from "./guards/jwt.guard";
 export * from "./events/base.event";
 export * from "./events/saga.interface";
+export * from "./config/shared-config.module";

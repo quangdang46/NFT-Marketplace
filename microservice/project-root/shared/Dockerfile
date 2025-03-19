@@ -10,8 +10,7 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Cài đặt dependencies và rimraf toàn cục
-RUN npm install --verbose && npm install -g rimraf
+RUN npm install --verbose
 
 # Copy source code
 COPY src/ ./src/

@@ -1,8 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { Transport, MicroserviceOptions } from '@nestjs/microservices';
 import { AuthModule } from './auth.module';
-import { getRabbitMQConfig } from '@project/shared';
-import { ConfigService } from '@nestjs/config';
+import { getRabbitMQConfig,ConfigService } from '@project/shared';
 
 async function bootstrap() {
   const configService = new ConfigService(); 

@@ -1,7 +1,7 @@
-node_modules
-package-lock.json
-dist
-*.log
 .git
 .gitignore
-*.md
+.dockerignore
+README.md
+dist
+node_modules
+coverage

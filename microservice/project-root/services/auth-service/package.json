@@ -22,13 +22,11 @@
   "dependencies": {
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/common": "^11.0.1",
-    "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/microservices": "^11.0.11",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
-    "@project/shared": "file:../../shared",
     "amqplib": "^0.10.5",
     "consul": "^2.0.1",
     "ethers": "^6.13.5",

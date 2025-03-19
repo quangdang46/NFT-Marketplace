@@ -1,7 +1,6 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import Consul from 'consul'; // Import default
-import { getConsulConfig } from '@project/shared';
+import { getConsulConfig,ConfigService } from '@project/shared';
 
 @Injectable()
 export class ConsulService implements OnApplicationShutdown {

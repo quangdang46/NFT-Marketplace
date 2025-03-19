@@ -1,70 +1,3 @@
-// import { Injectable } from '@nestjs/common';
-// import { ClientProxyFactory, Transport } from '@nestjs/microservices';
-// import { ConfigService } from '@nestjs/config';
-// import { Response } from 'express';
-// import { firstValueFrom } from 'rxjs';
-// import { ServiceDiscovery } from '../config/service-discovery.config';
-// import {
-//   COOKIE_EXPIRES_IN,
-//   COOKIE_REFRESH_TOKEN_EXPIRES_IN,
-//   getRabbitMQConfig,
-// } from '@project/shared';
-
-// @Injectable()
-// export class GatewayService {
-//   private serviceDiscovery: ServiceDiscovery;
-
-//   constructor(configService: ConfigService) {
-//     this.serviceDiscovery = new ServiceDiscovery(configService);
-//   }
-
-//   async sendToService<T>(
-//     serviceName: string,
-//     pattern: any,
-//     data: any,
-//   ): Promise<T> {
-//     const queue = await this.serviceDiscovery.getServiceQueue(serviceName);
-//     const client = ClientProxyFactory.create({
-//       transport: Transport.RMQ,
-//       options: {
-//         ...getRabbitMQConfig(
-//           this.serviceDiscovery.configService,
-//           'API_GATEWAY',
-//         ),
-//         queue,
-//       },
-//     });
-//     return firstValueFrom<T>(client.send<T>(pattern, data));
-//   }
-
-//   saveTokenToCookie(res: Response, accessToken: string, refreshToken: string) {
-//     res.cookie('auth_token', accessToken, {
-//       maxAge: COOKIE_EXPIRES_IN,
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'strict',
-//     });
-//     res.cookie('refresh_token', refreshToken, {
-//       maxAge: COOKIE_REFRESH_TOKEN_EXPIRES_IN,
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'strict',
-//     });
-//   }
-
-//   removeTokenFromCookie(res: Response) {
-//     res.clearCookie('auth_token', {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'strict',
-//     });
-//     res.clearCookie('refresh_token', {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'strict',
-//     });
-//   }
-// }
 
 import { Injectable, Inject } from '@nestjs/common';
 import {
@@ -73,13 +6,13 @@ import {
   RmqOptions,
   Transport,
 } from '@nestjs/microservices';
-import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { ServiceDiscovery } from '../config/service-discovery.config';
 import { Logger } from '@nestjs/common';
 import {
   COOKIE_EXPIRES_IN,
   COOKIE_REFRESH_TOKEN_EXPIRES_IN,
+  ConfigService,
 } from '@project/shared';
 
 @Injectable()

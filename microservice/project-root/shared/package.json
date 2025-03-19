@@ -15,15 +15,13 @@
   "peerDependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.1",
-    "@nestjs/core": "^11.0.1",
-    "@nestjs/jwt": "^11.0.0",
-    "@nestjs/typeorm": "^11.0.0"
+    "@nestjs/core": "^11.0.1"
   },
   "dependencies": {
-    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
+    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",
     "@types/express": "^5.0.0",
