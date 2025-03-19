@@ -12,13 +12,13 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      // "@project/shared": ["../shared/dist"],
-      // "@project/shared/*": ["../shared/dist/*"],
-      // "interfaces/*": ["../shared/dist/interfaces/*"]
+      "@project/shared": ["../shared/dist"],
+      "@project/shared/*": ["../shared/dist/*"],
+      "interfaces/*": ["../shared/dist/interfaces/*"]
 
-      "@project/shared": ["/app/shared/dist"],
-      "@project/shared/*": ["/app/shared/dist/*"],
-      "interfaces/*": ["/app/shared/dist/interfaces/*"]
+      // "@project/shared": ["/app/shared/dist"],
+      // "@project/shared/*": ["/app/shared/dist/*"],
+      // "interfaces/*": ["/app/shared/dist/interfaces/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

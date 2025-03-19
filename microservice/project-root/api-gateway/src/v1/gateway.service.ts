@@ -7,13 +7,13 @@ import {
   Transport,
 } from '@nestjs/microservices';
 import { Response } from 'express';
-import { ServiceDiscovery } from '../config/service-discovery.config';
 import { Logger } from '@nestjs/common';
 import {
   COOKIE_EXPIRES_IN,
   COOKIE_REFRESH_TOKEN_EXPIRES_IN,
   ConfigService,
 } from '@project/shared';
+import { ServiceDiscovery } from '@/config/service-discovery.config';
 
 @Injectable()
 export class GatewayService {
