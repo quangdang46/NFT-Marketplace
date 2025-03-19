@@ -1,6 +1,5 @@
 export * from "./interfaces/user-client.interface";
 export * from "./constants/auth.constant";
-export * from "./config/config.module";
 export * from "./config";
 export * from "./exceptions/all-exceptions.filter";
 export * from "./middlewares/rate-limit.middleware";

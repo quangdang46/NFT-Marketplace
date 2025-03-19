@@ -12,11 +12,9 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@project/shared": ["../../shared/dist/index"],
-      "@project/shared/*": ["../../shared/dist/*"]
-
-      // "@project/shared": ["/app/node_modules/@project/shared/index"],
-      // "@project/shared/*": ["/app/node_modules/@project/shared/*"]
+      "@project/shared": ["/app/shared/dist"],
+      "@project/shared/*": ["/app/shared/dist/*"],
+      "interfaces/*": ["/app/shared/dist/interfaces/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -3,6 +3,10 @@ services:
     build:
       context: ./shared
       dockerfile: Dockerfile
+    volumes:
+      - shared_dist:/app/dist
+    networks:
+      - app-network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -36,30 +40,31 @@ services:
     networks:
       - app-network
 
-  # auth-service:
-  #   build:
-  #     context: ./services/auth-service
-  #     dockerfile: Dockerfile 
-  #   depends_on:
-  #     - rabbitmq
-  #     - redis
-  #     - consul
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     - NODE_ENV=production
-  #     - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-  #     - REDIS_HOST=redis
-  #     - REDIS_PORT=6379
-  #     - CONSUL_HOST=consul
-  #     - CONSUL_PORT=8500
-  #   networks:
-  #     - app-network
+  auth-service:
+    build:
+      context: . # Context là project-root/ để bao gồm shared
+      dockerfile: services/auth-service/Dockerfile
+    depends_on:
+      - rabbitmq
+      - redis
+      - consul
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CONSUL_HOST=consul
+      - CONSUL_PORT=8500
+    networks:
+      - app-network
 
 volumes:
   rabbitmq_data:
   redis_data:
   consul_data:
+  shared_dist:
 
 networks:
   app-network:

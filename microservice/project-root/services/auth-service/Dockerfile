@@ -4,14 +4,24 @@ FROM node:20.7.0-alpine
 # Đặt thư mục làm việc
 WORKDIR /app
 
-# Copy package.json và package-lock.json trước để tối ưu layer cache
-COPY package.json package-lock.json ./
+# Copy shared module first
+COPY shared/ /app/shared/
 
-# Cài đặt dependencies
+# Install and build shared module
+WORKDIR /app/shared
+RUN npm install --verbose && npm run build
+
+# Switch back to auth-service directory
+WORKDIR /app
+
+# Copy package files from auth-service directory
+COPY services/auth-service/package*.json ./
+
+# Install auth-service dependencies
 RUN npm install --verbose
 
-# Copy toàn bộ source code vào container
-COPY . .
+# Copy auth-service source code
+COPY services/auth-service/ .
 
 # Biên dịch TypeScript
 RUN npm run build
