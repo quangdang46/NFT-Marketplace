@@ -14,10 +14,6 @@ import { ServiceDiscovery } from '@/config/service-discovery.config';
 
 const IMPORTS = [
   SharedConfigModule,
-  JwtModule.registerAsync({
-    useFactory: (configService: ConfigService) => getJwtConfig(configService),
-    inject: [ConfigService],
-  }),
   RedisModule.forRootAsync({
     useFactory: (configService: ConfigService) => getRedisConfig(configService),
     inject: [ConfigService],

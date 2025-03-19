@@ -1,7 +1,8 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { getConsulConfig, ConfigService } from '@project/shared';
 import { Logger } from '@nestjs/common';
-import Consul from 'consul';
+// import Consul from 'consul';
+import Consul = require('consul');
 
 
 interface ConsulServiceNode {

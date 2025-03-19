@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { GatewayService } from '../gateway.service';
-import { AuthRequest, JwtGuard } from '@project/shared';
+import { AuthRequest } from '@project/shared';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -48,7 +48,7 @@ export class AuthController {
     return res.send({ accessToken });
   }
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Post('logout')
   async logout(@Req() req: AuthRequest, @Res() res: Response) {
     if (!req.user) {
@@ -75,7 +75,7 @@ export class AuthController {
     res.send(nonce);
   }
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Get('me')
   async getMe(@Req() req: AuthRequest) {
     return this.gatewayService.sendToService(
