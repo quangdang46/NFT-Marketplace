@@ -5,48 +5,80 @@ import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 export const getRabbitMQConfig = (
   configService: ConfigService,
   servicePrefix: string
-) => ({
-  urls: [configService.get<string>("RABBITMQ_URL", "amqp://rabbitmq:5672")],
-  queue: configService.get<string>(
+) => {
+  const url = configService.get<string>(
+    "RABBITMQ_URL",
+    "amqp://localhost:5672"
+  );
+  const queue = configService.get<string>(
     `${servicePrefix}_SERVICE_QUEUE`,
     `${servicePrefix.toLowerCase()}_queue`
-  ),
-  queueOptions: { durable: false },
-});
+  );
+  console.log(`[RabbitMQ Config] URL: ${url}, Queue: ${queue}`);
+  return {
+    urls: [url],
+    queue,
+    queueOptions: { durable: false },
+  };
+};
 
 export const getTypeOrmConfig = (
   configService: ConfigService
-): TypeOrmModuleOptions => ({
-  type: "postgres",
-  host: configService.get<string>("POSTGRES_HOST", "postgres"),
-  port: configService.get<number>("POSTGRES_PORT", 5432),
-  username: configService.get<string>("POSTGRES_USER", "postgres"),
-  password: configService.get<string>("POSTGRES_PASSWORD", "postgres"),
-  database: configService.get<string>("POSTGRES_DB", "users_db"),
-  entities: [__dirname + "/../**/*.entity{.ts,.js}"],
-  synchronize: configService.get<string>("NODE_ENV") !== "production",
-});
+): TypeOrmModuleOptions => {
+  const host = configService.get<string>("POSTGRES_HOST", "localhost");
+  const port = configService.get<number>("POSTGRES_PORT", 5433);
+  const username = configService.get<string>("POSTGRES_USER", "postgres");
+  const password = configService.get<string>("POSTGRES_PASSWORD", "localhost");
+  const database = configService.get<string>("POSTGRES_DB", "nftmarket");
+  console.log(
+    `[TypeOrm Config] Host: ${host}:${port}, Database: ${database}, User: ${username}`
+  );
+  return {
+    type: "postgres",
+    host,
+    port,
+    username,
+    password,
+    database,
+    entities: [__dirname + "/../**/*.entity{.ts,.js}"],
+    synchronize: configService.get<string>("NODE_ENV") !== "production",
+  };
+};
 
-export const getJwtConfig = (configService: ConfigService) => ({
-  secret: configService.get<string>("JWT_SECRET", "your-secret-key"),
-  signOptions: { expiresIn: "1h" },
-});
+export const getJwtConfig = (configService: ConfigService) => {
+  const secret = configService.get<string>("JWT_SECRET", "your-secret-key");
+  console.log(`[JWT Config] Secret length: ${secret.length}`);
+  return {
+    secret,
+    signOptions: { expiresIn: "1h" },
+  };
+};
 
 export const getRedisConfig = (
   configService: ConfigService
-): RedisModuleOptions => ({
-  url: configService.get<string>("REDIS_URL", "redis://redis:6379"),
-  type: "single",
-});
+): RedisModuleOptions => {
+  const url = configService.get<string>("REDIS_URL", "redis://localhost:6379");
+  console.log(`[Redis Config] URL: ${url}`);
+  return {
+    url,
+    type: "single",
+  };
+};
 
 export const getConsulConfig = (
   configService: ConfigService,
   servicePrefix: string
-) => ({
-  host: configService.get<string>("CONSUL_HOST", "consul"),
-  port: configService.get<string>("CONSUL_PORT", "8500"),
-  serviceName: configService.get<string>(
+) => {
+  const host = configService.get<string>("CONSUL_HOST", "localhost");
+  const port = configService.get<string>("CONSUL_PORT", "8500");
+  const serviceName = configService.get<string>(
     `${servicePrefix}_SERVICE_NAME`,
     `${servicePrefix.toLowerCase()}-service`
-  ),
-});
+  );
+  console.log(`[Consul Config] Host: ${host}:${port}, Service: ${serviceName}`);
+  return {
+    host,
+    port,
+    serviceName,
+  };
+};

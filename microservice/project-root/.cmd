@@ -1,7 +1,7 @@
 npx @nestjs/cli new auth-service
 cd auth-service
 npm install
-npm install @nestjs/microservices amqplib @nestjs/config consul 
+npm install @nestjs/microservices amqplib amqp-connection-manager consul 
 
 docker system prune -a --volumes
 docker-compose up -d

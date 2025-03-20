@@ -1,6 +1,7 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import Consul from 'consul'; // Import default
-import { getConsulConfig,ConfigService } from '@project/shared';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import Consul = require('consul');
+import { getConsulConfig, ConfigService } from '@project/shared';
 
 @Injectable()
 export class ConsulService implements OnApplicationShutdown {
