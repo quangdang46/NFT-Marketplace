@@ -13,7 +13,10 @@ import { AuthRequest } from '@project/shared';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(private readonly gatewayService: GatewayService) {}
+  constructor(private readonly gatewayService: GatewayService) {
+    console.log('AuthController created');
+
+  }
 
   @Post('verify')
   async verifySignature(

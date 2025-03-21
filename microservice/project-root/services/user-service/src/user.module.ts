@@ -2,9 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserController } from './v1/user.controller';
 import { UserService } from './v1/user.service';
-import { ConsulService } from './v1/consul.service';
-import { User } from './entities/user.entity';
-import {  getTypeOrmConfig ,ConfigService,SharedConfigModule} from '@project/shared';
+import {
+  getTypeOrmConfig,
+  ConfigService,
+  SharedConfigModule,
+  ServiceDiscovery,
+} from '@project/shared';
+import { User } from '@/entities/user.entity';
 
 const IMPORTS = [
   SharedConfigModule,
@@ -27,13 +31,15 @@ const CONTROLLERS = [UserController];
 const PROVIDERS = [
   UserService,
   {
-    provide: ConsulService,
+    provide: ServiceDiscovery,
     useFactory: async (configService: ConfigService) => {
-      const consulService = new ConsulService(configService);
-      await consulService.registerService('user-service', {
-        queue: 'user_queue',
-      });
-      return consulService;
+      const serviceDiscovery = new ServiceDiscovery(configService, 'USER');
+      await serviceDiscovery.registerService(
+        'user-service',
+        { queue: 'user-service' },
+        ['user', 'rabbitmq'],
+      );
+      return serviceDiscovery;
     },
     inject: [ConfigService],
   },

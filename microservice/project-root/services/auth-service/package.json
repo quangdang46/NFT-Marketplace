@@ -29,7 +29,6 @@
     "@nestjs/platform-express": "^11.0.1",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.5",
-    "consul": "^2.0.1",
     "ethers": "^6.13.5",
     "ioredis": "^5.6.0",
     "passport": "^0.7.0",

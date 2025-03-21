@@ -5,7 +5,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { RabbitMQUserClient } from './v1/rabbitmq-user-client';
-import { getRedisConfig, getJwtConfig,SharedConfigModule ,ConfigService} from '@project/shared';
+import {
+  getRedisConfig,
+  getJwtConfig,
+  SharedConfigModule,
+  ConfigService,
+  ServiceDiscovery,
+} from '@project/shared';
 const IMPORTS = [
   SharedConfigModule,
 
@@ -25,6 +31,19 @@ const PROVIDERS = [
   {
     provide: 'USER_CLIENT',
     useClass: RabbitMQUserClient,
+  },
+  {
+    provide: ServiceDiscovery,
+    useFactory: async (configService: ConfigService) => {
+      const serviceDiscovery = new ServiceDiscovery(configService, 'AUTH');
+      await serviceDiscovery.registerService(
+        'auth-service',
+        { queue: 'auth-service' },
+        ['auth', 'rabbitmq'],
+      );
+      return serviceDiscovery;
+    },
+    inject: [ConfigService],
   },
 ];
 

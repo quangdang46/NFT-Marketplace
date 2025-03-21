@@ -80,11 +80,6 @@
 │   ├── struct.bash
 │   ├── tsconfig.json
 │   ├── tsconfig.tsbuildinfo
-├── infrastructure/
-│   ├── consul/
-│   │   ├── consul-config.json
-│   ├── rabbitmq/
-│   │   ├── rabbitmq.conf
 ├── .cmd
 ├── .env-example
 ├── .gitignore

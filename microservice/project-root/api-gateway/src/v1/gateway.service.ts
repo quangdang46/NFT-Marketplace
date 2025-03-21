@@ -11,8 +11,8 @@ import {
   COOKIE_EXPIRES_IN,
   COOKIE_REFRESH_TOKEN_EXPIRES_IN,
   ConfigService,
+  ServiceDiscovery,
 } from '@project/shared';
-import { ServiceDiscovery } from '@/config/service-discovery.config';
 
 @Injectable()
 export class GatewayService {

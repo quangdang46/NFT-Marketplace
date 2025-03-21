@@ -1,5 +1,5 @@
+
 import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './v1/auth/auth.controller';
 import { GatewayService } from './v1/gateway.service';
 import {
@@ -7,10 +7,9 @@ import {
   RateLimitMiddleware,
   SharedConfigModule,
   ConfigService,
-  getJwtConfig,
+  ServiceDiscovery,
 } from '@project/shared';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { ServiceDiscovery } from '@/config/service-discovery.config';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 
@@ -34,7 +33,27 @@ const IMPORTS = [
   }),
 ];
 const CONTROLLERS = [AuthController];
-const PROVIDERS = [GatewayService, ServiceDiscovery];
+const PROVIDERS = [
+  GatewayService,
+  {
+    provide: ServiceDiscovery,
+    useFactory: async (configService: ConfigService) => {
+      const serviceDiscovery = new ServiceDiscovery(
+        configService,
+        'API_GATEWAY',
+      );
+      await serviceDiscovery.registerService(
+        'api-gateway',
+        { queue: 'api-gateway-queue' },
+        ['gateway', 'rabbitmq'],
+      );
+      const logger = new Logger('GatewayModule');
+      logger.log('API Gateway registered with Consul');
+      return serviceDiscovery;
+    },
+    inject: [ConfigService],
+  },
+];
 const EXPORTS = [];
 
 @Module({
@@ -59,6 +78,7 @@ export class GatewayModule {
       this.logger.error('Failed to connect to Redis:', error);
     }
   }
+
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(RateLimitMiddleware).forRoutes('/*path');
   }
