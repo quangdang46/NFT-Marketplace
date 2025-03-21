@@ -1,24 +1,30 @@
 import { RedisModuleOptions } from "@nestjs-modules/ioredis";
 import { ConfigService } from "@nestjs/config";
+import { Transport } from "@nestjs/microservices";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
+
+import { RmqOptions } from "@nestjs/microservices";
 
 export const getRabbitMQConfig = (
   configService: ConfigService,
   servicePrefix: string
-) => {
+): RmqOptions => {
   const url = configService.get<string>(
     "RABBITMQ_URL",
     "amqp://localhost:5672"
   );
   const queue = configService.get<string>(
     `${servicePrefix}_SERVICE_QUEUE`,
-    `${servicePrefix.toLowerCase()}_queue`
+    `${servicePrefix.toLowerCase()}-queue`
   );
   console.log(`[RabbitMQ Config] URL: ${url}, Queue: ${queue}`);
   return {
-    urls: [url],
-    queue,
-    queueOptions: { durable: false },
+    transport: Transport.RMQ,
+    options: {
+      urls: [url],
+      queue,
+      queueOptions: { durable: false },
+    },
   };
 };
 

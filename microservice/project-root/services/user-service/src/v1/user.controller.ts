@@ -6,7 +6,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @MessagePattern({ cmd: 'find_or_create_user' })
+  @MessagePattern({ cmd: 'get_user' })
   async findOrCreateUser(@Payload() data: { address: string }) {
     return this.userService.findOrCreateUser(data.address);
   }

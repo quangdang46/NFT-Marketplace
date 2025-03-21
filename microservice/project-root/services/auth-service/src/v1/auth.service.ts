@@ -2,7 +2,6 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
-  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -13,8 +12,8 @@ import {
   REDIS_REFRESH_TOKEN_EXPIRES_IN,
   REDIS_EXPIRES_IN,
   REDIS_NONCE_EXPIRES_IN,
-  UserClient,
   JwtPayload,
+  ServiceClient,
 } from '@project/shared';
 import { IAuthService } from '@/interfaces/auth.interface';
 
@@ -23,7 +22,7 @@ export class AuthService implements IAuthService {
   constructor(
     @InjectRedis() private readonly redis: Redis,
     private readonly jwtService: JwtService,
-    @Inject('USER_CLIENT') private readonly userClient: UserClient,
+    private readonly serviceClient: ServiceClient,
   ) {}
 
   async authenticateWallet(body: { message: string; signature: string }) {
@@ -48,7 +47,14 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Nonce không hợp lệ hoặc đã hết hạn');
     }
 
-    const user = await this.userClient.findOrCreateUser(address);
+    const user: {
+      address: string;
+      id: number;
+    } = await this.serviceClient.sendToService(
+      'user-service',
+      { cmd: 'get_user' },
+      { address },
+    );
     if (!user) throw new UnauthorizedException('User not found');
 
     const payload: JwtPayload = { address: user.address, id: user.id };

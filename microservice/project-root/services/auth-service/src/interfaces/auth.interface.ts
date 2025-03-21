@@ -1,4 +1,3 @@
-import { Response } from 'express';
 export interface IAuthService {
   authenticateWallet(body: { message: string; signature: string }): Promise<{
     accessToken: string;

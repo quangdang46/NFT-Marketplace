@@ -4,13 +4,14 @@ import { AuthService } from './v1/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RedisModule } from '@nestjs-modules/ioredis';
-import { RabbitMQUserClient } from './v1/rabbitmq-user-client';
 import {
   getRedisConfig,
   getJwtConfig,
   SharedConfigModule,
   ConfigService,
   ServiceDiscovery,
+  getRabbitMQConfig,
+  ServiceClient,
 } from '@project/shared';
 const IMPORTS = [
   SharedConfigModule,
@@ -29,16 +30,25 @@ const PROVIDERS = [
   AuthService,
   JwtStrategy,
   {
-    provide: 'USER_CLIENT',
-    useClass: RabbitMQUserClient,
+    provide: ServiceClient,
+    useFactory: (options: any, discovery: ServiceDiscovery) => {
+      return new ServiceClient(options, discovery, ['user-service']); // Khởi tạo trước user-service
+    },
+    inject: ['RABBITMQ_OPTIONS', ServiceDiscovery],
+  },
+  {
+    provide: 'RABBITMQ_OPTIONS',
+    useFactory: (configService: ConfigService) =>
+      getRabbitMQConfig(configService, 'auth-service'),
+    inject: [ConfigService],
   },
   {
     provide: ServiceDiscovery,
     useFactory: async (configService: ConfigService) => {
-      const serviceDiscovery = new ServiceDiscovery(configService, 'AUTH');
+      const serviceDiscovery = new ServiceDiscovery(configService, 'auth-service');
       await serviceDiscovery.registerService(
         'auth-service',
-        { queue: 'auth-service' },
+        { queue: 'auth-service-queue' },
         ['auth', 'rabbitmq'],
       );
       return serviceDiscovery;

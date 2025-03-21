@@ -7,6 +7,8 @@ import {
   SharedConfigModule,
   ConfigService,
   ServiceDiscovery,
+  getRabbitMQConfig,
+  ServiceClient,
 } from '@project/shared';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -34,12 +36,27 @@ const IMPORTS = [
 const CONTROLLERS = [AuthController];
 const PROVIDERS = [
   GatewayService,
+  // bat buoc
+  {
+    provide: ServiceClient,
+    useFactory: (options: any, discovery: ServiceDiscovery) => {
+      return new ServiceClient(options, discovery, []); // initialServices là mảng rỗng
+    },
+    inject: ['RABBITMQ_OPTIONS', ServiceDiscovery],
+  },
+  {
+    provide: 'RABBITMQ_OPTIONS',
+    useFactory: (configService: ConfigService) =>
+      getRabbitMQConfig(configService, 'api-gateway'),
+    inject: [ConfigService],
+  },
+  // bat buoc
   {
     provide: ServiceDiscovery,
     useFactory: async (configService: ConfigService) => {
       const serviceDiscovery = new ServiceDiscovery(
         configService,
-        'API_GATEWAY',
+        'api-gateway',
       );
       await serviceDiscovery.registerService(
         'api-gateway',
@@ -82,7 +99,3 @@ export class GatewayModule {
     consumer.apply(RateLimitMiddleware).forRoutes('/*path');
   }
 }
-
-
-
-

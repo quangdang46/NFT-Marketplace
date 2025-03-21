@@ -1,18 +1,15 @@
 import { NestFactory } from '@nestjs/core';
-import { Transport, MicroserviceOptions } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { UserModule } from './user.module';
 import { ConfigService, getRabbitMQConfig } from '@project/shared';
 
 async function bootstrap() {
+  const configService = new ConfigService();
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UserModule,
-    {
-      transport: Transport.RMQ,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      options: getRabbitMQConfig(new ConfigService(), 'USER'),
-    },
+    getRabbitMQConfig(configService, 'user-service'),
   );
-
   await app.listen();
+  console.log('User Service is running');
 }
 bootstrap();

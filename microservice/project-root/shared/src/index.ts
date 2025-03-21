@@ -9,3 +9,5 @@ export * from "./events/base.event";
 export * from "./events/saga.interface";
 export * from "./config/shared-config.module";
 export * from "./config/service-discovery";
+export * from "./config/rabbitmq.client";
+export * from "./config/service-client";
