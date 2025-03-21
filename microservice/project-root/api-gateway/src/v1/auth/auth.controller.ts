@@ -65,12 +65,15 @@ export class AuthController {
 
   @Get('nonce')
   async getNonce(@Res() res: Response) {
+    console.log('Called GET /v1/auth/nonce');
+
     const { nonce }: { nonce: string } =
       await this.gatewayService.sendToService(
         'auth-service',
         { cmd: 'get_nonce' },
         {},
       );
+    console.log('Nonce received:', nonce);
     res.setHeader('Content-Type', 'text/plain');
     res.send(nonce);
   }

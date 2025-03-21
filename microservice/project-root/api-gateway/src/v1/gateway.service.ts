@@ -1,4 +1,3 @@
-
 import { Injectable, Inject } from '@nestjs/common';
 import {
   ClientProxy,
@@ -61,13 +60,17 @@ export class GatewayService {
    */
   async sendToService<T>(service: string, pattern: any, data: any): Promise<T> {
     if (!this.clients[service]) {
+      this.logger.error(`Service ${service} not configured`);
       throw new Error(`Service ${service} not configured`);
     }
-
     try {
+      this.logger.log(
+        `Sending request to ${service} with pattern: ${JSON.stringify(pattern)} and data: ${JSON.stringify(data)}`,
+      );
       const result = await this.clients[service]
         .send(pattern, data)
         .toPromise();
+      this.logger.log(`Received response from ${service}:`, result);
       return result;
     } catch (error) {
       this.logger.error(`Failed to send to ${service}`, error);

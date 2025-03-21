@@ -13,8 +13,27 @@
 │   │   │   ├── auth.module.ts
 │   │   │   ├── auth.types.ts
 │   │   │   ├── main.ts
+│   │   ├── test/
+│   │   ├── .dockerignore
+│   │   ├── .gitignore
+│   │   ├── .prettierrc
 │   │   ├── Dockerfile
+│   │   ├── eslint.config.mjs
+│   │   ├── nest-cli.json
 │   │   ├── package.json
+│   │   ├── tsconfig.build.json
+│   │   ├── tsconfig.json
+│   ├── user-service/
+│   │   ├── src/
+│   │   ├── test/
+│   │   ├── .dockerignore
+│   │   ├── .gitignore
+│   │   ├── .prettierrc
+│   │   ├── Dockerfile
+│   │   ├── eslint.config.mjs
+│   │   ├── nest-cli.json
+│   │   ├── package.json
+│   │   ├── tsconfig.build.json
 │   │   ├── tsconfig.json
 ├── api-gateway/
 │   ├── src/
@@ -25,28 +44,50 @@
 │   │   │   ├── gateway.service.ts
 │   │   ├── gateway.module.ts
 │   │   ├── main.ts
+│   ├── test/
+│   │   ├── app.e2e-spec.ts
+│   │   ├── jest-e2e.json
+│   │   ├── postman/
+│   ├── .dockerignore
+│   ├── .gitignore
+│   ├── .prettierrc
 │   ├── Dockerfile
+│   ├── README.md
+│   ├── eslint.config.mjs
+│   ├── nest-cli.json
 │   ├── package.json
+│   ├── tsconfig.build.json
 │   ├── tsconfig.json
 ├── shared/
-│   ├── utils/
-│   ├── interfaces/
-│   ├── constants/
-│   ├── middlewares/
-│   ├── exceptions/
-│   ├── decorators/
-│   ├── events/
-│   │   ├── base.event.ts 
-│   │   ├── saga.interface.ts
+│   ├── src/
+│   │   ├── config/
+│   │   ├── constants/
+│   │   ├── decorators/
+│   │   ├── events/
+│   │   │   ├── base.event.ts 
+│   │   │   ├── saga.interface.ts
+│   │   ├── exceptions/
+│   │   ├── guards/
+│   │   ├── interfaces/
+│   │   ├── middlewares/
+│   │   ├── utils/
+│   │   ├── index.ts
+│   ├── .cmd
+│   ├── .dockerignore
+│   ├── Dockerfile
+│   ├── README.md
 │   ├── package.json
+│   ├── struct.bash
 │   ├── tsconfig.json
-│   ├── index.ts
+│   ├── tsconfig.tsbuildinfo
 ├── infrastructure/
 │   ├── consul/
 │   │   ├── consul-config.json
 │   ├── rabbitmq/
 │   │   ├── rabbitmq.conf
-├── docker-compose.yml 
-├── .env
+├── .cmd
+├── .env-example
 ├── .gitignore
+├── docker-compose.yml 
 ├── README.md
+├── struct.txt

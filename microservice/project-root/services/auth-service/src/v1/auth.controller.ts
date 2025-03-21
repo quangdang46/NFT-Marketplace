@@ -3,7 +3,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { JwtPayload } from '@project/shared';
 
-@Controller({ path: 'auth', version: '1' })
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -27,6 +27,7 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'get_nonce' })
   async getNonce() {
+    console.log('Received get_nonce request');
     return this.authService.getNonce();
   }
 

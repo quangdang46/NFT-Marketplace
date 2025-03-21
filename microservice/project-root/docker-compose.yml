@@ -100,7 +100,7 @@ services:
       - CONSUL_HOST=consul
       - CONSUL_PORT=8500
     ports:
-      - "3000:3000"
+      - "8080:8080"
     networks:
       - app-network
 
