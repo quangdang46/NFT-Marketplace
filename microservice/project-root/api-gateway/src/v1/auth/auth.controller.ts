@@ -5,17 +5,15 @@ import {
   Get,
   Res,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { GatewayService } from '../gateway.service';
 import { AuthRequest } from '@project/shared';
 
-@Controller({ path: 'auth', version: '1' })
+@Controller("auth")
 export class AuthController {
   constructor(private readonly gatewayService: GatewayService) {
     console.log('AuthController created');
-
   }
 
   @Post('verify')
@@ -68,15 +66,12 @@ export class AuthController {
 
   @Get('nonce')
   async getNonce(@Res() res: Response) {
-    console.log('Called GET /v1/auth/nonce');
-
     const { nonce }: { nonce: string } =
       await this.gatewayService.sendToService(
         'auth-service',
         { cmd: 'get_nonce' },
         {},
       );
-    console.log('Nonce received:', nonce);
     res.setHeader('Content-Type', 'text/plain');
     res.send(nonce);
   }
@@ -91,3 +86,4 @@ export class AuthController {
     );
   }
 }
+

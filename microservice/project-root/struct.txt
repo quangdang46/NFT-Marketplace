@@ -37,10 +37,9 @@
 │   │   ├── tsconfig.json
 ├── api-gateway/
 │   ├── src/
-│   │   ├── config/
-│   │   │   ├── service-discovery.config.ts
 │   │   ├── v1/
-│   │   │   ├── gateway.controller.ts
+│   │   │   ├── auth
+│   │   │   │   ├── auth.controller.ts
 │   │   │   ├── gateway.service.ts
 │   │   ├── gateway.module.ts
 │   │   ├── main.ts

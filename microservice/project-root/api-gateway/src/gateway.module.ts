@@ -1,4 +1,3 @@
-
 import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
 import { AuthController } from './v1/auth/auth.controller';
 import { GatewayService } from './v1/gateway.service';
@@ -83,3 +82,7 @@ export class GatewayModule {
     consumer.apply(RateLimitMiddleware).forRoutes('/*path');
   }
 }
+
+
+
+
