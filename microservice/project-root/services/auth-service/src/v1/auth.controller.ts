@@ -1,10 +1,11 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { JwtPayload } from '@project/shared';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(private readonly authService: AuthService) {}
 
   @MessagePattern({ cmd: 'verify_signature' })
@@ -27,7 +28,7 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'get_nonce' })
   async getNonce() {
-    console.log('Received get_nonce request');
+    this.logger.log('get_nonce');
     return this.authService.getNonce();
   }
 
