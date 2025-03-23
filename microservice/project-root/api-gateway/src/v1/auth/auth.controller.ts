@@ -5,12 +5,13 @@ import {
   Get,
   Res,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { GatewayService } from '../gateway.service';
-import { AuthRequest } from '@project/shared';
+import { AuthRequest, JwtGuard } from '@project/shared';
 
-@Controller("auth")
+@Controller('auth')
 export class AuthController {
   constructor(private readonly gatewayService: GatewayService) {
     console.log('AuthController created');
@@ -49,7 +50,7 @@ export class AuthController {
     return res.send({ accessToken });
   }
 
-  // @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard)
   @Post('logout')
   async logout(@Req() req: AuthRequest, @Res() res: Response) {
     if (!req.user) {
@@ -73,10 +74,10 @@ export class AuthController {
         {},
       );
     res.setHeader('Content-Type', 'text/plain');
-    res.send(nonce);
+    res.send({ nonce });
   }
 
-  // @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard)
   @Get('me')
   async getMe(@Req() req: AuthRequest) {
     return this.gatewayService.sendToService(
@@ -86,4 +87,3 @@ export class AuthController {
     );
   }
 }
-

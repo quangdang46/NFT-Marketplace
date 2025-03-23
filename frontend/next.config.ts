@@ -11,8 +11,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@radix-ui/react-*", "lucide-react"],
   },
   poweredByHeader: false,
-  compress: true,
-  reactStrictMode: true,
 };
 
 export default nextConfig;

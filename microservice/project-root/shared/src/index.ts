@@ -1,4 +1,3 @@
-export * from "./interfaces/user-client.interface";
 export * from "./interfaces/auth.interface";
 export * from "./constants/auth.constant";
 export * from "./config";

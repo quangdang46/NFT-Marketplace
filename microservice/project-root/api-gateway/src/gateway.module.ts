@@ -9,13 +9,21 @@ import {
   ServiceDiscovery,
   getRabbitMQConfig,
   ServiceClient,
+  getJwtConfig,
+  JwtGuard,
+  JwtService,
 } from '@project/shared';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
+import { JwtModule} from '@nestjs/jwt';
 
 const IMPORTS = [
   SharedConfigModule,
+  JwtModule.registerAsync({
+    useFactory: (configService: ConfigService) => getJwtConfig(configService),
+    inject: [ConfigService],
+  }),
   RedisModule.forRootAsync({
     useFactory: (configService: ConfigService) => ({
       ...getRedisConfig(configService),
@@ -36,6 +44,8 @@ const IMPORTS = [
 const CONTROLLERS = [AuthController];
 const PROVIDERS = [
   GatewayService,
+  JwtGuard,
+  JwtService,
   // bat buoc
   {
     provide: ServiceClient,

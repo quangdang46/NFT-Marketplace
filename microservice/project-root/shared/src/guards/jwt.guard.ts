@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { ConfigService } from "../config/shared-config.module";
 import { JwtService } from "@nestjs/jwt";
 import { AuthRequest, JwtPayload } from "../interfaces/auth.interface";
 
@@ -26,7 +26,11 @@ export class JwtGuard implements CanActivate {
     const token = authHeader.split(" ")[1];
 
     try {
-      const secret = this.configService.get<string>("JWT_SECRET"); // Lấy secret từ ConfigService
+      const secret = this.configService.get<string>(
+        "JWT_SECRET",
+        "your-secret-key"
+      ); 
+      console.log(`[JWT Config] Secret length: ${secret.length}`);
       if (!secret) throw new Error("JWT_SECRET is not set");
       const decoded = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret,
@@ -38,3 +42,5 @@ export class JwtGuard implements CanActivate {
     }
   }
 }
+
+export { JwtService };
