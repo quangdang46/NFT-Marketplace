@@ -17,7 +17,10 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
 import Redis from 'ioredis';
 import { JwtModule} from '@nestjs/jwt';
-
+import { join } from 'path';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { GraphQLModule } from '@nestjs/graphql';
+import { TestResolver } from '@/v1/test/test.resolver';
 const IMPORTS = [
   SharedConfigModule,
   JwtModule.registerAsync({
@@ -40,6 +43,20 @@ const IMPORTS = [
     }),
     inject: [ConfigService],
   }),
+
+  GraphQLModule.forRootAsync<ApolloDriverConfig>({
+    driver: ApolloDriver,
+    imports: [SharedConfigModule],
+    useFactory: (configService: ConfigService) => ({
+      autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
+      playground: true,
+      introspection: true,
+      context: ({ req }) => ({ req }),
+      path: '/graphql',
+      useGlobalPrefix: false,
+    }),
+    inject: [ConfigService],
+  }),
 ];
 const CONTROLLERS = [AuthController];
 const PROVIDERS = [
@@ -47,6 +64,10 @@ const PROVIDERS = [
   JwtGuard,
   JwtService,
   // bat buoc
+  // grapql
+  TestResolver,
+  // grapql
+
   {
     provide: ServiceClient,
     useFactory: (options: any, discovery: ServiceDiscovery) => {
