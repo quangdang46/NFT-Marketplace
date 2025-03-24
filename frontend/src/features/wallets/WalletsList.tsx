@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Copy, User } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 import { mockChains } from "../../data/mockData";
 import Image from "next/image";
+import { toast } from "sonner";
 
 interface Wallet {
   address: string;
@@ -33,7 +33,6 @@ interface Wallet {
 export function WalletsList() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Simulate API call to fetch wallets
@@ -82,8 +81,7 @@ export function WalletsList() {
 
   const copyAddress = (address: string) => {
     navigator.clipboard.writeText(address);
-    toast({
-      title: "Address copied",
+    toast.success("Address copied", {
       description: "Wallet address copied to clipboard",
     });
   };
