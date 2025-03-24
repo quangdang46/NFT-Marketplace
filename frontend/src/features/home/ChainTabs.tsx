@@ -25,7 +25,7 @@ export function ChainTabs() {
   };
 
   return (
-    <div className="sticky md:top-[100px] z-40 bg-background/80 backdrop-blur-md border-b border-border">
+    <div className="sticky md:top-[85px] xl:top-[60px] z-40 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto py-2">
         {isMobile ? (
           <div className="bg-card rounded-lg p-2">
