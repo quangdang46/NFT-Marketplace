@@ -59,18 +59,6 @@ export const MobileMenu = ({ navItems }: MobileMenuProps) => {
               )}
             </div>
           ))}
-          <Link
-            href="/wallet"
-            className="px-4 py-2 text-[#f97316] font-medium hover:bg-white/5 rounded-md transition-colors"
-          >
-            Wallet
-          </Link>
-          <Button
-            variant="ghost"
-            className="justify-start text-[#ec4899] hover:text-[#ec4899]/80 hover:bg-white/5"
-          >
-            Earn
-          </Button>
         </nav>
       </SheetContent>
     </Sheet>

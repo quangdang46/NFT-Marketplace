@@ -3,7 +3,8 @@ import type { NFT } from "@/types/nft";
 export const mockNFTs: NFT[] = [
   {
     id: "#4599",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.0276",
     lastPrice: "0.02751",
     selected: true,
@@ -11,7 +12,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#3396",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.0277",
     lastPrice: "0.02401",
     selected: true,
@@ -19,7 +21,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#1996",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.02817",
     lastPrice: "",
     selected: true,
@@ -27,7 +30,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#4500",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.02817",
     lastPrice: "",
     selected: false,
@@ -35,7 +39,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#7437",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.02817",
     lastPrice: "",
     selected: false,
@@ -43,7 +48,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#8853",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.0299",
     lastPrice: "",
     selected: false,
@@ -51,7 +57,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#2506",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.03",
     lastPrice: "",
     selected: false,
@@ -59,7 +66,8 @@ export const mockNFTs: NFT[] = [
   },
   {
     id: "#3207",
-    image: "/placeholder.svg",
+    image:
+      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
     price: "0.03235",
     lastPrice: "",
     selected: false,
@@ -74,7 +82,8 @@ export const allNFTs: NFT[] = [
     .fill(0)
     .map((_, i) => ({
       id: `#${(10000 + i).toString()}`,
-      image: "/placeholder.svg",
+      image:
+        "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20",
       price: (0.03 + i * 0.001).toFixed(5),
       lastPrice: i % 2 === 0 ? (0.029 + i * 0.0005).toFixed(5) : "",
       selected: false,

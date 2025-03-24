@@ -1,12 +1,11 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { navItems } from "@/lib/constant/menu";
 import { MobileMenu } from "@/components/MobileMenu";
 import { SearchBar } from "@/components/SearchBar";
 import { NavLink } from "@/components/NavLink";
-import { WalletButton } from "@/components/WalletButton";
+import { WalletButton } from "@/features/wallet-button/WalletButton";
 import { ModeToggle } from "@/components/ui/darkmode";
 import Link from "next/link";
 
@@ -42,9 +41,6 @@ export function Header() {
                 {item.label}
               </NavLink>
             ))}
-            <NavLink href="/wallet" active={activeTab === "wallet"}>
-              <span className="text-[#ec4899] font-medium">Wallet</span>
-            </NavLink>
           </nav>
         )}
 
@@ -53,13 +49,6 @@ export function Header() {
 
         {/* Wallet & Earn Buttons */}
         <div className="flex items-center space-x-2 ml-auto">
-          <Button
-            variant="ghost"
-            className="hidden md:flex items-center text-[#ec4899] hover:text-[#ec4899]/80 hover:bg-white/5"
-          >
-            Earn
-          </Button>
-
           <WalletButton />
           <ModeToggle></ModeToggle>
 

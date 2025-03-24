@@ -1,16 +1,11 @@
 import { Header } from "@/components/Header";
-import TabChains from "@/features/shared/TabChains/TabChains";
-
-export const iframeHeight = "800px";
-
 export default function Wrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col  text-white">
-      <div className="fixed top-0 left-0 right-0 z-50">
+      <div className="fixed top-0 left-0 right-0 z-100">
         <Header />
-        <TabChains />
       </div>
-      <main className="pt-20 sm:pt-25 pb-10 flex-grow">{children}</main>
+      <main className="container mx-auto pt-10 md:pt-20 pb-4 py-4 mt-5">{children}</main>
       <footer className="border-t border-white/5 py-6">
         <div className="flex flex-col md:flex-row items-center justify-between text-white/40 text-sm">
           <div>© 2023 Magic Eden Marketplace</div>
