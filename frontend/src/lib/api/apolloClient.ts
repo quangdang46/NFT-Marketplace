@@ -104,6 +104,12 @@ const errorLink = onError(
               });
           });
         }
+        // các lỗi khác
+        console.log(
+          `[GraphQL error from apoloclient]: Message: ${err.message}`
+        );
+        Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
+        Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
       }
     }
     if (networkError) console.error(`[Network error]: ${networkError}`);

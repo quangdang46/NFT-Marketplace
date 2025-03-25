@@ -34,6 +34,6 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'get_me' })
   async getMe(@Payload() data: JwtPayload) {
-    return { success: true, data };
+    return data;
   }
 }

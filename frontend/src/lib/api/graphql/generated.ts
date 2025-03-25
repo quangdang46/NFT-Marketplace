@@ -43,15 +43,14 @@ export type MutationVerifyArgs = {
 
 export type Query = {
   __typename?: 'Query';
-  me: User;
+  me: UserResponse;
   nonce: Scalars['String']['output'];
 };
 
-export type User = {
-  __typename?: 'User';
-  address?: Maybe<Scalars['String']['output']>;
+export type UserResponse = {
+  __typename?: 'UserResponse';
+  address: Scalars['String']['output'];
   id: Scalars['String']['output'];
-  role?: Maybe<Scalars['String']['output']>;
 };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
@@ -62,7 +61,7 @@ export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me: { __typename?: 'User', id: string, role?: string | null, address?: string | null } };
+export type MeQuery = { __typename?: 'Query', me: { __typename?: 'UserResponse', id: string, address: string } };
 
 export type NonceQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -119,7 +118,6 @@ export const MeDocument = gql`
     query Me {
   me {
     id
-    role
     address
   }
 }

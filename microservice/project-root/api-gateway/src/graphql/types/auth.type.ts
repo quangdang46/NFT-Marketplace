@@ -1,16 +1,15 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
-export class User {
+export class UserResponse {
   @Field()
   id: string;
 
-  @Field({ nullable: true })
-  role?: string;
+  // @Field({ nullable: true }) //check
+  // role?: string;
 
-
-  @Field({ nullable: true })
-  address?: string; // Thêm nếu auth-service trả về address
+  @Field()
+  address: string;
 }
 
 @ObjectType()

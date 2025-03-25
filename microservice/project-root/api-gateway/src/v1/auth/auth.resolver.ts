@@ -2,7 +2,7 @@ import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
 import { GatewayService } from '../gateway.service';
 import { UseGuards } from '@nestjs/common';
 import { JwtGuard, AuthRequest } from '@project/shared';
-import { AuthResponse, User } from '@/graphql/types/auth.type';
+import { AuthResponse, UserResponse } from '@/graphql/types/auth.type';
 
 @Resolver()
 export class AuthResolver {
@@ -35,15 +35,16 @@ export class AuthResolver {
     return { accessToken, refreshToken };
   }
 
-  @Query(() => User)
+  @Query(() => UserResponse)
   @UseGuards(JwtGuard)
   async me(@Context() context: { req: AuthRequest }) {
     const user = context.req.user;
-    return this.gatewayService.sendToService(
+    const result = await this.gatewayService.sendToService(
       'auth-service',
       { cmd: 'get_me' },
       user,
     );
+    return result;
   }
 
   @Mutation(() => Boolean)
