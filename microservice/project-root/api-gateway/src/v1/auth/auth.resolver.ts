@@ -25,7 +25,6 @@ export class AuthResolver {
   async verify(
     @Args('message') message: string,
     @Args('signature') signature: string,
-    @Context() context: { res: any }, // Để lưu cookie
   ) {
     const { accessToken, refreshToken } =
       await this.gatewayService.sendToService<{
@@ -33,11 +32,6 @@ export class AuthResolver {
         refreshToken: string;
       }>('auth-service', { cmd: 'verify_signature' }, { message, signature });
 
-    this.gatewayService.saveTokenToCookie(
-      context.res,
-      accessToken,
-      refreshToken,
-    );
     return { accessToken, refreshToken };
   }
 
@@ -63,7 +57,6 @@ export class AuthResolver {
       { cmd: 'logout' },
       { address: user.address },
     );
-    this.gatewayService.removeTokenFromCookie(context.res);
     return true;
   }
 
@@ -78,11 +71,6 @@ export class AuthResolver {
         { cmd: 'refresh_token' },
         { refreshToken },
       );
-    this.gatewayService.saveTokenToCookie(
-      context.res,
-      accessToken,
-      refreshToken,
-    );
     return { accessToken, refreshToken };
   }
 }

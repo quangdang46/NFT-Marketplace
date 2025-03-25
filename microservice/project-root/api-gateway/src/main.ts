@@ -5,7 +5,7 @@ import { AllExceptionsFilter } from '@project/shared';
 async function bootstrap() {
   const app = await NestFactory.create(GatewayModule);
   app.enableCors({
-    origin: '*',
+    origin: 'http://localhost:3000',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Nếu dùng cookie hoặc token

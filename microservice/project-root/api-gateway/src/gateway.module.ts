@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, Logger } from '@nestjs/common';
-import { AuthController } from './v1/auth/auth.controller';
 import { GatewayService } from './v1/gateway.service';
 import {
   getRedisConfig,
@@ -51,14 +50,14 @@ const IMPORTS = [
       autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
       playground: true,
       introspection: true,
-      context: ({ req }) => ({ req }),
+      context: ({ req,res }) => ({ req,res }),
       path: '/graphql',
       useGlobalPrefix: false,
     }),
     inject: [ConfigService],
   }),
 ];
-const CONTROLLERS = [AuthController];
+const CONTROLLERS = [];
 const PROVIDERS = [
   GatewayService,
   JwtGuard,

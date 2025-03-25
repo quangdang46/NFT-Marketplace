@@ -1,6 +1,0 @@
-query GetAllNFTs {
-  getAllNFTs {
-    id
-    name
-  }
-}

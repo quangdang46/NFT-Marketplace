@@ -1,0 +1,6 @@
+mutation Verify($message: String!, $signature: String!) {
+  verify(message: $message, signature: $signature) {
+    accessToken
+    refreshToken
+  }
+}

@@ -12,8 +12,14 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createSiweMessage } from "viem/siwe";
 import Cookies from "js-cookie";
-import axiosInstance from "@/lib/api/axiosClient";
-import axios from "axios";
+import { ApolloProvider } from "@apollo/client";
+import client from "@/lib/api/apolloClient";
+import {
+  NonceDocument,
+  VerifyDocument,
+  MeDocument,
+  LogoutDocument,
+} from "@/lib/api/graphql/generated";
 
 export default function AuthProvider({
   children,
@@ -26,13 +32,9 @@ export default function AuthProvider({
     Cookies.get("auth_token") ? "authenticated" : "loading"
   );
 
-  // Fetch user when:
   useEffect(() => {
-    const controller = new AbortController();
     const fetchStatus = async () => {
-      if (fetchingStatusRef.current || verifyingRef.current) {
-        return;
-      }
+      if (fetchingStatusRef.current || verifyingRef.current) return;
       const authToken = Cookies.get("auth_token");
       const refreshToken = Cookies.get("refresh_token");
 
@@ -44,17 +46,14 @@ export default function AuthProvider({
       fetchingStatusRef.current = true;
 
       try {
-        const response = await axiosInstance.get("/auth/me", {
-          signal: controller.signal,
-        });
-        setAuthStatus(
-          response.data?.success ? "authenticated" : "unauthenticated"
-        );
-      } catch (error: any) {
-        if (axios.isCancel(error)) {
-          // Request was canceled, no need to log or update state
-          return;
+        const { data, errors } = await client.query({ query: MeDocument });
+        console.log("Me response:", { data, errors });
+        if (errors) {
+          console.error("GraphQL errors in me:", errors);
+          throw new Error("Failed to fetch user data");
         }
+        setAuthStatus(data.me ? "authenticated" : "unauthenticated");
+      } catch (error) {
         console.error("Error fetching auth status:", error);
         setAuthStatus("unauthenticated");
       } finally {
@@ -62,25 +61,19 @@ export default function AuthProvider({
       }
     };
 
-    // 1. page loads
     fetchStatus();
-    // 2. window is focused (in case user logs out of another window)
     window.addEventListener("focus", fetchStatus);
-    return () => {
-      controller.abort();
-      window.removeEventListener("focus", fetchStatus);
-    };
+    return () => window.removeEventListener("focus", fetchStatus);
   }, []);
 
   const authAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
         try {
-          const response = await axiosInstance.get("/auth/nonce");
-          return response.data.nonce;
+          const { data } = await client.query({ query: NonceDocument });
+          return data.nonce;
         } catch (error) {
-          console.error("Error fetching nonce:", error);
-          throw error; // Để RainbowKit xử lý lỗi
+          throw error;
         }
       },
 
@@ -100,20 +93,21 @@ export default function AuthProvider({
         verifyingRef.current = true;
 
         try {
-          const { data } = await axiosInstance.post("/auth/verify", {
-            message,
-            signature,
+          const { data } = await client.mutate({
+            mutation: VerifyDocument,
+            variables: { message, signature },
           });
-          if (!data?.accessToken || !data?.refreshToken)
+          const { accessToken, refreshToken } = data.verify;
+          if (!accessToken || !refreshToken)
             throw new Error("No tokens received");
-          Cookies.set("auth_token", data.accessToken, {
+
+          Cookies.set("auth_token", accessToken, {
             expires: 1 / 24,
             secure: true,
             sameSite: "strict",
           });
-
-          Cookies.set("refresh_token", data.refreshToken, {
-            expires: 7, // 7 ngày
+          Cookies.set("refresh_token", refreshToken, {
+            expires: 7,
             secure: true,
             sameSite: "strict",
           });
@@ -133,7 +127,8 @@ export default function AuthProvider({
 
       signOut: async () => {
         try {
-          await axiosInstance.post("/auth/logout");
+          const { data } = await client.mutate({ mutation: LogoutDocument });
+          console.log("Logout response:", data); // Debug
           Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
           Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
           setAuthStatus("unauthenticated");
@@ -145,12 +140,17 @@ export default function AuthProvider({
   }, []);
 
   return (
-    <RainbowKitAuthenticationProvider adapter={authAdapter} status={authStatus}>
-      <RainbowKitProvider
-        theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}
+    <ApolloProvider client={client}>
+      <RainbowKitAuthenticationProvider
+        adapter={authAdapter}
+        status={authStatus}
       >
-        {children}
-      </RainbowKitProvider>
-    </RainbowKitAuthenticationProvider>
+        <RainbowKitProvider
+          theme={{ lightMode: lightTheme(), darkMode: darkTheme() }}
+        >
+          {children}
+        </RainbowKitProvider>
+      </RainbowKitAuthenticationProvider>
+    </ApolloProvider>
   );
 }

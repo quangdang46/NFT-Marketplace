@@ -1,5 +1,0 @@
-mutation CreateNFT($data: CreateNFTDto!) {
-  createNFT(data: $data) {
-    name
-  }
-}
