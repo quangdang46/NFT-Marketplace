@@ -2,10 +2,24 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Test {
-  message: String!
+type User {
+  id: String!
+  role: String
+  address: String
+}
+
+type AuthResponse {
+  accessToken: String!
+  refreshToken: String!
 }
 
 type Query {
-  test: Test!
+  nonce: String!
+  me: User!
+}
+
+type Mutation {
+  verify(message: String!, signature: String!): AuthResponse!
+  logout: Boolean!
+  refreshToken(refreshToken: String!): AuthResponse!
 }

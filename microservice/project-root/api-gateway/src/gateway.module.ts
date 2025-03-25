@@ -20,7 +20,7 @@ import { JwtModule} from '@nestjs/jwt';
 import { join } from 'path';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
-import { TestResolver } from '@/v1/test/test.resolver';
+import { AuthResolver } from '@/v1/auth/auth.resolver';
 const IMPORTS = [
   SharedConfigModule,
   JwtModule.registerAsync({
@@ -65,7 +65,7 @@ const PROVIDERS = [
   JwtService,
   // bat buoc
   // grapql
-  TestResolver,
+  AuthResolver,
   // grapql
 
   {
