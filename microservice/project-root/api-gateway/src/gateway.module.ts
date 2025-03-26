@@ -141,7 +141,7 @@ export class GatewayModule implements OnModuleInit {
       await this.redis.ping();
       this.logger.log('Successfully connected to Redis');
     } catch (error) {
-      this.logger.error('Failed to connect to Redis:', error);
+      this.logger.error('Failed to connect to Redis:', error.message);
     }
   }
 
@@ -150,7 +150,9 @@ export class GatewayModule implements OnModuleInit {
       'GatewayModule initialized, waiting for RabbitMQ client to be ready...',
     );
     let clientReady = false;
-    const maxAttempts = 15;
+    const maxAttempts = 40; // Tăng từ 30 lên 40
+    const retryDelay = 250; // Giảm từ 500ms xuống 250ms
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         await this.rabbitMQClient.connect();
@@ -160,8 +162,9 @@ export class GatewayModule implements OnModuleInit {
       } catch (error) {
         this.logger.warn(
           `Client not ready, retrying (${attempt + 1}/${maxAttempts})...`,
+          error.message || error.code || error.stack || 'Unknown error',
         );
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
       }
     }
 
@@ -183,12 +186,25 @@ export class GatewayModule implements OnModuleInit {
           await this.rabbitMQClient.connect();
           reconnected = true;
           this.logger.log('RabbitMQ client reconnected successfully');
+
+          // Đăng ký lại service với Consul sau khi reconnect
+          await this.serviceDiscovery.registerService(
+            SERVICE_NAME,
+            { queue: 'api-gateway-queue' },
+            ['gateway', 'rabbitmq'],
+          );
+          this.logger.log('Re-registered service with Consul after reconnect');
+
+          // Đảm bảo consumer được đăng ký lại
+          this.rabbitMQClient.emit('restart', {});
+          this.logger.log('Restarted microservice to re-register consumers');
           break;
         } catch (error) {
           this.logger.warn(
             `Reconnect failed, retrying (${attempt + 1}/${maxAttempts})...`,
+            error.message || error.code || error.stack || 'Unknown error',
           );
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
         }
       }
 
@@ -205,19 +221,19 @@ export class GatewayModule implements OnModuleInit {
     const attemptHealthCheck = async (maxRetries = 3, retryDelay = 5000) => {
       for (let i = 0; i < maxRetries; i++) {
         try {
-          // Kiểm tra trạng thái kết nối trước khi thực hiện health check
           try {
             await this.rabbitMQClient.connect();
           } catch (error) {
             this.logger.warn(
               'RabbitMQ client not connected before health check',
+              error.message || error.code || error.stack || 'Unknown error',
             );
             throw new Error('RabbitMQ client not connected');
           }
 
           await this.serviceDiscovery.passHealthCheck();
           this.logger.log('Initial health check passed');
-          return; // Thoát nếu health check thành công
+          return;
         } catch (error) {
           this.logger.error(
             `Initial health check failed (attempt ${i + 1}/${maxRetries}): ${error.message}`,
@@ -237,12 +253,12 @@ export class GatewayModule implements OnModuleInit {
 
     setInterval(async () => {
       try {
-        // Kiểm tra trạng thái kết nối trước khi thực hiện health check
         try {
           await this.rabbitMQClient.connect();
         } catch (error) {
           this.logger.warn(
             'RabbitMQ client not connected before periodic health check',
+            error.message || error.code || error.stack || 'Unknown error',
           );
           throw new Error('RabbitMQ client not connected');
         }
@@ -251,17 +267,47 @@ export class GatewayModule implements OnModuleInit {
         this.logger.log('Periodic health check passed');
       } catch (error) {
         this.logger.error(`Periodic health check failed: ${error.message}`);
-        // Thử kết nối lại RabbitMQ nếu health check thất bại
-        try {
-          await this.rabbitMQClient.connect();
-          this.logger.log('Reconnected to RabbitMQ after health check failure');
-        } catch (reconnectError) {
+        let reconnected = false;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+          try {
+            await this.rabbitMQClient.connect();
+            reconnected = true;
+            this.logger.log(
+              'Reconnected to RabbitMQ after health check failure',
+            );
+
+            await this.serviceDiscovery.registerService(
+              SERVICE_NAME,
+              { queue: 'api-gateway-queue' },
+              ['gateway', 'rabbitmq'],
+            );
+            this.logger.log(
+              'Re-registered service with Consul after health check failure',
+            );
+            this.rabbitMQClient.emit('restart', {});
+            this.logger.log(
+              'Restarted microservice to re-register consumers after health check failure',
+            );
+            break;
+          } catch (reconnectError) {
+            this.logger.warn(
+              `Reconnect failed during health check, retrying (${attempt + 1}/${maxAttempts})...`,
+              reconnectError.message ||
+                reconnectError.code ||
+                reconnectError.stack ||
+                'Unknown error',
+            );
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          }
+        }
+
+        if (!reconnected) {
           this.logger.error(
-            `Failed to reconnect to RabbitMQ: ${reconnectError.message}`,
+            `Failed to reconnect to RabbitMQ after ${maxAttempts} attempts during health check`,
           );
         }
       }
-    }, 15000);
+    }, 10000); // Giảm từ 15000 xuống 10000
   }
 
   configure(consumer: MiddlewareConsumer) {

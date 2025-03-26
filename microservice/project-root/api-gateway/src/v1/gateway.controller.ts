@@ -20,4 +20,10 @@ export class GatewayController {
     this.logger.log('Received ping message');
     return 'pong';
   }
+
+  @MessagePattern('restart')
+  handleRestart() {
+    this.logger.log('Restarting consumer for api-gateway-queue');
+    // Logic để đăng ký lại consumer nếu cần
+  }
 }
