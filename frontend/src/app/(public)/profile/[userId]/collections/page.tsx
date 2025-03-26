@@ -1,13 +1,13 @@
-import { UserCollections } from "@/features/profile/UserCollections"
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { UserCollections } from "@/components/features/profile/UserCollections";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface UserCollectionsPageProps {
   params: {
-    userId: string
-  }
+    userId: string;
+  };
 }
 
 export function generateMetadata({ params }: UserCollectionsPageProps) {
@@ -16,22 +16,24 @@ export function generateMetadata({ params }: UserCollectionsPageProps) {
     return {
       title: "User Not Found | NFT Marketplace",
       description: "The requested user profile was not found",
-    }
+    };
   }
 
-  const isOwnProfile = params.userId === "me"
-  const displayName = isOwnProfile ? "My" : `User ${params.userId}'s`
+  const isOwnProfile = params.userId === "me";
+  const displayName = isOwnProfile ? "My" : `User ${params.userId}'s`;
 
   return {
     title: `${displayName} Collections | NFT Marketplace`,
     description: `View all collections by ${displayName.toLowerCase()}`,
-  }
+  };
 }
 
-export default function UserCollectionsPage({ params }: UserCollectionsPageProps) {
+export default function UserCollectionsPage({
+  params,
+}: UserCollectionsPageProps) {
   // Validate userId format - allow "me" or user-{number}
   if (params.userId !== "me" && !params.userId.match(/^user-\d+$/)) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -43,12 +45,13 @@ export default function UserCollectionsPage({ params }: UserCollectionsPageProps
           </Button>
         </Link>
         <h1 className="text-3xl font-bold">
-          {params.userId === "me" ? "My Collections" : `Collections by User ${params.userId}`}
+          {params.userId === "me"
+            ? "My Collections"
+            : `Collections by User ${params.userId}`}
         </h1>
       </div>
 
       <UserCollections userId={params.userId} showAll={true} />
     </div>
-  )
+  );
 }
-

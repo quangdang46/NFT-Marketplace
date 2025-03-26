@@ -1,15 +1,15 @@
-import { ProfileDetail } from "@/features/profile/ProfileDetail"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserNFTs } from "@/features/profile/UserNFTs"
-import { UserActivity } from "@/features/profile/UserActivity"
-import { UserCollections } from "@/features/profile/UserCollections"
-import { UserFavorites } from "@/features/profile/UserFavorites"
-import { notFound } from "next/navigation"
+import { ProfileDetail } from "@/components/features/profile/ProfileDetail";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserNFTs } from "@/components/features/profile/UserNFTs";
+import { UserActivity } from "@/components/features/profile/UserActivity";
+import { UserCollections } from "@/components/features/profile/UserCollections";
+import { UserFavorites } from "@/components/features/profile/UserFavorites";
+import { notFound } from "next/navigation";
 
 interface ProfileAddressPageProps {
   params: {
-    address: string
-  }
+    address: string;
+  };
 }
 
 export function generateMetadata({ params }: ProfileAddressPageProps) {
@@ -30,10 +30,12 @@ export function generateMetadata({ params }: ProfileAddressPageProps) {
   return {
     title: `Profile ${params.address} | NFT Marketplace`,
     description: `View NFT profile, collections, and activity for ${params.address}`,
-  }
+  };
 }
 
-export default function ProfileAddressPage({ params }: ProfileAddressPageProps) {
+export default function ProfileAddressPage({
+  params,
+}: ProfileAddressPageProps) {
   // Validate address format - should be a valid Ethereum-like address
   // const isValidAddress =
   //   params.address &&
@@ -76,11 +78,12 @@ export default function ProfileAddressPage({ params }: ProfileAddressPageProps) 
 
         <TabsContent value="offers" className="mt-6">
           <div className="bg-card p-8 rounded-lg text-center">
-            <p className="text-muted-foreground">No active offers for this user.</p>
+            <p className="text-muted-foreground">
+              No active offers for this user.
+            </p>
           </div>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-

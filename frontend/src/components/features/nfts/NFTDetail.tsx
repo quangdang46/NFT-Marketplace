@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import NFTImageGallery from "@/features/nfts/ImageShow/nft-image-gallery";
-import NFTCarousel from "@/features/nfts/ImageShow/nft-carousel";
+import NFTImageGallery from "@/components/features/nfts/ImageShow/nft-image-gallery";
+import NFTCarousel from "@/components/features/nfts/ImageShow/nft-carousel";
 
 interface NFTDetailProps {
   nftId: string;

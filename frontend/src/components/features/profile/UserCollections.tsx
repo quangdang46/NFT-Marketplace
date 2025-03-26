@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { mockCollections } from "../../data/mockData";
+import { mockCollections } from "../../../data/mockData";
 import { ArrowRight } from "lucide-react";
 import { FilterSidebar } from "../shared/FilterSidebar";
 import { FilterToggle } from "../shared/FilterToggle";

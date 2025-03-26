@@ -1,4 +1,4 @@
-import CreateCollection from "@/features/create/CreateCollection/CreateCollection";
+import CreateCollection from "@/components/features/create/CreateCollection/CreateCollection";
 
 export const metadata = {
   title: "Create Collection | NFT Marketplace",

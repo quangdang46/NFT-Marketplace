@@ -1,11 +1,11 @@
-import { CollectionDetail } from "@/features/collections/CollectionDetail"
-import { NFTGrid } from "@/features/nfts/NFTGrid"
-import { notFound } from "next/navigation"
+import { CollectionDetail } from "@/components/features/collections/CollectionDetail";
+import { NFTGrid } from "@/components/features/nfts/NFTGrid";
+import { notFound } from "next/navigation";
 
 interface CollectionDetailPageProps {
   params: {
-    collectionAddress: string
-  }
+    collectionAddress: string;
+  };
 }
 
 export function generateMetadata({ params }: CollectionDetailPageProps) {
@@ -13,13 +13,18 @@ export function generateMetadata({ params }: CollectionDetailPageProps) {
   return {
     title: `Collection ${params.collectionAddress} | NFT Marketplace`,
     description: `View details and NFTs in collection ${params.collectionAddress}`,
-  }
+  };
 }
 
-export default function CollectionDetailPage({ params }: CollectionDetailPageProps) {
+export default function CollectionDetailPage({
+  params,
+}: CollectionDetailPageProps) {
   // Validate collection address format
-  if (!params.collectionAddress || !params.collectionAddress.match(/^collection-\d+$/)) {
-    notFound()
+  if (
+    !params.collectionAddress ||
+    !params.collectionAddress.match(/^collection-\d+$/)
+  ) {
+    notFound();
   }
 
   return (
@@ -30,6 +35,5 @@ export default function CollectionDetailPage({ params }: CollectionDetailPagePro
         <NFTGrid collectionId={params.collectionAddress} />
       </div>
     </div>
-  )
+  );
 }
-

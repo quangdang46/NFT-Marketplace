@@ -9,9 +9,9 @@ import { ViewToggle } from "./ViewToggle";
 import { NFTCarousel } from "./NFTCarousel";
 import { FeaturedArtists } from "./FeaturedArtists";
 import { RecentlySold } from "./RecentlySold";
-import { mockChains } from "../../data/mockData";
-import CarouselNFT from "@/features/home/CarouselNFT/CarouselNFT";
-import NFTCollections from "@/features/home/NFTCollections/NFTCollections";
+import { mockChains } from "../../../data/mockData";
+import CarouselNFT from "@/components/features/home/CarouselNFT/CarouselNFT";
+import NFTCollections from "@/components/features/home/NFTCollections/NFTCollections";
 export function HomeContent() {
   const searchParams = useSearchParams();
   const [selectedChain, setSelectedChain] = useState<string | null>(null);

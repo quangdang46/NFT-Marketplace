@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Grid, List, ArrowRight } from "lucide-react";
-import { mockNFTs } from "../../data/mockData";
+import { mockNFTs } from "../../../data/mockData";
 import { FilterSidebar } from "../shared/FilterSidebar";
 import { FilterToggle } from "../shared/FilterToggle";
 import { ItemSelector } from "../shared/ItemSelector";

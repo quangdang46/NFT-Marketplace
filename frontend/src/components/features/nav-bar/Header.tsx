@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { navItems } from "@/lib/constant/menu";
-import { MobileMenu } from "@/components/MobileMenu";
-import { SearchBar } from "@/components/SearchBar";
-import { NavLink } from "@/components/NavLink";
-import { WalletButton } from "@/features/wallet-button/WalletButton";
+import { MobileMenu } from "@/components/features/nav-bar/MobileMenu";
+import { SearchBar } from "@/components/features/nav-bar/SearchBar";
+import { NavLink } from "@/components/features/nav-bar/NavLink";
+import { WalletButton } from "@/components/features/wallet-button/WalletButton";
 import { ModeToggle } from "@/components/ui/darkmode";
 import Link from "next/link";
 

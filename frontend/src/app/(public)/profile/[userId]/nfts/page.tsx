@@ -1,13 +1,13 @@
-import { UserNFTs } from "@/features/profile/UserNFTs"
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { UserNFTs } from "@/components/features/profile/UserNFTs";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface UserNFTsPageProps {
   params: {
-    userId: string
-  }
+    userId: string;
+  };
 }
 
 export function generateMetadata({ params }: UserNFTsPageProps) {
@@ -16,22 +16,22 @@ export function generateMetadata({ params }: UserNFTsPageProps) {
     return {
       title: "User Not Found | NFT Marketplace",
       description: "The requested user profile was not found",
-    }
+    };
   }
 
-  const isOwnProfile = params.userId === "me"
-  const displayName = isOwnProfile ? "My" : `User ${params.userId}'s`
+  const isOwnProfile = params.userId === "me";
+  const displayName = isOwnProfile ? "My" : `User ${params.userId}'s`;
 
   return {
     title: `${displayName} NFTs | NFT Marketplace`,
     description: `View all NFTs owned by ${displayName.toLowerCase()}`,
-  }
+  };
 }
 
 export default function UserNFTsPage({ params }: UserNFTsPageProps) {
   // Validate userId format - allow "me" or user-{number}
   if (params.userId !== "me" && !params.userId.match(/^user-\d+$/)) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -43,12 +43,13 @@ export default function UserNFTsPage({ params }: UserNFTsPageProps) {
           </Button>
         </Link>
         <h1 className="text-3xl font-bold">
-          {params.userId === "me" ? "My NFTs" : `NFTs owned by User ${params.userId}`}
+          {params.userId === "me"
+            ? "My NFTs"
+            : `NFTs owned by User ${params.userId}`}
         </h1>
       </div>
 
       <UserNFTs userId={params.userId} showAll={true} />
     </div>
-  )
+  );
 }
-

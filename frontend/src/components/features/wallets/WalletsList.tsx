@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Copy, User } from "lucide-react";
-import { mockChains } from "../../data/mockData";
+import { mockChains } from "../../../data/mockData";
 import Image from "next/image";
 import { toast } from "sonner";
 

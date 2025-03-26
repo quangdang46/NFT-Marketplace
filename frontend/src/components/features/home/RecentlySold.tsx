@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockNFTs } from "../../data/mockData";
+import { mockNFTs } from "../../../data/mockData";
 
 interface SoldNFT {
   id: string;

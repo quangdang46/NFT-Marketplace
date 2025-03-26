@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, ArrowRight } from "lucide-react";
-import { mockNFTs } from "../../data/mockData";
+import { mockNFTs } from "../../../data/mockData";
 import { Button } from "@/components/ui/button";
 
 interface UserFavoritesProps {

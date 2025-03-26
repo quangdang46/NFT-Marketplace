@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { mockChains } from "../../data/mockData";
+import { mockChains } from "../../../data/mockData";
 import { Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 

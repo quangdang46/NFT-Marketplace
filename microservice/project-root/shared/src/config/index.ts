@@ -26,7 +26,7 @@ export const getRabbitMQConfig = (
       queueOptions: { durable: true },
       persistent: true,
       socketOptions: {
-        heartbeat: 3600, 
+        heartbeat: 60, 
         reconnectTimeInSeconds: 5,
         connectionTimeout: 10000,
       },

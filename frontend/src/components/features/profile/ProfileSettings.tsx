@@ -22,9 +22,9 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 import { toast } from "sonner";
-import ConnectedDevices from "@/features/profile/account/tabs/security-tab/connected-devices";
-import TwoFactorAuth from "@/features/profile/account/tabs/security-tab/two-factor-auth";
-import { ProfileTab } from "@/features/profile/account/tabs/profile-tab";
+import ConnectedDevices from "@/components/features/profile/account/tabs/security-tab/connected-devices";
+import TwoFactorAuth from "@/components/features/profile/account/tabs/security-tab/two-factor-auth";
+import { ProfileTab } from "@/components/features/profile/account/tabs/profile-tab";
 
 export function ProfileSettings() {
   const [loading, setLoading] = useState(false);
@@ -59,7 +59,9 @@ export function ProfileSettings() {
               Update your profile information visible to other users
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6"><ProfileTab></ProfileTab></CardContent>
+          <CardContent className="space-y-6">
+            <ProfileTab></ProfileTab>
+          </CardContent>
         </Card>
       </TabsContent>
 

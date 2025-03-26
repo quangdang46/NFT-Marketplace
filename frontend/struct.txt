@@ -1,0 +1,56 @@
+frontend/
+├── public/                  # Static files served directly
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── (public)/        # Public routes
+│   │   │   ├── auctions/    # Auction related pages
+│   │   │   │   └── [auctionId]/ # Single auction page
+│   │   │   ├── collections/ # Collections pages
+│   │   │   │   ├── [collectionAddress]/ # Single collection
+│   │   │   │   └── chain/   # Chain specific collections
+│   │   │   ├── create/      # Creation pages
+│   │   │   │   ├── collection/ # Create collection
+│   │   │   │   └── nft/     # Create NFT
+│   │   │   ├── nfts/        # NFT pages
+│   │   │   │   └── [nftId]/ # Single NFT page
+│   │   │   ├── profile/     # User profile pages
+│   │   │   │   ├── [userId]/ # User profile
+│   │   │   │   ├── address/ # Address profile
+│   │   │   │   ├── me/      # Own profile
+│   │   │   │   └── settings/ # Profile settings
+│   │   │   └── wallets/     # Wallet pages
+│   │   └── page.tsx         # Root page
+│   ├── components/          # Shared UI components
+│   │   ├── features/        # Feature specific components
+│   │   ├── icons/           # Icon components
+│   │   ├── providers/       # Context providers
+│   │   └── ui/              # Base UI components
+│   ├── data/                # Data and mock data
+│   │   └── mockData.ts      # Mock data for development
+│   ├── hooks/               # Custom React hooks
+│   │   ├── use-mobile.ts    # Mobile detection hook
+│   │   ├── use-nft-filter.txt # NFT filtering hook
+│   │   ├── use-nft-selection.ts # NFT selection hook
+│   │   ├── useMediaQuery.ts # Media query hook
+│   │   └── useProfileOwnership.ts # Profile ownership hook
+│   ├── lib/                 # Core utilities and services
+│   │   ├── api/             # API utilities
+│   │   ├── blockchain/      # Blockchain integrations
+│   │   ├── constant/        # Constants and configurations
+│   │   └── utils.ts         # Utility functions
+│   ├── middleware/          # Custom middleware
+│   │   ├── authMiddleware.ts # Authentication middleware
+│   │   ├── chainMiddleware.ts # Chain-specific middleware
+│   │   └── stackHandler.ts  # Middleware stack handler
+│   ├── store/               # State management
+│   │   ├── hooks.ts         # Custom store hooks
+│   │   ├── slices/          # Redux slices
+│   │   └── store.ts         # Store configuration
+│   └── types/               # TypeScript type definitions
+│       ├── MiddlewareFactory.ts # Middleware types
+│       ├── nft.ts           # NFT related types
+│       └── params.ts        # Parameter types
+├── .env.example             # Environment variables example
+├── next.config.ts           # Next.js configuration
+├── package.json             # Project dependencies
+└── tsconfig.json           # TypeScript configuration

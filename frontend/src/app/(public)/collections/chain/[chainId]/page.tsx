@@ -1,41 +1,43 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import { notFound } from "next/navigation"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { notFound } from "next/navigation";
 import { mockChains } from "@/data/mockData";
-import { ChainFilter } from "@/features/shared/ChainFilter"
-import { CollectionsList } from "@/features/collections/CollectionsList";
+import { ChainFilter } from "@/components/features/shared/ChainFilter";
+import { CollectionsList } from "@/components/features/collections/CollectionsList";
 
 interface ChainCollectionsPageProps {
   params: {
-    chainId: string
-  }
+    chainId: string;
+  };
 }
 
 export function generateMetadata({ params }: ChainCollectionsPageProps) {
   // Validate chainId
-  const validChain = mockChains.find((chain) => chain.id === params.chainId)
+  const validChain = mockChains.find((chain) => chain.id === params.chainId);
   if (!validChain) {
     return {
       title: "Chain Not Found | NFT Marketplace",
       description: "The requested blockchain was not found",
-    }
+    };
   }
 
   // Capitalize first letter of chainId
-  const chainName = validChain.name
+  const chainName = validChain.name;
 
   return {
     title: `${chainName} Collections | NFT Marketplace`,
     description: `Browse NFT collections on the ${chainName} blockchain`,
-  }
+  };
 }
 
-export default function ChainCollectionsPage({ params }: ChainCollectionsPageProps) {
+export default function ChainCollectionsPage({
+  params,
+}: ChainCollectionsPageProps) {
   // Validate chainId
-  const validChain = mockChains.find((chain) => chain.id === params.chainId)
+  const validChain = mockChains.find((chain) => chain.id === params.chainId);
   if (!validChain) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -52,6 +54,5 @@ export default function ChainCollectionsPage({ params }: ChainCollectionsPagePro
       <ChainFilter baseUrl="/collections/chain" />
       <CollectionsList chainId={params.chainId} />
     </div>
-  )
+  );
 }
-

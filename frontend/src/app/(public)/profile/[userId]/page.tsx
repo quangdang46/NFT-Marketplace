@@ -1,15 +1,15 @@
-import { ProfileDetail } from "@/features/profile/ProfileDetail"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserNFTs } from "@/features/profile/UserNFTs"
-import { UserActivity } from "@/features/profile/UserActivity"
-import { UserCollections } from "@/features/profile/UserCollections"
-import { UserFavorites } from "@/features/profile/UserFavorites"
-import { notFound } from "next/navigation"
+import { ProfileDetail } from "@/components/features/profile/ProfileDetail";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserNFTs } from "@/components/features/profile/UserNFTs";
+import { UserActivity } from "@/components/features/profile/UserActivity";
+import { UserCollections } from "@/components/features/profile/UserCollections";
+import { UserFavorites } from "@/components/features/profile/UserFavorites";
+import { notFound } from "next/navigation";
 
 interface ProfilePageProps {
   params: {
-    userId: string
-  }
+    userId: string;
+  };
 }
 
 export function generateMetadata({ params }: ProfilePageProps) {
@@ -18,23 +18,25 @@ export function generateMetadata({ params }: ProfilePageProps) {
     return {
       title: "User Not Found | NFT Marketplace",
       description: "The requested user profile was not found",
-    }
+    };
   }
 
   // In a real app, you would fetch the user data here
-  const isOwnProfile = params.userId === "me"
-  const displayName = isOwnProfile ? "My Profile" : `User ${params.userId}`
+  const isOwnProfile = params.userId === "me";
+  const displayName = isOwnProfile ? "My Profile" : `User ${params.userId}`;
 
   return {
     title: `${displayName} | NFT Marketplace`,
-    description: `View ${isOwnProfile ? "your" : `${displayName}'s`} NFT profile, collections, and activity`,
-  }
+    description: `View ${
+      isOwnProfile ? "your" : `${displayName}'s`
+    } NFT profile, collections, and activity`,
+  };
 }
 
 export default function ProfilePage({ params }: ProfilePageProps) {
   // Validate userId format - allow "me" or user-{number}
   if (params.userId !== "me" && !params.userId.match(/^user-\d+$/)) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -68,11 +70,12 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
         <TabsContent value="offers" className="mt-6">
           <div className="bg-card p-8 rounded-lg text-center">
-            <p className="text-muted-foreground">No active offers at the moment.</p>
+            <p className="text-muted-foreground">
+              No active offers at the moment.
+            </p>
           </div>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-

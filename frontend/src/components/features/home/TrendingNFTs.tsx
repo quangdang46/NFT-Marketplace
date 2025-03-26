@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Heart, DollarSign } from "lucide-react";
-import { mockNFTs } from "../../data/mockData";
+import { mockNFTs } from "../../../data/mockData";
 
 interface TrendingNFTsProps {
   chainId: string | null;

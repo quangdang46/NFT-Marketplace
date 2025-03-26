@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { X, Search } from "lucide-react";
-import { mockChains } from "../../data/mockData";
+import { mockChains } from "../../../data/mockData";
 import Image from "next/image";
 
 interface FilterSidebarProps {

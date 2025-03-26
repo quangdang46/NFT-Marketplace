@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Heart } from "lucide-react";
-import { mockCollections, mockChains } from "../../data/mockData";
+import { mockCollections, mockChains } from "../../../data/mockData";
 
 interface FeaturedCollectionsProps {
   chainId: string | null;

@@ -1,14 +1,14 @@
-import { ProfileDetail } from "@/features/profile/ProfileDetail"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserNFTs } from "@/features/profile/UserNFTs"
-import { UserActivity } from "@/features/profile/UserActivity"
-import { UserCollections } from "@/features/profile/UserCollections"
-import { UserFavorites } from "@/features/profile/UserFavorites"
+import { ProfileDetail } from "@/components/features/profile/ProfileDetail";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserNFTs } from "@/components/features/profile/UserNFTs";
+import { UserActivity } from "@/components/features/profile/UserActivity";
+import { UserCollections } from "@/components/features/profile/UserCollections";
+import { UserFavorites } from "@/components/features/profile/UserFavorites";
 
 export const metadata = {
   title: "My Profile | NFT Marketplace",
   description: "View and manage your NFT profile, collections, and activity",
-}
+};
 
 export default function ProfilePage() {
   return (
@@ -42,11 +42,12 @@ export default function ProfilePage() {
 
         <TabsContent value="offers" className="mt-6">
           <div className="bg-card p-8 rounded-lg text-center">
-            <p className="text-muted-foreground">No active offers at the moment.</p>
+            <p className="text-muted-foreground">
+              No active offers at the moment.
+            </p>
           </div>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
-

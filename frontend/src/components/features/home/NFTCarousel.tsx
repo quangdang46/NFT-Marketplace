@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
-import { mockNFTs } from "../../data/mockData";
+import { mockNFTs } from "../../../data/mockData";
 
 interface NFTCarouselProps {
   chainId: string | null;

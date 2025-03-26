@@ -1,6 +1,6 @@
 import { WalletDropdown } from "./WalletDropdown";
 import { useRef, useState, useEffect } from "react";
-import ConnectWallet from "@/features/wallet-button/ConnectWallet";
+import ConnectWallet from "@/components/features/wallet-button/ConnectWallet";
 import { useAccount, useBalance } from "wagmi";
 
 export const WalletButton = () => {

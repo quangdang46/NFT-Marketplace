@@ -1,10 +1,10 @@
-import { CollectionsList } from "@/features/collections/CollectionsList"
-import { ChainFilter } from "@/features/shared/ChainFilter"
+import { CollectionsList } from "@/components/features/collections/CollectionsList";
+import { ChainFilter } from "@/components/features/shared/ChainFilter";
 
 export const metadata = {
   title: "All Collections | NFT Marketplace",
   description: "Browse all NFT collections across multiple blockchains",
-}
+};
 
 export default function CollectionsPage() {
   return (
@@ -13,6 +13,5 @@ export default function CollectionsPage() {
       <ChainFilter baseUrl="/collections/chain" />
       <CollectionsList />
     </div>
-  )
+  );
 }
-

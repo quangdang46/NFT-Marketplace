@@ -1,4 +1,4 @@
-import { AuctionDetail } from "@/features/auctions/AuctionDetail";
+import { AuctionDetail } from "@/components/features/auctions/AuctionDetail";
 import { notFound } from "next/navigation";
 
 interface AuctionDetailPageProps {

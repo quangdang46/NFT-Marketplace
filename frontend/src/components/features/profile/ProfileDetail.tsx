@@ -22,12 +22,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mockChains } from "../../data/mockData";
+import { mockChains } from "../../../data/mockData";
 import { ProfileEditDialog } from "./ProfileEditDialog";
-import { useProfileOwnership } from "../../hooks/useProfileOwnership";
+import { useProfileOwnership } from "../../../hooks/useProfileOwnership";
 import Link from "next/link";
 import { useSelector } from "react-redux";
-import type { RootState } from "../../store/store";
+import type { RootState } from "../../../store/store";
 import { toast } from "sonner";
 
 interface ProfileDetailProps {

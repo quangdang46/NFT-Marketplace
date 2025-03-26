@@ -1,4 +1,4 @@
-import { AuctionsList } from "@/features/auctions/AuctionsList";
+import { AuctionsList } from "@/components/features/auctions/AuctionsList";
 
 export const metadata = {
   title: "Live Auctions | NFT Marketplace",

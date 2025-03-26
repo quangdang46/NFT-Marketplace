@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Upload } from "lucide-react";
-import { mockChains } from "../../data/mockData";
+import { mockChains } from "../../../data/mockData";
 import {
   Select,
   SelectContent,

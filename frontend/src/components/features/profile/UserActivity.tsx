@@ -19,7 +19,7 @@ import {
   Heart,
   ArrowRight,
 } from "lucide-react";
-import { mockNFTs } from "../../data/mockData";
+import { mockNFTs } from "../../../data/mockData";
 import { Button } from "@/components/ui/button";
 
 interface UserActivityProps {

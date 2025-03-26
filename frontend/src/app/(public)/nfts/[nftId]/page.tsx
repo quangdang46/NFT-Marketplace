@@ -1,5 +1,5 @@
-import { NFTDetail } from "@/features/nfts/NFTDetail";
-import { NFTGrid } from "@/features/nfts/NFTGrid";
+import { NFTDetail } from "@/components/features/nfts/NFTDetail";
+import { NFTGrid } from "@/components/features/nfts/NFTGrid";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 

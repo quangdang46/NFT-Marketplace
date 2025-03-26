@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { HomeContent } from "../features/home/HomeContent";
-import { ChainTabs } from "../features/home/ChainTabs";
+import { HomeContent } from "../components/features/home/HomeContent";
+import { ChainTabs } from "../components/features/home/ChainTabs";
 
 export const metadata = {
   title: "NFT Marketplace | Explore Collections Across Multiple Chains",
