@@ -16,6 +16,14 @@ export class UserController {
     return 'pong';
   }
 
+
+    @MessagePattern('restart')
+    handleRestart() {
+      this.logger.log('Restarting consumer for api-gateway-queue');
+      // Logic để đăng ký lại consumer nếu cần
+    }
+
+
   @MessagePattern({ cmd: 'get_user' })
   async findOrCreateUser(@Payload() data: { address: string }) {
     return this.userService.findOrCreateUser(data.address);

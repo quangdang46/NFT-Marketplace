@@ -59,6 +59,12 @@ const CONTROLLERS = [AuthController];
 const PROVIDERS = [
   AuthService,
   {
+    provide: 'RABBITMQ_OPTIONS',
+    useFactory: (configService: ConfigService) =>
+      getRabbitMQConfig(configService, SERVICE_NAME),
+    inject: [ConfigService],
+  },
+  {
     provide: ServiceDiscovery,
     useFactory: async (configService: ConfigService) => {
       const serviceDiscovery = new ServiceDiscovery(
@@ -114,20 +120,18 @@ export class AuthModule implements OnModuleInit {
   }
 
   async onModuleInit() {
-    const isClientReady = await this.rabbitMQHealthService.initializeRabbitMQ(
-      15,
-      2000,
-    );
+    const isClientReady = await this.rabbitMQHealthService.initializeRabbitMQ();
     if (!isClientReady) {
+      this.logger.error('Failed to initialize RabbitMQ client in AuthModule');
       return;
     }
-
+    this.logger.log('RabbitMQ client initialized successfully in AuthModule');
     await new Promise((resolve) => setTimeout(resolve, 10000));
 
     this.logger.log('Starting health check for AuthModule');
 
     await this.rabbitMQHealthService.attemptInitialHealthCheck();
 
-    this.rabbitMQHealthService.startPeriodicHealthCheck(15, 2000, 5000); // Đồng bộ interval với GatewayModule
+    this.rabbitMQHealthService.startPeriodicHealthCheck();
   }
 }

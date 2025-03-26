@@ -59,7 +59,12 @@ export class RabbitMQClient implements OnApplicationShutdown {
     } catch (error) {
       this.isConnected = false;
       this.logger.error(
-        `Failed to connect to RMQ (attempt ${attempt + 1}): ${error.message}`
+        `Failed to connect to RMQ (attempt ${attempt + 1}/${this.maxRetries})`,
+        {
+          message: error.message,
+          code: (error as any).code,
+          stack: (error as any).stack,
+        }
       );
       if (
         error.message.includes("PRECONDITION-FAILED") &&
@@ -83,9 +88,11 @@ export class RabbitMQClient implements OnApplicationShutdown {
       this.logger.warn("RMQ not connected, waiting for connection...");
       await this.initializeClientWithRetry();
       if (!this.isConnected) {
+        this.logger.error("Failed to connect to RabbitMQ after retries");
         throw new Error("Failed to connect to RabbitMQ after retries");
       }
     }
+    this.logger.log("RabbitMQ client is connected and ready");
   }
 
   async send<T>(pattern: any, data: any): Promise<T> {
@@ -105,9 +112,11 @@ export class RabbitMQClient implements OnApplicationShutdown {
       return response;
     } catch (error) {
       this.isConnected = false;
-      this.logger.error(
-        `Send failed on queue ${this.options.options.queue}: ${error.message}`
-      );
+      this.logger.error(`Send failed on queue ${this.options.options.queue}`, {
+        message: error.message,
+        code: (error as any).code,
+        stack: (error as any).stack,
+      });
       await this.reconnect();
       throw error;
     }

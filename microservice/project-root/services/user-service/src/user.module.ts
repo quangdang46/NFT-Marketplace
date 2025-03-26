@@ -49,6 +49,12 @@ const CONTROLLERS = [UserController];
 const PROVIDERS = [
   UserService,
   {
+    provide: 'RABBITMQ_OPTIONS',
+    useFactory: (configService: ConfigService) =>
+      getRabbitMQConfig(configService, SERVICE_NAME),
+    inject: [ConfigService],
+  },
+  {
     provide: ServiceDiscovery,
     useFactory: async (configService: ConfigService) => {
       const discovery = new ServiceDiscovery(configService, SERVICE_NAME);
