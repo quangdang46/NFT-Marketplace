@@ -1,3 +1,4 @@
+
 import {
   MiddlewareConsumer,
   Module,
@@ -15,6 +16,8 @@ import {
   JwtGuard,
   JwtService,
   ServiceClient,
+  RabbitMQHealthService,
+  ClientProxy,
 } from '@project/shared';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -25,9 +28,12 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AuthResolver } from './v1/auth/auth.resolver';
 import { GatewayController } from './v1/gateway.controller';
-import { ClientsModule, ClientProxy } from '@nestjs/microservices';
-import { Inject } from '@nestjs/common';
+import { ClientsModule } from '@nestjs/microservices';
 import { GatewayService } from '@/v1/gateway.service';
+
+// Định nghĩa kiểu EventsMap và Status
+type EventsMap = Record<string, (...args: any[]) => void>;
+type Status = string;
 
 const SERVICE_NAME = 'api-gateway';
 
@@ -114,6 +120,22 @@ const PROVIDERS = [
     },
     inject: [ConfigService, ServiceDiscovery],
   },
+  {
+    provide: RabbitMQHealthService,
+    useFactory: (
+      serviceDiscovery: ServiceDiscovery,
+      rabbitMQClient: ClientProxy<EventsMap, Status>,
+    ) => {
+      return new RabbitMQHealthService(
+        SERVICE_NAME,
+        rabbitMQClient,
+        serviceDiscovery,
+        'api-gateway-queue',
+        ['gateway', 'rabbitmq'],
+      );
+    },
+    inject: [ServiceDiscovery, 'RABBITMQ_SERVICE'],
+  },
 ];
 
 const EXPORTS = [];
@@ -129,8 +151,7 @@ export class GatewayModule implements OnModuleInit {
 
   constructor(
     @InjectRedis() private readonly redis: Redis,
-    private readonly serviceDiscovery: ServiceDiscovery,
-    @Inject('RABBITMQ_SERVICE') private readonly rabbitMQClient: ClientProxy,
+    private readonly rabbitMQHealthService: RabbitMQHealthService,
   ) {
     this.logger.log('Gateway Module initialized');
     this.checkRedisConnection();
@@ -146,168 +167,16 @@ export class GatewayModule implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.logger.log(
-      'GatewayModule initialized, waiting for RabbitMQ client to be ready...',
-    );
-    let clientReady = false;
-    const maxAttempts = 40; // Tăng từ 30 lên 40
-    const retryDelay = 250; // Giảm từ 500ms xuống 250ms
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        await this.rabbitMQClient.connect();
-        clientReady = true;
-        this.logger.log('RabbitMQ client is ready');
-        break;
-      } catch (error) {
-        this.logger.warn(
-          `Client not ready, retrying (${attempt + 1}/${maxAttempts})...`,
-          error.message || error.code || error.stack || 'Unknown error',
-        );
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-      }
-    }
-
-    if (!clientReady) {
-      this.logger.error(
-        `Failed to initialize RabbitMQ client after ${maxAttempts} attempts`,
-      );
+    const isClientReady = await this.rabbitMQHealthService.initializeRabbitMQ();
+    if (!isClientReady) {
       return;
     }
 
-    // Lắng nghe sự kiện disconnect và reconnect
-    (this.rabbitMQClient as any).on('disconnect', async () => {
-      this.logger.error(
-        'RabbitMQ client disconnected. Attempting to reconnect...',
-      );
-      let reconnected = false;
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        try {
-          await this.rabbitMQClient.connect();
-          reconnected = true;
-          this.logger.log('RabbitMQ client reconnected successfully');
-
-          // Đăng ký lại service với Consul sau khi reconnect
-          await this.serviceDiscovery.registerService(
-            SERVICE_NAME,
-            { queue: 'api-gateway-queue' },
-            ['gateway', 'rabbitmq'],
-          );
-          this.logger.log('Re-registered service with Consul after reconnect');
-
-          // Đảm bảo consumer được đăng ký lại
-          this.rabbitMQClient.emit('restart', {});
-          this.logger.log('Restarted microservice to re-register consumers');
-          break;
-        } catch (error) {
-          this.logger.warn(
-            `Reconnect failed, retrying (${attempt + 1}/${maxAttempts})...`,
-            error.message || error.code || error.stack || 'Unknown error',
-          );
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        }
-      }
-
-      if (!reconnected) {
-        this.logger.error(
-          `Failed to reconnect RabbitMQ client after ${maxAttempts} attempts`,
-        );
-      }
-    });
-
+    // Bỏ gọi setupReconnectHandler
     await new Promise((resolve) => setTimeout(resolve, 10000));
-
     this.logger.log('Starting health check for GatewayModule');
-    const attemptHealthCheck = async (maxRetries = 3, retryDelay = 5000) => {
-      for (let i = 0; i < maxRetries; i++) {
-        try {
-          try {
-            await this.rabbitMQClient.connect();
-          } catch (error) {
-            this.logger.warn(
-              'RabbitMQ client not connected before health check',
-              error.message || error.code || error.stack || 'Unknown error',
-            );
-            throw new Error('RabbitMQ client not connected');
-          }
-
-          await this.serviceDiscovery.passHealthCheck();
-          this.logger.log('Initial health check passed');
-          return;
-        } catch (error) {
-          this.logger.error(
-            `Initial health check failed (attempt ${i + 1}/${maxRetries}): ${error.message}`,
-          );
-          if (i < maxRetries - 1) {
-            this.logger.log(`Retrying health check after ${retryDelay}ms...`);
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-          }
-        }
-      }
-      this.logger.error(
-        'Failed to pass initial health check after all retries',
-      );
-    };
-
-    await attemptHealthCheck();
-
-    setInterval(async () => {
-      try {
-        try {
-          await this.rabbitMQClient.connect();
-        } catch (error) {
-          this.logger.warn(
-            'RabbitMQ client not connected before periodic health check',
-            error.message || error.code || error.stack || 'Unknown error',
-          );
-          throw new Error('RabbitMQ client not connected');
-        }
-
-        await this.serviceDiscovery.passHealthCheck();
-        this.logger.log('Periodic health check passed');
-      } catch (error) {
-        this.logger.error(`Periodic health check failed: ${error.message}`);
-        let reconnected = false;
-        for (let attempt = 0; attempt < maxAttempts; attempt++) {
-          try {
-            await this.rabbitMQClient.connect();
-            reconnected = true;
-            this.logger.log(
-              'Reconnected to RabbitMQ after health check failure',
-            );
-
-            await this.serviceDiscovery.registerService(
-              SERVICE_NAME,
-              { queue: 'api-gateway-queue' },
-              ['gateway', 'rabbitmq'],
-            );
-            this.logger.log(
-              'Re-registered service with Consul after health check failure',
-            );
-            this.rabbitMQClient.emit('restart', {});
-            this.logger.log(
-              'Restarted microservice to re-register consumers after health check failure',
-            );
-            break;
-          } catch (reconnectError) {
-            this.logger.warn(
-              `Reconnect failed during health check, retrying (${attempt + 1}/${maxAttempts})...`,
-              reconnectError.message ||
-                reconnectError.code ||
-                reconnectError.stack ||
-                'Unknown error',
-            );
-            await new Promise((resolve) => setTimeout(resolve, retryDelay));
-          }
-        }
-
-        if (!reconnected) {
-          this.logger.error(
-            `Failed to reconnect to RabbitMQ after ${maxAttempts} attempts during health check`,
-          );
-        }
-      }
-    }, 10000); // Giảm từ 15000 xuống 10000
+    await this.rabbitMQHealthService.attemptInitialHealthCheck();
+    this.rabbitMQHealthService.startPeriodicHealthCheck();
   }
 
   configure(consumer: MiddlewareConsumer) {
