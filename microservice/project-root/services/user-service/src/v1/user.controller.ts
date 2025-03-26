@@ -2,7 +2,7 @@ import { UserService } from '@/v1/user.service';
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
-@Controller({ path: 'user', version: '1' })
+@Controller("user")
 export class UserController {
   private readonly logger = new Logger(UserController.name);
 

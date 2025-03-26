@@ -33,8 +33,8 @@ export function HomeContent() {
   return (
     <div className="pt-4">
       <HomeBanner />
-      <CarouselNFT chainId={selectedChain}></CarouselNFT>
-      <NFTCollections chainId={selectedChain} />
+      <CarouselNFT ></CarouselNFT>
+      <NFTCollections />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-8">
         <h2 className="text-2xl font-bold">Hot Collections</h2>
         <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
