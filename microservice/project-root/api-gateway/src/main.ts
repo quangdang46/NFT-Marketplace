@@ -30,6 +30,21 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(8080);
   logger.log(`GraphQL Playground available at: ${await app.getUrl()}/graphql`);
+
+  // Lắng nghe sự kiện disconnect và reconnect
+  const client = app.get('RABBITMQ_SERVICE');
+  client.on('disconnect', async () => {
+    logger.error('Disconnected from RabbitMQ. Attempting to reconnect...');
+    try {
+      await app.close(); // Đóng microservice hiện tại
+      app.connectMicroservice<MicroserviceOptions>(rmqOptions); // Kết nối lại
+      await app.startAllMicroservices(); // Khởi động lại microservice
+      await app.listen(8080); // Khởi động lại HTTP server
+      logger.log('Reconnected and restarted microservice successfully');
+    } catch (error) {
+      logger.error('Failed to reconnect to RabbitMQ:', error);
+    }
+  });
 }
 
 bootstrap();

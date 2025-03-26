@@ -25,6 +25,11 @@ export const getRabbitMQConfig = (
       queue,
       queueOptions: { durable: true },
       persistent: true,
+      socketOptions: {
+        heartbeat: 60, // Gửi heartbeat mỗi 60 giây để duy trì kết nối
+        reconnectTimeInSeconds: 5, // Thử kết nối lại sau 5 giây nếu bị ngắt
+        connectionTimeout: 10000, // Timeout kết nối là 10 giây
+      },
     },
   };
 };
