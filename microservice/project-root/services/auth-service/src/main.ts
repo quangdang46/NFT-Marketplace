@@ -10,11 +10,11 @@ async function bootstrap() {
   const rmqOptions = getRabbitMQConfig(configService, 'auth-service');
   logger.log(`Listening on queue: ${rmqOptions.options?.queue}`); // Đảm bảo log queue
 
-  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AuthModule,
-    rmqOptions,
-  );
-  await app.listen();
+  const app = await NestFactory.create(AuthModule);
+
+  app.connectMicroservice<MicroserviceOptions>(rmqOptions);
+
+  await app.startAllMicroservices();
   logger.log('Auth Service is running');
 }
 

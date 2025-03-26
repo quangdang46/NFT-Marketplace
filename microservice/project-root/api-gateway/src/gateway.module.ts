@@ -11,10 +11,10 @@ import {
   ConfigService,
   ServiceDiscovery,
   getRabbitMQConfig,
-  ServiceClient,
   getJwtConfig,
   JwtGuard,
   JwtService,
+  ServiceClient,
 } from '@project/shared';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -24,7 +24,7 @@ import { join } from 'path';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AuthResolver } from './v1/auth/auth.resolver';
-import { GatewayController } from './v1/gateway.controller'; // Đổi tên import
+import { GatewayController } from './v1/gateway.controller';
 import { ClientsModule, ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
 import { GatewayService } from '@/v1/gateway.service';
@@ -76,7 +76,7 @@ const IMPORTS = [
   ]),
 ];
 
-const CONTROLLERS = [GatewayController]; // Thêm GatewayController vào controllers
+const CONTROLLERS = [GatewayController];
 
 const PROVIDERS = [
   JwtGuard,
@@ -150,7 +150,7 @@ export class GatewayModule implements OnModuleInit {
       'GatewayModule initialized, waiting for RabbitMQ client to be ready...',
     );
     let clientReady = false;
-    const maxAttempts = 15; // Tăng số lần thử lên 15
+    const maxAttempts = 15;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         await this.rabbitMQClient.connect();
@@ -161,7 +161,7 @@ export class GatewayModule implements OnModuleInit {
         this.logger.warn(
           `Client not ready, retrying (${attempt + 1}/${maxAttempts})...`,
         );
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // Tăng thời gian chờ lên 2 giây
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
 

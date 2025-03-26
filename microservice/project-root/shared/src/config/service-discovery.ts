@@ -1,6 +1,7 @@
 
+
 import { Injectable, Logger, OnApplicationShutdown } from "@nestjs/common";
-import { ConfigService } from "./shared-config.module"; // Sửa import
+import { ConfigService } from "./shared-config.module";
 import Consul = require("consul");
 import { getConsulConfig } from "./index";
 import { RabbitMQClient } from "./rabbitmq.client";
@@ -99,6 +100,7 @@ export class ServiceDiscovery implements OnApplicationShutdown {
       throw error;
     }
   }
+
   async getServiceQueue(serviceName: string): Promise<string> {
     try {
       const services = (await this.consul.catalog.service.nodes(
@@ -132,3 +134,5 @@ export class ServiceDiscovery implements OnApplicationShutdown {
 }
 
 export default ServiceDiscovery;
+
+

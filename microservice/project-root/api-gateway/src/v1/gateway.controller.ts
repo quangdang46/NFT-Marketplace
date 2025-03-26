@@ -16,14 +16,8 @@ export class GatewayController {
   }
 
   @MessagePattern({ cmd: 'ping' })
-  async handlePing(
-    @Payload() data: any,
-    @Ctx() context: RmqContext,
-  ): Promise<string> {
-    this.logger.log('Received ping message, responding with pong...');
-    const channel = context.getChannelRef();
-    const originalMsg = context.getMessage();
-    channel.ack(originalMsg);
+  handlePing(): string {
+    this.logger.log('Received ping message');
     return 'pong';
   }
 }

@@ -1,51 +1,35 @@
-import { VersioningType, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { GatewayModule } from './gateway.module';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import { AllExceptionsFilter } from '@project/shared';
-import { Transport } from '@nestjs/microservices';
+import {
+  AllExceptionsFilter,
+  ConfigService,
+  getRabbitMQConfig,
+} from '@project/shared';
+import { MicroserviceOptions } from '@nestjs/microservices';
 
 const logger = new Logger('Bootstrap');
 
 async function bootstrap() {
-  try {
-    logger.log('Creating Nest application...');
-    const app = await NestFactory.create(GatewayModule);
-    logger.log('Nest application created successfully');
+  const logger = new Logger('GatewayService');
+  const configService = new ConfigService();
+  const rmqOptions = getRabbitMQConfig(configService, 'api-gateway');
+  logger.log(`Listening on queue: ${rmqOptions.options?.queue}`); // Đảm bảo log queue
 
-    logger.log('Connecting microservice...');
-    app.connectMicroservice({
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://localhost:5672'],
-        queue: 'api-gateway-queue',
-        queueOptions: { durable: true },
-        persistent: true,
-        noAck: false, // Đảm bảo noAck là false
-      },
-    });
+  const app = await NestFactory.create(GatewayModule);
 
-    logger.log('Configuring CORS...');
-    app.enableCors({
-      origin: 'http://localhost:3000',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: true,
-    });
+  app.connectMicroservice<MicroserviceOptions>(rmqOptions);
 
-    logger.log('Setting up global filters...');
-    app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
-
-    logger.log('Starting HTTP server and microservice...');
-    await app.startAllMicroservices();
-    await app.listen(8080);
-    logger.log(`Application is running on: ${await app.getUrl()}`);
-    logger.log(
-      `GraphQL Playground available at: ${await app.getUrl()}/graphql`,
-    );
-  } catch (error) {
-    logger.error('Failed to bootstrap application:', error.stack);
-    process.exit(1);
-  }
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
+  await app.startAllMicroservices();
+  await app.listen(8080);
+  logger.log(`GraphQL Playground available at: ${await app.getUrl()}/graphql`);
 }
 
 bootstrap();

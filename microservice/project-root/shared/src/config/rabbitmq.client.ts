@@ -1,10 +1,7 @@
-
-
-
 import { Injectable, OnApplicationShutdown } from "@nestjs/common";
 import { ClientProxy, ClientProxyFactory } from "@nestjs/microservices";
 import { Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { ConfigService } from "./shared-config.module";
 import { getRabbitMQConfig } from "./index";
 import * as amqplib from "amqplib";
 
@@ -37,7 +34,7 @@ export class RabbitMQClient implements OnApplicationShutdown {
         `Failed to delete queue ${this.options.options.queue}:`,
         error.message
       );
-      throw error; // Thêm throw để biết nếu xóa queue thất bại
+      throw error;
     }
   }
 
@@ -94,13 +91,23 @@ export class RabbitMQClient implements OnApplicationShutdown {
   async send<T>(pattern: any, data: any): Promise<T> {
     await this.ensureConnected();
     this.logger.log(
-      `Sending message: ${JSON.stringify(pattern)} - ${JSON.stringify(data)}`
+      `Sending message to queue ${this.options.options.queue}: ${JSON.stringify(
+        pattern
+      )} - ${JSON.stringify(data)}`
     );
     try {
-      return await this.client!.send<T>(pattern, data).toPromise();
+      const response = await this.client!.send<T>(pattern, data).toPromise();
+      this.logger.log(
+        `Received response from queue ${
+          this.options.options.queue
+        }: ${JSON.stringify(response)}`
+      );
+      return response;
     } catch (error) {
       this.isConnected = false;
-      this.logger.error("Send failed:", error.message);
+      this.logger.error(
+        `Send failed on queue ${this.options.options.queue}: ${error.message}`
+      );
       await this.reconnect();
       throw error;
     }

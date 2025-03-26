@@ -1,31 +1,42 @@
-import { Module, OnModuleInit, Logger } from '@nestjs/common';
-import { AuthController } from './v1/auth.controller';
-import { AuthService } from './v1/auth.service';
-import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { RedisModule } from '@nestjs-modules/ioredis';
+import { Module, Logger, OnModuleInit } from '@nestjs/common';
 import {
-  getRedisConfig,
-  getJwtConfig,
   SharedConfigModule,
   ConfigService,
   ServiceDiscovery,
   getRabbitMQConfig,
+  getRedisConfig,
+  getJwtConfig,
   ServiceClient,
 } from '@project/shared';
 import { ClientsModule, ClientProxy } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
+import { AuthController } from './v1/auth.controller';
+import { AuthService } from './v1/auth.service';
+import { RedisModule } from '@nestjs-modules/ioredis';
+import { JwtModule } from '@nestjs/jwt';
 
 const SERVICE_NAME = 'auth-service';
 
 const IMPORTS = [
   SharedConfigModule,
-  JwtModule.registerAsync({
-    useFactory: (configService: ConfigService) => getJwtConfig(configService),
+  RedisModule.forRootAsync({
+    useFactory: (configService: ConfigService) => ({
+      ...getRedisConfig(configService),
+      onClientReady: (client) => {
+        const logger = new Logger('RedisModule');
+        logger.log('Redis client ready');
+        client.on('error', (err) => logger.error('Redis Client Error:', err));
+        client.on('connect', () => logger.log('Redis Client Connected'));
+        client.on('reconnecting', () =>
+          logger.warn('Redis Client Reconnecting'),
+        );
+        client.on('end', () => logger.warn('Redis Client Connection Ended'));
+      },
+    }),
     inject: [ConfigService],
   }),
-  RedisModule.forRootAsync({
-    useFactory: (configService: ConfigService) => getRedisConfig(configService),
+  JwtModule.registerAsync({
+    useFactory: (configService: ConfigService) => getJwtConfig(configService),
     inject: [ConfigService],
   }),
   ClientsModule.registerAsync([
@@ -42,13 +53,6 @@ const CONTROLLERS = [AuthController];
 
 const PROVIDERS = [
   AuthService,
-  JwtStrategy,
-  {
-    provide: 'RABBITMQ_OPTIONS',
-    useFactory: (configService: ConfigService) =>
-      getRabbitMQConfig(configService, SERVICE_NAME),
-    inject: [ConfigService],
-  },
   {
     provide: ServiceDiscovery,
     useFactory: async (configService: ConfigService) => {
@@ -56,12 +60,13 @@ const PROVIDERS = [
         configService,
         SERVICE_NAME,
       );
-      const rabbitMQConfig = getRabbitMQConfig(configService, SERVICE_NAME);
       await serviceDiscovery.registerService(
         SERVICE_NAME,
-        { queue: rabbitMQConfig.options?.queue || `${SERVICE_NAME}-queue` },
+        { queue: 'auth-service-queue' },
         ['auth', 'rabbitmq'],
       );
+      const logger = new Logger('AuthModule');
+      logger.log('Auth Service registered with Consul');
       return serviceDiscovery;
     },
     inject: [ConfigService],
@@ -86,46 +91,78 @@ export class AuthModule implements OnModuleInit {
   constructor(
     private readonly serviceDiscovery: ServiceDiscovery,
     @Inject('RABBITMQ_SERVICE') private readonly rabbitMQClient: ClientProxy,
-  ) {}
+  ) {
+    this.logger.log('Auth Module initialized');
+  }
 
   async onModuleInit() {
     this.logger.log(
-      'AuthModule initialized, waiting for consumers to be ready...',
+      'AuthModule initialized, waiting for RabbitMQ client to be ready...',
     );
-    // Kiểm tra consumer sẵn sàng
-    let consumerReady = false;
-    for (let attempt = 0; attempt < 10; attempt++) {
+    let clientReady = false;
+    const maxAttempts = 15;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         await this.rabbitMQClient.connect();
-        consumerReady = true;
-        this.logger.log('RabbitMQ consumer is ready');
+        clientReady = true;
+        this.logger.log('RabbitMQ client is ready');
         break;
       } catch (error) {
-        this.logger.warn(`Consumer not ready, retrying (${attempt + 1}/10)...`);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        this.logger.warn(
+          `Client not ready, retrying (${attempt + 1}/${maxAttempts})...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
 
-    if (!consumerReady) {
+    if (!clientReady) {
       this.logger.error(
-        'Failed to initialize RabbitMQ consumer after 10 attempts',
+        `Failed to initialize RabbitMQ client after ${maxAttempts} attempts`,
       );
       return;
     }
 
-    // Trì hoãn thêm 5 giây
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
-    // Bắt đầu health check
     this.logger.log('Starting health check for AuthModule');
-    this.serviceDiscovery.passHealthCheck().catch((error) => {
-      this.logger.error(`Initial health check failed: ${error.message}`);
-    });
+    const attemptHealthCheck = async (maxRetries = 3, retryDelay = 5000) => {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          await this.serviceDiscovery.passHealthCheck();
+          this.logger.log('Initial health check passed');
+          return; // Thoát nếu health check thành công
+        } catch (error) {
+          this.logger.error(
+            `Initial health check failed (attempt ${i + 1}/${maxRetries}): ${error.message}`,
+          );
+          if (i < maxRetries - 1) {
+            this.logger.log(`Retrying health check after ${retryDelay}ms...`);
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+          }
+        }
+      }
+      this.logger.error(
+        'Failed to pass initial health check after all retries',
+      );
+    };
 
-    setInterval(() => {
-      this.serviceDiscovery.passHealthCheck().catch((error) => {
+    await attemptHealthCheck();
+
+    setInterval(async () => {
+      try {
+        await this.serviceDiscovery.passHealthCheck();
+      } catch (error) {
         this.logger.error(`Periodic health check failed: ${error.message}`);
-      });
+        // Thử kết nối lại RabbitMQ nếu health check thất bại
+        try {
+          await this.rabbitMQClient.connect();
+          this.logger.log('Reconnected to RabbitMQ after health check failure');
+        } catch (reconnectError) {
+          this.logger.error(
+            `Failed to reconnect to RabbitMQ: ${reconnectError.message}`,
+          );
+        }
+      }
     }, 15000);
   }
 }

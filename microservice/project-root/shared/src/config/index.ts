@@ -24,8 +24,7 @@ export const getRabbitMQConfig = (
       urls: [url],
       queue,
       queueOptions: { durable: true },
-      persistent: true, // Message bền vững
-      noAck: true,
+      persistent: true,
     },
   };
 };

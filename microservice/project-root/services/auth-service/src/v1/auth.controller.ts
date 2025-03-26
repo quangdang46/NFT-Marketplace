@@ -1,32 +1,20 @@
 import { Controller, Logger } from '@nestjs/common';
-import {
-  Ctx,
-  MessagePattern,
-  Payload,
-  RmqContext,
-} from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { JwtPayload } from '@project/shared';
 
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
-  constructor(private readonly authService: AuthService) {}
-
-  @MessagePattern({ cmd: 'ping' })
-  async handlePing(
-    @Payload() data: any,
-    @Ctx() context: RmqContext,
-  ): Promise<string> {
-    this.logger.log('Received ping message');
-    const response = 'pong';
-    this.logger.log('Sent pong response');
-    return response;
+  constructor(private readonly authService: AuthService) {
+    this.logger.log('AuthController initialized');
   }
 
-
-
-  
+  @MessagePattern({ cmd: 'ping' })
+  handlePing(): string {
+    this.logger.log('Received ping message');
+    return 'pong';
+  }
 
   @MessagePattern({ cmd: 'verify_signature' })
   async verifySignature(
