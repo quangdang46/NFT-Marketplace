@@ -39,14 +39,11 @@
 │   ├── src/
 │   │   ├── v1/
 │   │   │   ├── auth
-│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.resolver.ts
 │   │   │   ├── gateway.service.ts
+│   │   │   ├── gateway.controller.ts
 │   │   ├── gateway.module.ts
 │   │   ├── main.ts
-│   ├── test/
-│   │   ├── app.e2e-spec.ts
-│   │   ├── jest-e2e.json
-│   │   ├── postman/
 │   ├── .dockerignore
 │   ├── .gitignore
 │   ├── .prettierrc

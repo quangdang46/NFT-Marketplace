@@ -1,12 +1,12 @@
+
 import { Injectable, Logger, OnApplicationShutdown } from "@nestjs/common";
-import { ConfigService } from "./shared-config.module";
+import { ConfigService } from "./shared-config.module"; // Sửa import
 import Consul = require("consul");
 import { getConsulConfig } from "./index";
+import { RabbitMQClient } from "./rabbitmq.client";
 
 interface ConsulServiceNode {
-  ServiceMeta?: {
-    queue?: string;
-  };
+  ServiceMeta?: { queue?: string };
 }
 
 @Injectable()
@@ -14,14 +14,17 @@ export class ServiceDiscovery implements OnApplicationShutdown {
   private consul: Consul;
   private readonly logger = new Logger(ServiceDiscovery.name);
   private serviceId: string;
+  private rabbitMQClient: RabbitMQClient;
 
-  constructor(configService: ConfigService, serviceKey: string) {
-    const { host, port, serviceName } = getConsulConfig(
-      configService,
-      serviceKey
-    );
+  constructor(configService: ConfigService, serviceName: string) {
+    const {
+      host,
+      port,
+      serviceName: consulServiceName,
+    } = getConsulConfig(configService, serviceName);
     this.consul = new Consul({ host, port: parseInt(port) });
-    this.serviceId = `${serviceName}-${process.pid}`;
+    this.serviceId = `${consulServiceName}-${process.pid}`;
+    this.rabbitMQClient = new RabbitMQClient(configService, serviceName);
   }
 
   async registerService(
@@ -43,47 +46,71 @@ export class ServiceDiscovery implements OnApplicationShutdown {
         },
       });
 
-      await this.consul.agent.check.pass({ id: `service:${this.serviceId}` });
-      this.logger.log(
-        `Service ${this.serviceId} registered and initial health check passed`
-      );
+      await this.rabbitMQClient.ensureConnected();
+      this.logger.log(`Service ${this.serviceId} registered with Consul`);
+
+      // Gọi passHealthCheck bất đồng bộ
+      this.passHealthCheck().catch((error) => {
+        this.logger.error(`Initial health check failed: ${error.message}`);
+      });
 
       setInterval(() => {
-        void (async () => {
-          try {
-            this.logger.log(`Passing health check for ${this.serviceId}`);
-            await this.consul.agent.check.pass({
-              id: `service:${this.serviceId}`,
-            });
-            this.logger.log(`Health check passed for ${this.serviceId}`);
-          } catch (error) {
-            this.logger.error(
-              `Failed to pass check for ${this.serviceId}:`,
-              error
-            );
-          }
-        })();
+        this.passHealthCheck().catch((error) => {
+          this.logger.error(`Periodic health check failed: ${error.message}`);
+        });
       }, 15000);
     } catch (error) {
-      this.logger.error(`Failed to register service ${name}:`, error);
+      this.logger.error(`Failed to register service ${name}:`, error.message);
       throw error;
     }
   }
 
+  async passHealthCheck(): Promise<void> {
+    try {
+      const isRabbitMQConnected = this.rabbitMQClient.getConnectionStatus();
+      if (!isRabbitMQConnected) {
+        throw new Error("RabbitMQ not connected");
+      }
+
+      this.logger.log(`Sending ping to ${this.serviceId}...`);
+      const response = await this.rabbitMQClient.send<string>(
+        { cmd: "ping" },
+        {}
+      );
+      this.logger.log(`Received response: ${response}`);
+      if (response !== "pong") {
+        throw new Error("Ping failed");
+      }
+
+      await this.consul.agent.check.pass({
+        id: `service:${this.serviceId}`,
+        note: "Service is healthy",
+      });
+      this.logger.log(`Health check passed for ${this.serviceId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to pass check for ${this.serviceId}:`,
+        error.message
+      );
+      await this.consul.agent.check.fail({
+        id: `service:${this.serviceId}`,
+        note: `Health check failed: ${error.message}`,
+      });
+      throw error;
+    }
+  }
   async getServiceQueue(serviceName: string): Promise<string> {
     try {
       const services = (await this.consul.catalog.service.nodes(
         serviceName
       )) as ConsulServiceNode[];
-      if (!services || services.length === 0) {
+      if (!services || services.length === 0)
         throw new Error(`Service ${serviceName} not found in Consul`);
-      }
       const queue = services[0].ServiceMeta?.queue;
-      if (!queue) {
+      if (!queue)
         throw new Error(
           `Service ${serviceName} has no queue defined in ServiceMeta`
         );
-      }
       return queue;
     } catch (error) {
       this.logger.error(`Failed to get queue for ${serviceName}:`, error);
@@ -104,4 +131,4 @@ export class ServiceDiscovery implements OnApplicationShutdown {
   }
 }
 
-export default ServiceDiscovery; // Export để dùng trong shared
+export default ServiceDiscovery;

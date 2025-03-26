@@ -14,7 +14,7 @@ export const getRabbitMQConfig = (
     "amqp://localhost:5672"
   );
   const queue = configService.get<string>(
-    `${servicePrefix}_SERVICE_QUEUE`,
+    `${servicePrefix.toUpperCase()}-NAME`,
     `${servicePrefix.toLowerCase()}-queue`
   );
   console.log(`[RabbitMQ Config] URL: ${url}, Queue: ${queue}`);
@@ -23,7 +23,9 @@ export const getRabbitMQConfig = (
     options: {
       urls: [url],
       queue,
-      queueOptions: { durable: false },
+      queueOptions: { durable: true },
+      persistent: true, // Message bền vững
+      noAck: true,
     },
   };
 };
@@ -78,8 +80,8 @@ export const getConsulConfig = (
   const host = configService.get<string>("CONSUL_HOST", "localhost");
   const port = configService.get<string>("CONSUL_PORT", "8500");
   const serviceName = configService.get<string>(
-    `${servicePrefix}_SERVICE_NAME`,
-    `${servicePrefix.toLowerCase()}-service`
+    `${servicePrefix.toUpperCase()}-NAME`,
+    `${servicePrefix.toLowerCase()}`
   );
   console.log(`[Consul Config] Host: ${host}:${port}, Service: ${serviceName}`);
   return {
