@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { mockChains } from "../../../data/mockData";
 import { Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { mockChains } from "@/lib/constant/chains";
 
 export function ChainTabs() {
   const router = useRouter();
@@ -43,7 +42,7 @@ export function ChainTabs() {
             </select>
           </div>
         ) : (
-          <div className="flex space-x-1 overflow-x-auto scrollbar-hide pb-1">
+          <div className="flex space-x-1">
             <div
               key="all"
               onClick={() => handleChainChange("all")}
@@ -77,17 +76,13 @@ export function ChainTabs() {
               >
                 <div
                   className="w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: chain.color }}
+                  style={{
+                    backgroundColor: `${
+                      chain.id == selectedChain ? "#ccc" : "transparent"
+                    }`,
+                  }}
                 >
-                  <Image
-                    src={
-                      chain.icon ||
-                      "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?20x20"
-                    }
-                    alt={chain.name}
-                    width={14}
-                    height={14}
-                  />
+                  {chain.icon}
                 </div>
                 <span
                   className={`ml-2 text-sm font-medium transition-all duration-200 ${

@@ -1,20 +1,30 @@
 import Base from "@/components/icons/Base";
 import Ethereum from "@/components/icons/Ethereum";
 import Polygon from "@/components/icons/Polygon";
-import { LucideIcon, Expand } from "lucide-react";
-import { ComponentType } from "react";
-type ChainIcon =
-  | LucideIcon
-  | ComponentType<{ size?: number; className?: string }>;
-interface Chain {
+export interface Chain {
+  id: string;
   name: string;
-  icon: ChainIcon;
-  href: string;
+  icon: React.ReactNode;
+  symbol: string;
 }
 
-export const chains: Chain[] = [
-  { name: "All", icon: Expand, href: "/collections" },
-  { name: "Base", icon: Base, href: "/collections/base" },
-  { name: "Ethereum", icon: Ethereum, href: "/collections/ethereum" },
-  { name: "Polygon", icon: Polygon, href: "/collections/polygon" },
+export const mockChains: Chain[] = [
+  {
+    id: "base",
+    name: "Base",
+    icon: <Base />,
+    symbol: "SOL",
+  },
+  {
+    id: "ethereum",
+    name: "Ethereum",
+    icon: <Ethereum />,
+    symbol: "ETH",
+  },
+  {
+    id: "polygon",
+    name: "Polygon",
+    icon: <Polygon />,
+    symbol: "POLY",
+  },
 ];

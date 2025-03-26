@@ -1,7 +1,7 @@
 export const mockChains = [
   {
-    id: "solana",
-    name: "Solana",
+    id: "base",
+    name: "Base",
     icon: "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?24x24",
     symbol: "SOL",
     color: "#14F195",
@@ -19,21 +19,8 @@ export const mockChains = [
     icon: "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?24x24",
     symbol: "MATIC",
     color: "#8247E5",
-  },
-  {
-    id: "binance",
-    name: "Binance",
-    icon: "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?24x24",
-    symbol: "BNB",
-    color: "#F3BA2F",
-  },
-  {
-    id: "avalanche",
-    name: "Avalanche",
-    icon: "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?24x24",
-    symbol: "AVAX",
-    color: "#E84142",
-  },
+  }
+
 ];
 
 export const mockCollections = [
