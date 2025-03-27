@@ -4,6 +4,7 @@ import { Transport } from "@nestjs/microservices";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 import { RmqOptions } from "@nestjs/microservices";
+import { MongooseModuleOptions } from "@nestjs/mongoose";
 
 export const getRabbitMQConfig = (
   configService: ConfigService,
@@ -92,5 +93,31 @@ export const getConsulConfig = (
     host,
     port,
     serviceName,
+  };
+};
+
+
+export const getMongoConfig = (
+  configService: ConfigService
+): MongooseModuleOptions => {
+  // Lấy các giá trị từ biến môi trường
+  const host = configService.get<string>("MONGO_HOST", "localhost"); // Mặc định là localhost
+  const port = configService.get<number>("MONGO_PORT", 27017); // Mặc định là 27017
+  const username = configService.get<string>("MONGO_USERNAME", ""); // Username (nếu có)
+  const password = configService.get<string>("MONGO_PASSWORD", ""); // Password (nếu có)
+  const database = configService.get<string>("MONGO_DATABASE", "nftmarket"); // Tên database
+
+  // Tạo URI kết nối MongoDB
+  let uri = `mongodb://${host}:${port}/${database}`;
+  if (username && password) {
+    uri = `mongodb://${username}:${password}@${host}:${port}/${database}`;
+  }
+  console.log(`[MongoDB Config] URI: ${uri} Database: ${database}`);
+  // Trả về cấu hình Mongoose
+  return {
+    uri,
+    autoIndex: true, // Tự động tạo index cho schema
+    connectTimeoutMS: 10000, // Timeout kết nối
+    serverSelectionTimeoutMS: 5000, // Timeout chọn server
   };
 };

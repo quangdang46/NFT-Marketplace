@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs", // Sử dụng module CommonJS
+    "declaration": true, // Tạo file declaration (.d.ts)
+    "removeComments": true, // Xóa comment trong file build
+    "emitDecoratorMetadata": true, // Hỗ trợ decorator metadata
+    "experimentalDecorators": true, // Hỗ trợ decorator
+    "allowSyntheticDefaultImports": true, // Cho phép import mặc định
+    "target": "ES2023", // Mục tiêu là ES2023
+    "sourceMap": true, // Tạo source map
+    "outDir": "./dist", // Thư mục đầu ra
+    "baseUrl": "./", // Đường dẫn cơ sở
+    "paths": {
+      "@/*": ["src/*"], // Alias cho thư mục src
+      "@project/shared": ["../../shared/dist"], // Alias cho shared module
+      "@project/shared/*": ["../../shared/dist/*"], // Alias cho các file trong shared module
+      "interfaces/*": ["../../shared/dist/interfaces/*"] // Alias cho interfaces
+    },
+    "incremental": true, // Build tăng dần
+    "skipLibCheck": true, // Bỏ qua kiểm tra thư viện
+    "strictNullChecks": true, // Kiểm tra null nghiêm ngặt
+    "forceConsistentCasingInFileNames": true, // Ép buộc tên file nhất quán
+    "noImplicitAny": false, // Cho phép implicit any
+    "strictBindCallApply": false, // Không kiểm tra bind/call/apply nghiêm ngặt
+    "noFallthroughCasesInSwitch": false // Không kiểm tra fallthrough trong switch
+  }
+}
