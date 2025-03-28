@@ -11,12 +11,11 @@ async function bootstrap() {
   logger.log(`Listening on queue: ${rmqOptions.options?.queue}`);
 
   const app = await NestFactory.create(CollectionModule);
-  await app.init();
-
+  
   app.connectMicroservice<MicroserviceOptions>(rmqOptions);
-
-  // Khởi động tất cả microservices
+  
   await app.startAllMicroservices();
+  await app.init();
   logger.log('collection Service is running'); // Ghi log khi service khởi động thành công
 }
 

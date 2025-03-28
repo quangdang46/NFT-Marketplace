@@ -11,14 +11,16 @@ async function bootstrap() {
 
   // Sử dụng NestFactory.create thay vì createMicroservice
   const app = await NestFactory.create(AuthModule);
-  await app.init();
 
   // Kết nối microservice
   app.connectMicroservice<MicroserviceOptions>(rmqOptions);
 
   // Khởi động microservice
   await app.startAllMicroservices();
+  await app.init();
+
   logger.log('Auth Service is running');
+
 }
 
 bootstrap();

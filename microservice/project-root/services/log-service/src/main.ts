@@ -11,11 +11,11 @@ async function bootstrap() {
   logger.log(`Listening on queue: ${rmqOptions.options?.queue}`);
 
   const app = await NestFactory.create(LogModule);
-  await app.init();
-
+  
   app.connectMicroservice<MicroserviceOptions>(rmqOptions);
 
   await app.startAllMicroservices();
+  await app.init();
   logger.log('log Service is running');
 }
 
