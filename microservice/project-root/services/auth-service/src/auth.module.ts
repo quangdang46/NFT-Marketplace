@@ -1,7 +1,5 @@
 import { Module, Logger, OnModuleInit } from '@nestjs/common';
 import {
-  SharedConfigModule,
-  ConfigService,
   ServiceDiscovery,
   getRabbitMQConfig,
   getRedisConfig,
@@ -23,10 +21,9 @@ type Status = string;
 const SERVICE_NAME = 'auth-service';
 
 const IMPORTS = [
-  SharedConfigModule,
   RedisModule.forRootAsync({
-    useFactory: (configService: ConfigService) => ({
-      ...getRedisConfig(configService),
+    useFactory: () => ({
+      ...getRedisConfig(),
       onClientReady: (client) => {
         const logger = new Logger('RedisModule');
         logger.log('Redis client ready');
@@ -38,18 +35,17 @@ const IMPORTS = [
         client.on('end', () => logger.warn('Redis Client Connection Ended'));
       },
     }),
-    inject: [ConfigService],
+    inject: [],
   }),
   JwtModule.registerAsync({
-    useFactory: (configService: ConfigService) => getJwtConfig(configService),
-    inject: [ConfigService],
+    useFactory: () => getJwtConfig(),
+    inject: [],
   }),
   ClientsModule.registerAsync([
     {
       name: 'RABBITMQ_SERVICE',
-      useFactory: (configService: ConfigService) =>
-        getRabbitMQConfig(configService, SERVICE_NAME),
-      inject: [ConfigService],
+      useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+      inject: [],
     },
   ]),
 ];
@@ -60,17 +56,13 @@ const PROVIDERS = [
   AuthService,
   {
     provide: 'RABBITMQ_OPTIONS',
-    useFactory: (configService: ConfigService) =>
-      getRabbitMQConfig(configService, SERVICE_NAME),
-    inject: [ConfigService],
+    useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+    inject: [],
   },
   {
     provide: ServiceDiscovery,
-    useFactory: async (configService: ConfigService) => {
-      const serviceDiscovery = new ServiceDiscovery(
-        configService,
-        SERVICE_NAME,
-      );
+    useFactory: async () => {
+      const serviceDiscovery = new ServiceDiscovery(SERVICE_NAME);
       await serviceDiscovery.registerService(
         SERVICE_NAME,
         { queue: 'auth-service-queue' },
@@ -80,14 +72,14 @@ const PROVIDERS = [
       logger.log('Auth Service registered with Consul');
       return serviceDiscovery;
     },
-    inject: [ConfigService],
+    inject: [],
   },
   {
     provide: ServiceClient,
-    useFactory: (configService: ConfigService, discovery: ServiceDiscovery) => {
-      return new ServiceClient(configService, discovery, [SERVICE_NAME]);
+    useFactory: (discovery: ServiceDiscovery) => {
+      return new ServiceClient(discovery, [SERVICE_NAME]);
     },
-    inject: [ConfigService, ServiceDiscovery],
+    inject: [ServiceDiscovery],
   },
   {
     provide: RabbitMQHealthService,

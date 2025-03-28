@@ -1,17 +1,12 @@
 import { Logger } from '@nestjs/common';
 import { GatewayModule } from './gateway.module';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
-import {
-  AllExceptionsFilter,
-  ConfigService,
-  getRabbitMQConfig,
-} from '@project/shared';
+import { AllExceptionsFilter, getRabbitMQConfig } from '@project/shared';
 import { MicroserviceOptions } from '@nestjs/microservices';
 
 async function bootstrap() {
   const logger = new Logger('GatewayService');
-  const configService = new ConfigService();
-  const rmqOptions = getRabbitMQConfig(configService, 'api-gateway');
+  const rmqOptions = getRabbitMQConfig('api-gateway');
   logger.log(`Listening on queue: ${rmqOptions.options?.queue}`); // Đảm bảo log queue
 
   const app = await NestFactory.create(GatewayModule);
@@ -28,7 +23,6 @@ async function bootstrap() {
   await app.startAllMicroservices();
   await app.listen(8080);
   logger.log(`GraphQL Playground available at: ${await app.getUrl()}/graphql`);
-
 }
 
 bootstrap();

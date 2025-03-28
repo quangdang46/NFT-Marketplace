@@ -1,76 +1,97 @@
-// test.module.ts
-import { Module, OnModuleInit, Logger } from '@nestjs/common'; // Import các thành phần cần thiết từ NestJS
-import { TestController } from './v1/test.controller'; // Import TestController
-import { TestService } from './v1/test.service'; // Import TestService
+import { Module, OnModuleInit, Logger } from '@nestjs/common';
+import { TestController } from '@/v1/test.controller';
+import { TestService } from '@/v1/test.service';
 import {
-  getTypeOrmConfig,
-  ConfigService,
-  SharedConfigModule,
   ServiceDiscovery,
   getRabbitMQConfig,
   ServiceClient,
   RabbitMQHealthService,
   ClientProxy,
-} from '@project/shared'; // Import các thành phần từ shared module
-import { ClientsModule } from '@nestjs/microservices'; // Import ClientsModule để kết nối RabbitMQ
+} from '@project/shared';
+import { ClientsModule } from '@nestjs/microservices';
+// import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-// Định nghĩa kiểu EventsMap và Status cho RabbitMQHealthService
 type EventsMap = Record<string, (...args: any[]) => void>;
 type Status = string;
 
-// Định nghĩa tên service
 const SERVICE_NAME = 'test-service';
 
-// Định nghĩa các imports cho module
 const IMPORTS = [
-  SharedConfigModule, // Import SharedConfigModule để sử dụng các cấu hình chung
+  /*
+  npm i @nestjs-modules/ioredis ioredis
+    RedisModule.forRootAsync({
+    useFactory: () => ({
+      ...getRedisConfig(),
+      onClientReady: (client) => {
+        const logger = new Logger('RedisModule');
+        logger.log('Redis client ready');
+        client.on('error', (err) => logger.error('Redis Client Error:', err));
+        client.on('connect', () => logger.log('Redis Client Connected'));
+        client.on('reconnecting', () =>
+          logger.warn('Redis Client Reconnecting'),
+        );
+        client.on('end', () => logger.warn('Redis Client Connection Ended'));
+      },
+    }),
+    inject: [],
+  }),
+  */
+
+  /*
+  npm i @nestjs/typeorm typeorm pg
+    TypeOrmModule.forRootAsync({
+    useFactory: () => {
+      const config = getTypeOrmConfig();
+      return {
+        ...config,
+        entities: [etc...],
+      } as TypeOrmModuleOptions;
+    },
+    inject: [],
+  }),
+  TypeOrmModule.forFeature([etc...]),
+  */
+
   ClientsModule.registerAsync([
     {
-      // Đăng ký client RabbitMQ
       name: 'RABBITMQ_SERVICE',
-      useFactory: (configService: ConfigService) =>
-        getRabbitMQConfig(configService, SERVICE_NAME), // Lấy cấu hình RabbitMQ
-      inject: [ConfigService],
+      useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+      inject: [],
     },
   ]),
 ];
 
-// Định nghĩa các controllers cho module
 const CONTROLLERS = [TestController];
 
-// Định nghĩa các providers cho module
 const PROVIDERS = [
-  TestService, // Đăng ký TestService
+  TestService,
   {
     provide: 'RABBITMQ_OPTIONS',
-    useFactory: (configService: ConfigService) =>
-      getRabbitMQConfig(configService, SERVICE_NAME), // Cung cấp cấu hình RabbitMQ
-    inject: [ConfigService],
+    useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+    inject: [],
   },
   {
     provide: ServiceDiscovery,
-    useFactory: async (configService: ConfigService) => {
-      // Khởi tạo ServiceDiscovery để đăng ký service với Consul
-      const discovery = new ServiceDiscovery(configService, SERVICE_NAME);
-      const rabbitMQConfig = getRabbitMQConfig(configService, SERVICE_NAME);
+    useFactory: async () => {
+      const discovery = new ServiceDiscovery(SERVICE_NAME);
+      const rabbitMQConfig = getRabbitMQConfig(SERVICE_NAME);
       await discovery.registerService(
         SERVICE_NAME,
         { queue: rabbitMQConfig.options?.queue || `${SERVICE_NAME}-queue` },
-        ['test', 'rabbitmq'], // Tags cho service
+        ['test', 'rabbitmq'],
       );
       const logger = new Logger('TestModule');
       logger.log('Test Service registered with Consul');
       return discovery;
     },
-    inject: [ConfigService],
+    inject: [],
   },
   {
     provide: ServiceClient,
-    useFactory: (configService: ConfigService, discovery: ServiceDiscovery) => {
-      // Khởi tạo ServiceClient để giao tiếp với các service khác
-      return new ServiceClient(configService, discovery, [SERVICE_NAME]);
+    useFactory: (discovery: ServiceDiscovery) => {
+      return new ServiceClient(discovery, [SERVICE_NAME]);
     },
-    inject: [ConfigService, ServiceDiscovery],
+    inject: [ServiceDiscovery],
   },
   {
     provide: RabbitMQHealthService,
@@ -78,51 +99,42 @@ const PROVIDERS = [
       serviceDiscovery: ServiceDiscovery,
       rabbitMQClient: ClientProxy<EventsMap, Status>,
     ) => {
-      // Khởi tạo RabbitMQHealthService để kiểm tra sức khỏe của RabbitMQ
       return new RabbitMQHealthService(
         SERVICE_NAME,
         rabbitMQClient,
         serviceDiscovery,
-        'test-service-queue', // Queue của test-service
-        ['test', 'rabbitmq'], // Tags cho health check
+        `${SERVICE_NAME}-queue`,
+        ['test', 'rabbitmq'],
       );
     },
     inject: [ServiceDiscovery, 'RABBITMQ_SERVICE'],
   },
 ];
 
-// Định nghĩa TestModule
 @Module({
   imports: IMPORTS,
   controllers: CONTROLLERS,
   providers: PROVIDERS,
 })
 export class TestModule implements OnModuleInit {
-  private readonly logger = new Logger(TestModule.name); // Tạo logger cho module
+  private readonly logger = new Logger(TestModule.name);
 
   constructor(private readonly rabbitMQHealthService: RabbitMQHealthService) {
-    this.logger.log('Test Module initialized'); // Ghi log khi module được khởi tạo
+    this.logger.log('Test Module initialized');
   }
 
-  // Hàm onModuleInit được gọi khi module khởi tạo
   async onModuleInit() {
-    // Khởi tạo kết nối RabbitMQ
     const isClientReady = await this.rabbitMQHealthService.initializeRabbitMQ();
     if (!isClientReady) {
       this.logger.warn('Failed to initialize RabbitMQ client');
-      return; // Thoát nếu không kết nối được
+      return;
     }
 
-    // Đợi 10 giây trước khi bắt đầu health check
     this.logger.log('Waiting for 10 seconds before starting health check...');
     await new Promise((resolve) => setTimeout(resolve, 10000));
-
-    // Thực hiện health check ban đầu
     this.logger.log('Starting health check for TestModule');
     await this.rabbitMQHealthService.attemptInitialHealthCheck();
-
-    // Bắt đầu kiểm tra sức khỏe định kỳ
     this.logger.log('Starting periodic health check...');
-    this.rabbitMQHealthService.startPeriodicHealthCheck(); // Sử dụng các giá trị mặc định: maxAttempts = 15, retryDelay = 2000, interval = 15000
+    this.rabbitMQHealthService.startPeriodicHealthCheck();
   }
 }

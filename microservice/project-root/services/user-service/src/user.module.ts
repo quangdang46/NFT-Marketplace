@@ -4,15 +4,13 @@ import { UserController } from './v1/user.controller';
 import { UserService } from './v1/user.service';
 import {
   getTypeOrmConfig,
-  ConfigService,
-  SharedConfigModule,
   ServiceDiscovery,
   getRabbitMQConfig,
   ServiceClient,
   RabbitMQHealthService, // Import RabbitMQHealthService
   ClientProxy,
 } from '@project/shared';
-import { User } from '@/entities/user.entity';
+import { User } from '@/entity/user.entity';
 import { ClientsModule } from '@nestjs/microservices';
 
 // Định nghĩa kiểu EventsMap và Status
@@ -22,24 +20,22 @@ type Status = string;
 const SERVICE_NAME = 'user-service';
 
 const IMPORTS = [
-  SharedConfigModule,
   TypeOrmModule.forRootAsync({
-    useFactory: (configService: ConfigService) => {
-      const config = getTypeOrmConfig(configService);
+    useFactory: () => {
+      const config = getTypeOrmConfig();
       return {
         ...config,
         entities: [User],
       } as TypeOrmModuleOptions;
     },
-    inject: [ConfigService],
+    inject: [],
   }),
   TypeOrmModule.forFeature([User]),
   ClientsModule.registerAsync([
     {
       name: 'RABBITMQ_SERVICE',
-      useFactory: (configService: ConfigService) =>
-        getRabbitMQConfig(configService, SERVICE_NAME),
-      inject: [ConfigService],
+      useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+      inject: [],
     },
   ]),
 ];
@@ -50,15 +46,14 @@ const PROVIDERS = [
   UserService,
   {
     provide: 'RABBITMQ_OPTIONS',
-    useFactory: (configService: ConfigService) =>
-      getRabbitMQConfig(configService, SERVICE_NAME),
-    inject: [ConfigService],
+    useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+    inject: [],
   },
   {
     provide: ServiceDiscovery,
-    useFactory: async (configService: ConfigService) => {
-      const discovery = new ServiceDiscovery(configService, SERVICE_NAME);
-      const rabbitMQConfig = getRabbitMQConfig(configService, SERVICE_NAME);
+    useFactory: async () => {
+      const discovery = new ServiceDiscovery(SERVICE_NAME);
+      const rabbitMQConfig = getRabbitMQConfig(SERVICE_NAME);
       await discovery.registerService(
         SERVICE_NAME,
         { queue: rabbitMQConfig.options?.queue || `${SERVICE_NAME}-queue` },
@@ -68,14 +63,14 @@ const PROVIDERS = [
       logger.log('User Service registered with Consul');
       return discovery;
     },
-    inject: [ConfigService],
+    inject: [],
   },
   {
     provide: ServiceClient,
-    useFactory: (configService: ConfigService, discovery: ServiceDiscovery) => {
-      return new ServiceClient(configService, discovery, [SERVICE_NAME]);
+    useFactory: (discovery: ServiceDiscovery) => {
+      return new ServiceClient(discovery, [SERVICE_NAME]);
     },
-    inject: [ConfigService, ServiceDiscovery],
+    inject: [ServiceDiscovery],
   },
   {
     provide: RabbitMQHealthService,
@@ -87,7 +82,7 @@ const PROVIDERS = [
         SERVICE_NAME,
         rabbitMQClient,
         serviceDiscovery,
-        'user-service-queue',
+        `${SERVICE_NAME}-queue`,
         ['user', 'rabbitmq'],
       );
     },

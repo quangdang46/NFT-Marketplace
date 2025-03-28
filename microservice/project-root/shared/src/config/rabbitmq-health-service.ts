@@ -52,10 +52,6 @@ export class RabbitMQHealthService {
 
     return clientReady;
   }
-
-  // Bỏ phương thức setupReconnectHandler vì ClientProxy đã tự động reconnect
-  // Thay vào đó, chúng ta sẽ dựa vào health check để xử lý ngắt kết nối
-
   async attemptInitialHealthCheck(
     maxRetries: number = 3,
     retryDelay: number = 5000

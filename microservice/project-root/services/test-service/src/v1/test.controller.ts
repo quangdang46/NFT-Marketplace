@@ -1,33 +1,27 @@
-// v1/test.controller.ts
 import { TestService } from '@/v1/test.service';
-import { Controller, Logger } from '@nestjs/common'; // Import Controller và Logger từ NestJS
-import { MessagePattern, Payload } from '@nestjs/microservices'; // Import MessagePattern để xử lý tin nhắn RabbitMQ
+import { Controller, Logger } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 
-@Controller('test') // Định nghĩa controller với path và version
+@Controller('test')
 export class TestController {
-  private readonly logger = new Logger(TestController.name); // Tạo logger cho controller
+  private readonly logger = new Logger(TestController.name);
 
   constructor(private readonly testService: TestService) {
-    this.logger.log('Test Controller initialized'); // Ghi log khi controller khởi tạo
+    this.logger.log('Test Controller initialized');
   }
 
-  // Xử lý tin nhắn ping
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
     this.logger.log('Received ping message');
-    return 'pong'; // Trả về "pong" để xác nhận
+    return 'pong';
   }
 
-  // Xử lý tin nhắn restart (nếu cần)
   @MessagePattern('restart')
   handleRestart() {
     this.logger.log('Restarting consumer for test-service-queue');
-    // Logic để đăng ký lại consumer nếu cần
   }
 
-  // Xử lý tin nhắn get_test
-  @MessagePattern({ cmd: 'get_test' })
-  async createOrFindTestRecord(@Payload() data: { name: string }) {
-    this.logger.log(`Received get_test message with name: ${data.name}`);
-  }
+
+
+  
 }

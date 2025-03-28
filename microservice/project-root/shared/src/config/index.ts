@@ -1,23 +1,16 @@
 import { RedisModuleOptions } from "@nestjs-modules/ioredis";
-import { ConfigService } from "@nestjs/config";
 import { Transport } from "@nestjs/microservices";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 import { RmqOptions } from "@nestjs/microservices";
 import { MongooseModuleOptions } from "@nestjs/mongoose";
+import { ethers } from "ethers";
 
-export const getRabbitMQConfig = (
-  configService: ConfigService,
-  servicePrefix: string
-): RmqOptions => {
-  const url = configService.get<string>(
-    "RABBITMQ_URL",
-    "amqp://localhost:5672"
-  );
-  const queue = configService.get<string>(
-    `${servicePrefix.toUpperCase()}-NAME`,
-    `${servicePrefix.toLowerCase()}-queue`
-  );
+export const getRabbitMQConfig = (servicePrefix: string): RmqOptions => {
+  const url = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+  const queue =
+    process.env[`${servicePrefix.toUpperCase()}-NAME`] ||
+    `${servicePrefix.toLowerCase()}-queue`;
   console.log(`[RabbitMQ Config] URL: ${url}, Queue: ${queue}`);
   return {
     transport: Transport.RMQ,
@@ -27,7 +20,7 @@ export const getRabbitMQConfig = (
       queueOptions: { durable: true },
       persistent: true,
       socketOptions: {
-        heartbeat: 60, 
+        heartbeat: 60,
         reconnectTimeInSeconds: 5,
         connectionTimeout: 10000,
       },
@@ -35,14 +28,12 @@ export const getRabbitMQConfig = (
   };
 };
 
-export const getTypeOrmConfig = (
-  configService: ConfigService
-): TypeOrmModuleOptions => {
-  const host = configService.get<string>("POSTGRES_HOST", "localhost");
-  const port = configService.get<number>("POSTGRES_PORT", 5433);
-  const username = configService.get<string>("POSTGRES_USER", "postgres");
-  const password = configService.get<string>("POSTGRES_PASSWORD", "localhost");
-  const database = configService.get<string>("POSTGRES_DB", "nftmarket");
+export const getTypeOrmConfig = (): TypeOrmModuleOptions => {
+  const host = process.env.POSTGRES_HOST || "localhost";
+  const port = +process.env.POSTGRES_PORT || 5433;
+  const username = process.env.POSTGRES_USER || "postgres";
+  const password = process.env.POSTGRES_PASSWORD || "localhost";
+  const database = process.env.POSTGRES_DB || "nftmarket";
   console.log(
     `[TypeOrm Config] Host: ${host}:${port}, Database: ${database}, User: ${username}`
   );
@@ -54,12 +45,15 @@ export const getTypeOrmConfig = (
     password,
     database,
     entities: [__dirname + "/../**/*.entity{.ts,.js}"],
-    synchronize: configService.get<string>("NODE_ENV") !== "production",
+    synchronize: process.env.NODE_ENV !== "production",
   };
 };
 
-export const getJwtConfig = (configService: ConfigService) => {
-  const secret = configService.get<string>("JWT_SECRET", "your-secret-key");
+export const getJwtConfig = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT Secret not found in environment variables");
+  }
   console.log(`[JWT Config] Secret length: ${secret.length}`);
   return {
     secret,
@@ -67,10 +61,8 @@ export const getJwtConfig = (configService: ConfigService) => {
   };
 };
 
-export const getRedisConfig = (
-  configService: ConfigService
-): RedisModuleOptions => {
-  const url = configService.get<string>("REDIS_URL", "redis://localhost:6379");
+export const getRedisConfig = (): RedisModuleOptions => {
+  const url = process.env.REDIS_URL || "redis://localhost:6379";
   console.log(`[Redis Config] URL: ${url}`);
   return {
     url,
@@ -78,16 +70,13 @@ export const getRedisConfig = (
   };
 };
 
-export const getConsulConfig = (
-  configService: ConfigService,
-  servicePrefix: string
-) => {
-  const host = configService.get<string>("CONSUL_HOST", "localhost");
-  const port = configService.get<string>("CONSUL_PORT", "8500");
-  const serviceName = configService.get<string>(
-    `${servicePrefix.toUpperCase()}-NAME`,
-    `${servicePrefix.toLowerCase()}`
-  );
+export const getConsulConfig = (servicePrefix: string) => {
+  const host = process.env.CONSUL_HOST || "localhost";
+  const port = process.env.CONSUL_PORT || "8500";
+
+  const serviceName =
+    process.env[`${servicePrefix.toUpperCase()}-NAME`] ||
+    `${servicePrefix.toLowerCase()}`;
   console.log(`[Consul Config] Host: ${host}:${port}, Service: ${serviceName}`);
   return {
     host,
@@ -96,28 +85,63 @@ export const getConsulConfig = (
   };
 };
 
+export const getMongoConfig = (): MongooseModuleOptions => {
+  const host = process.env.MONGO_HOST || "localhost";
+  const port = +process.env.MONGO_PORT || 27017;
+  const username = process.env.MONGO_USERNAME || "";
+  const password = process.env.MONGO_PASSWORD || "";
+  const database = process.env.MONGO_DATABASE || "nftmarket";
 
-export const getMongoConfig = (
-  configService: ConfigService
-): MongooseModuleOptions => {
-  // Lấy các giá trị từ biến môi trường
-  const host = configService.get<string>("MONGO_HOST", "localhost"); // Mặc định là localhost
-  const port = configService.get<number>("MONGO_PORT", 27017); // Mặc định là 27017
-  const username = configService.get<string>("MONGO_USERNAME", ""); // Username (nếu có)
-  const password = configService.get<string>("MONGO_PASSWORD", ""); // Password (nếu có)
-  const database = configService.get<string>("MONGO_DATABASE", "nftmarket"); // Tên database
-
-  // Tạo URI kết nối MongoDB
   let uri = `mongodb://${host}:${port}/${database}`;
   if (username && password) {
     uri = `mongodb://${username}:${password}@${host}:${port}/${database}`;
   }
   console.log(`[MongoDB Config] URI: ${uri} Database: ${database}`);
-  // Trả về cấu hình Mongoose
   return {
     uri,
     autoIndex: true, // Tự động tạo index cho schema
     connectTimeoutMS: 10000, // Timeout kết nối
     serverSelectionTimeoutMS: 5000, // Timeout chọn server
+  };
+};
+
+export const getPrivateKey = () => {
+  const key = process.env.PRIVATE_KEY;
+  if (!key) {
+    throw new Error("Private Key not found in environment variables");
+  }
+  console.log(`[Private Key] Length: ${key.length}`);
+  return key;
+};
+
+export const getChainsConfig = () => {
+  return {
+    "eth-sepolia": {
+      provider: new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL),
+      signer: new ethers.Wallet(getPrivateKey()),
+    },
+    "base-sepolia": {
+      provider: new ethers.JsonRpcProvider(process.env.BASE_SEPOLIA_RPC_URL),
+      signer: new ethers.Wallet(getPrivateKey()),
+    },
+    "polygon-mumbai": {
+      provider: new ethers.JsonRpcProvider(process.env.POLYGON_MUMBAI_RPC_URL),
+      signer: new ethers.Wallet(getPrivateKey()),
+    },
+  };
+};
+
+export const getMarketplace = () => {
+  const marketplaceFeeRecipient = process.env.MARKETPLACE_FEE_RECIPIENT;
+  const marketplaceFeePercentage = process.env.MARKETPLACE_FEE_PERCENT;
+  if (!marketplaceFeeRecipient || !marketplaceFeePercentage) {
+    throw new Error("Marketplace Fee not found in environment variables");
+  }
+  console.log(
+    `[Marketplace Fee] Recipient: ${marketplaceFeeRecipient}, Percentage: ${marketplaceFeePercentage}`
+  );
+  return {
+    marketplaceFeeRecipient,
+    marketplaceFeePercentage,
   };
 };

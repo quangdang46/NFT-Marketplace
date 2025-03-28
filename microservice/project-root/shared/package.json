@@ -14,13 +14,11 @@
   },
   "peerDependencies": {
     "@nestjs/common": "^11.0.1",
-    "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1"
   },
   "dependencies": {
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/common": "^11.0.1",
-    "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/graphql": "^13.0.4",
     "@nestjs/jwt": "^11.0.0",
@@ -31,6 +29,7 @@
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.5",
     "consul": "^2.0.1",
+    "ethers": "^6.13.5",
     "ioredis": "^5.6.0",
     "mongoose": "^8.13.0",
     "typeorm": "^0.3.21"
@@ -38,6 +37,7 @@
   "devDependencies": {
     "@types/amqplib": "^0.10.7",
     "@types/node": "^22.13.10",
+    "dotenv": "^16.4.7",
     "rimraf": "^5.0.10",
     "typescript": "^5.8.2"
   }

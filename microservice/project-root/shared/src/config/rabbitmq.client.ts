@@ -1,7 +1,6 @@
 import { Injectable, OnApplicationShutdown } from "@nestjs/common";
 import { ClientProxy, ClientProxyFactory } from "@nestjs/microservices";
 import { Logger } from "@nestjs/common";
-import { ConfigService } from "./shared-config.module";
 import { getRabbitMQConfig } from "./index";
 import * as amqplib from "amqplib";
 
@@ -14,8 +13,8 @@ export class RabbitMQClient implements OnApplicationShutdown {
   private maxRetries = 5;
   private retryDelay = 2000;
 
-  constructor(configService: ConfigService, serviceName: string) {
-    this.options = getRabbitMQConfig(configService, serviceName);
+  constructor(serviceName: string) {
+    this.options = getRabbitMQConfig(serviceName);
     this.initializeClientWithRetry();
   }
 

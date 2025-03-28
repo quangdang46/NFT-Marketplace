@@ -1,7 +1,4 @@
-
-
 import { Injectable, Logger, OnApplicationShutdown } from "@nestjs/common";
-import { ConfigService } from "./shared-config.module";
 import Consul = require("consul");
 import { getConsulConfig } from "./index";
 import { RabbitMQClient } from "./rabbitmq.client";
@@ -17,15 +14,15 @@ export class ServiceDiscovery implements OnApplicationShutdown {
   private serviceId: string;
   private rabbitMQClient: RabbitMQClient;
 
-  constructor(configService: ConfigService, serviceName: string) {
+  constructor(serviceName: string) {
     const {
       host,
       port,
       serviceName: consulServiceName,
-    } = getConsulConfig(configService, serviceName);
+    } = getConsulConfig(serviceName);
     this.consul = new Consul({ host, port: parseInt(port) });
     this.serviceId = `${consulServiceName}-${process.pid}`;
-    this.rabbitMQClient = new RabbitMQClient(configService, serviceName);
+    this.rabbitMQClient = new RabbitMQClient(serviceName);
   }
 
   async registerService(
@@ -134,5 +131,3 @@ export class ServiceDiscovery implements OnApplicationShutdown {
 }
 
 export default ServiceDiscovery;
-
-

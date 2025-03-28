@@ -12,13 +12,98 @@ type AuthResponse {
   refreshToken: String!
 }
 
+type NFT {
+  id: String!
+  name: String
+  tokenURI: String!
+  owner: String!
+}
+
+type MintResponse {
+  txHash: String!
+  tokenId: String
+  tokenIds: [String!]
+  success: Boolean!
+}
+
+type MarketplaceNFTsResponse {
+  nfts: [NFT!]!
+}
+
+type CreateCollectionResponse {
+  collectionId: String!
+  contractAddress: String!
+}
+
+type ApproveCollectionResponse {
+  success: Boolean!
+}
+
+type User {
+  id: String!
+  username: String!
+  role: String!
+  email: String!
+  wallet_address: String!
+  is_verified: Boolean!
+}
+
+type CreateUserResponse {
+  userId: String!
+}
+
+type VerifyUserResponse {
+  status: String!
+}
+
+type Wallet {
+  id: String!
+  address: String!
+  chain: String!
+  is_primary: Boolean!
+}
+
+type AddWalletResponse {
+  walletId: String!
+}
+
+type AuctionResponse {
+  txHash: String!
+  success: Boolean!
+}
+
+type CreateOrderResponse {
+  orderId: String!
+}
+
+type MatchOrderResponse {
+  success: Boolean!
+}
+
 type Query {
   nonce: String!
   me: UserResponse!
+  getMarketplaceNFTs(page: Float! = 1, limit: Float! = 10): MarketplaceNFTsResponse!
+  getUser(userId: String!): User!
+  getWallets: [Wallet!]!
+  getAuctionBids(auctionId: String!): [String!]!
 }
 
 type Mutation {
   verify(message: String!, signature: String!): AuthResponse!
   logout: Boolean!
   refreshToken(refreshToken: String!): AuthResponse!
+  createCollection(name: String!, description: String!, image: String!, images: [String!], chain: String!): CreateCollectionResponse!
+  approveCollection(collectionId: String!): ApproveCollectionResponse!
+  bulkMintManual(collectionId: String!, chain: String!, tokenURIs: [String!]!): MintResponse!
+  mintManual(collectionId: String!, chain: String!, tokenURI: String!): MintResponse!
+  lazyMintManual(collectionId: String!, chain: String!, tokenURI: String!, royaltyPercentage: Float!, signature: String!): MintResponse!
+  createUser(username: String!, email: String!, _address: String!, role: String): CreateUserResponse!
+  verifyUser(userId: String!): VerifyUserResponse!
+  addWallet(address: String!, chain: String!, is_primary: Boolean): AddWalletResponse!
+  createAuction(collectionId: String!, chain: String!, tokenId: String!, minBid: String!, duration: Float!): AuctionResponse!
+  placeBid(collectionId: String!, chain: String!, tokenId: String!, bidAmount: String!): AuctionResponse!
+  endAuction(collectionId: String!, chain: String!, tokenId: String!): AuctionResponse!
+  createOrder(nft_id: String!, price: String!, chain: String!): CreateOrderResponse!
+  matchOrder(orderId: String!): MatchOrderResponse!
 }

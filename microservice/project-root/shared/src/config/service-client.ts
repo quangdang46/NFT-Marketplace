@@ -1,11 +1,7 @@
-
-
-
 import { Injectable, Inject } from "@nestjs/common";
 import { Logger } from "@nestjs/common";
 import { RabbitMQClient } from "./rabbitmq.client";
 import { ServiceDiscovery } from "./service-discovery";
-import { ConfigService } from "./shared-config.module";
 
 @Injectable()
 export class ServiceClient {
@@ -13,7 +9,6 @@ export class ServiceClient {
   private clients: Record<string, RabbitMQClient> = {};
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly serviceDiscovery: ServiceDiscovery,
     private readonly initialServices: string[] = []
   ) {
@@ -23,7 +18,7 @@ export class ServiceClient {
   private async initializeClients() {
     for (const service of this.initialServices) {
       const queue = await this.serviceDiscovery.getServiceQueue(service);
-      this.clients[service] = new RabbitMQClient(this.configService, service);
+      this.clients[service] = new RabbitMQClient(service);
       this.logger.log(`Initialized client for ${service} with queue: ${queue}`);
     }
   }
@@ -38,7 +33,7 @@ export class ServiceClient {
     let client = this.clients[service];
     if (!client) {
       const queue = await this.serviceDiscovery.getServiceQueue(service);
-      client = new RabbitMQClient(this.configService, service);
+      client = new RabbitMQClient(service);
       this.clients[service] = client;
       this.logger.log(
         `Dynamically added client for ${service} with queue: ${queue}`

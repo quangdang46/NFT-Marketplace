@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User } from '../entity/user.entity';
 import { ServiceClient } from '@project/shared';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -13,7 +14,9 @@ export class UserService {
   ) {}
 
   async findOrCreateUser(address: string) {
-    let user = await this.userRepository.findOne({ where: { address } });
+    let user = await this.userRepository.findOne({
+      where: { address },
+    });
     if (!user) {
       user = this.userRepository.create({
         address,
@@ -26,5 +29,14 @@ export class UserService {
     }
     await this.userRepository.save(user);
     return user;
+  }
+
+  async verifyUser(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found');
+    user.is_verified = true;
+    await this.userRepository.save(user);
+    this.logger.log(`Verified user ${userId}`);
+    return { status: 'verified' };
   }
 }

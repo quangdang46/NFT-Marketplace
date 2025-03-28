@@ -1,4 +1,3 @@
-
 import {
   MiddlewareConsumer,
   Module,
@@ -8,8 +7,6 @@ import {
 import {
   getRedisConfig,
   RateLimitMiddleware,
-  SharedConfigModule,
-  ConfigService,
   ServiceDiscovery,
   getRabbitMQConfig,
   getJwtConfig,
@@ -30,6 +27,12 @@ import { AuthResolver } from './v1/auth/auth.resolver';
 import { GatewayController } from './v1/gateway.controller';
 import { ClientsModule } from '@nestjs/microservices';
 import { GatewayService } from '@/v1/gateway.service';
+import { NftResolver } from '@/v1/nft/nft.resolver';
+import { CollectionResolver } from '@/v1/collection/collection.resolver';
+import { UserResolver } from '@/v1/user/user.resolver';
+import { WalletResolver } from '@/v1/wallet/wallet.resolver';
+import { AuctionResolver } from '@/v1/auction/auction.resolver';
+import { OrderResolver } from '@/v1/order/order.resolver';
 
 // Định nghĩa kiểu EventsMap và Status
 type EventsMap = Record<string, (...args: any[]) => void>;
@@ -38,14 +41,13 @@ type Status = string;
 const SERVICE_NAME = 'api-gateway';
 
 const IMPORTS = [
-  SharedConfigModule,
   JwtModule.registerAsync({
-    useFactory: (configService: ConfigService) => getJwtConfig(configService),
-    inject: [ConfigService],
+    useFactory: () => getJwtConfig(),
+    inject: [],
   }),
   RedisModule.forRootAsync({
-    useFactory: (configService: ConfigService) => ({
-      ...getRedisConfig(configService),
+    useFactory: () => ({
+      ...getRedisConfig(),
       onClientReady: (client) => {
         const logger = new Logger('RedisModule');
         logger.log('Redis client ready');
@@ -57,12 +59,12 @@ const IMPORTS = [
         client.on('end', () => logger.warn('Redis Client Connection Ended'));
       },
     }),
-    inject: [ConfigService],
+    inject: [],
   }),
   GraphQLModule.forRootAsync<ApolloDriverConfig>({
     driver: ApolloDriver,
-    imports: [SharedConfigModule],
-    useFactory: (configService: ConfigService) => ({
+    imports: [],
+    useFactory: () => ({
       autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
       playground: true,
       introspection: true,
@@ -70,14 +72,13 @@ const IMPORTS = [
       path: '/graphql',
       useGlobalPrefix: false,
     }),
-    inject: [ConfigService],
+    inject: [],
   }),
   ClientsModule.registerAsync([
     {
       name: 'RABBITMQ_SERVICE',
-      useFactory: (configService: ConfigService) =>
-        getRabbitMQConfig(configService, SERVICE_NAME),
-      inject: [ConfigService],
+      useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+      inject: [],
     },
   ]),
 ];
@@ -89,36 +90,38 @@ const PROVIDERS = [
   JwtService,
   GatewayService,
   AuthResolver,
+  CollectionResolver,
+  NftResolver,
+  UserResolver,
+  WalletResolver,
+  AuctionResolver,
+  OrderResolver,
   {
     provide: 'RABBITMQ_OPTIONS',
-    useFactory: (configService: ConfigService) =>
-      getRabbitMQConfig(configService, SERVICE_NAME),
-    inject: [ConfigService],
+    useFactory: () => getRabbitMQConfig(SERVICE_NAME),
+    inject: [],
   },
   {
     provide: ServiceDiscovery,
-    useFactory: async (configService: ConfigService) => {
-      const serviceDiscovery = new ServiceDiscovery(
-        configService,
-        SERVICE_NAME,
-      );
+    useFactory: async () => {
+      const serviceDiscovery = new ServiceDiscovery(SERVICE_NAME);
       await serviceDiscovery.registerService(
         SERVICE_NAME,
-        { queue: 'api-gateway-queue' },
+        { queue: `${SERVICE_NAME}-queue` },
         ['gateway', 'rabbitmq'],
       );
       const logger = new Logger('GatewayModule');
       logger.log('API Gateway registered with Consul');
       return serviceDiscovery;
     },
-    inject: [ConfigService],
+    inject: [],
   },
   {
     provide: ServiceClient,
-    useFactory: (configService: ConfigService, discovery: ServiceDiscovery) => {
-      return new ServiceClient(configService, discovery, [SERVICE_NAME]);
+    useFactory: (discovery: ServiceDiscovery) => {
+      return new ServiceClient(discovery, [SERVICE_NAME]);
     },
-    inject: [ConfigService, ServiceDiscovery],
+    inject: [ServiceDiscovery],
   },
   {
     provide: RabbitMQHealthService,
@@ -130,7 +133,7 @@ const PROVIDERS = [
         SERVICE_NAME,
         rabbitMQClient,
         serviceDiscovery,
-        'api-gateway-queue',
+        `${SERVICE_NAME}-queue`,
         ['gateway', 'rabbitmq'],
       );
     },
@@ -167,6 +170,7 @@ export class GatewayModule implements OnModuleInit {
   }
 
   async onModuleInit() {
+    console.log('Before RabbitMQ initialization...');
     const isClientReady = await this.rabbitMQHealthService.initializeRabbitMQ();
     if (!isClientReady) {
       return;

@@ -1,248 +1,3 @@
-# NFT Marketplace
-
-[English](#english) | [Tiếng Việt](#tiếng-việt)
-
-## English
-
-### Introduction
-
-A decentralized NFT (Non-Fungible Token) marketplace platform that enables users to trade digital assets on multiple blockchains. The platform supports essential features including buying, selling, minting NFTs, and managing digital assets with robust security measures.
-
-### Key Features
-
-- Multi-chain NFT Trading (Ethereum, Solana)
-- NFT Minting & Collection Creation
-- Secure Wallet Integration
-- Advanced Search & Filtering
-- User Dashboard
-- Admin Management System
-- Real-time Price Updates
-- Automated Market Making (AMM)
-
-### Technology Stack
-
-#### Frontend
-
-- Next.js 14 (App Router)
-- TypeScript
-- TailwindCSS
-- Shadcn/ui Components
-- Web3 Integration (ethers.js, web3.js)
-- State Management with Zustand
-- Internationalization (i18n)
-
-#### Backend Microservices
-
-- Node.js/Express.js
-- Microservice Architecture
-- API Gateway
-- Service Discovery
-- Event-Driven Communication
-- MongoDB & Redis,Postgresql
-
-#### Blockchain
-
-- Smart Contracts (Solidity)
-- Multi-chain Support
-- IPFS for Decentralized Storage
-- Wallet Connect Integration
-
-### Installation & Setup
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/your-username/nft-marketplace.git
-cd nft-marketplace
-```
-
-2. Setup Environment Variables
-
-```bash
-# Frontend
-cd frontend
-cp .env.example .env.local
-
-# Microservices
-cd ../microservice/project-root
-cp .env-example .env
-```
-
-3. Using Docker (Recommended)
-
-```bash
-docker-compose up -d
-```
-
-4. Development Environment
-
-```bash
-# Frontend
-cd frontend
-npm install
-npm run dev
-
-# Microservices
-cd ../microservice/project-root
-npm install
-npm run dev
-```
-
-### Project Structure
-
-```
-├── frontend/                # Next.js Frontend Application
-│   ├── src/
-│   │   ├── app/            # Next.js App Router
-│   │   ├── components/     # Reusable Components
-│   │   ├── features/       # Feature Modules
-│   │   ├── lib/           # Core Utilities
-│   │   └── store/         # State Management
-│   └── public/            # Static Assets
-└── microservice/          # Backend Microservices
-    └── project-root/
-        ├── api-gateway/   # API Gateway Service
-        ├── services/      # Individual Services
-        └── shared/        # Shared Resources
-```
-
-### Testing
-
-```bash
-# Frontend Tests
-cd frontend
-npm run test
-
-# Backend Tests
-cd ../microservice/project-root
-npm run test
-```
-
-### Contributing
-
-We welcome contributions! Please check our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Tiếng Việt
-
-### Giới thiệu
-
-Nền tảng NFT Marketplace phi tập trung cho phép người dùng giao dịch tài sản số trên nhiều blockchain. Nền tảng hỗ trợ các tính năng thiết yếu bao gồm mua, bán, tạo NFT và quản lý tài sản số với các biện pháp bảo mật mạnh mẽ.
-
-### Tính năng chính
-
-- Giao dịch NFT đa chuỗi (Ethereum, ...)
-- Tạo NFT & Bộ sưu tập
-- Tích hợp ví an toàn
-- Tìm kiếm & Lọc nâng cao
-- Bảng điều khiển người dùng
-- Hệ thống quản trị
-- Cập nhật giá thời gian thực
-- Tạo thị trường tự động (AMM)
-
-### Công nghệ sử dụng
-
-#### Frontend
-
-- Next.js 14 (App Router)
-- TypeScript
-- TailwindCSS
-- Shadcn/ui Components
-- Tích hợp Web3 (ethers.js, web3.js)
-- Quản lý trạng thái với Zustand
-- Đa ngôn ngữ (i18n)
-
-#### Backend Microservices
-
-- Node.js/Express.js
-- Kiến trúc Microservice
-- API Gateway
-- Service Discovery
-- Giao tiếp hướng sự kiện
-- MongoDB & Redis,Postgresql
-
-#### Blockchain
-
-- Smart Contracts (Solidity)
-- Hỗ trợ đa chuỗi
-- IPFS cho lưu trữ phi tập trung
-- Tích hợp Wallet Connect
-
-### Cài đặt & Thiết lập
-
-1. Clone repository
-
-```bash
-git clone https://github.com/your-username/nft-marketplace.git
-cd nft-marketplace
-```
-
-2. Thiết lập biến môi trường
-
-```bash
-# Frontend
-cd frontend
-cp .env.example .env.local
-
-# Microservices
-cd ../microservice/project-root
-cp .env-example .env
-```
-
-3. Sử dụng Docker (Khuyến nghị)
-
-```bash
-docker-compose up -d
-```
-
-4. Môi trường phát triển
-
-```bash
-# Frontend
-cd frontend
-npm install
-npm run dev
-
-# Microservices
-cd ../microservice/project-root
-npm install
-npm run dev
-```
-
-### Cấu trúc dự án
-
-```
-├── frontend/                # Ứng dụng Frontend Next.js
-│   ├── src/
-│   │   ├── app/            # Next.js App Router
-│   │   ├── components/     # Components tái sử dụng
-│   │   ├── features/       # Modules tính năng
-│   │   ├── lib/           # Tiện ích core
-│   │   └── store/         # Quản lý trạng thái
-│   └── public/            # Tài nguyên tĩnh
-└── microservice/          # Backend Microservices
-    └── project-root/
-        ├── api-gateway/   # Service API Gateway
-        ├── services/      # Các service riêng lẻ
-        └── shared/        # Tài nguyên dùng chung
-```
-
-### Kiểm thử
-
-```bash
-# Kiểm thử Frontend
-cd frontend
-npm run test
-
-# Kiểm thử Backend
-cd ../microservice/project-root
-npm run test
-```
 
 # Bảng chi tiết: Chức năng, Người dùng, Microservices với GraphQL và Cơ sở dữ liệu
 
@@ -300,10 +55,14 @@ npm run test
 | -------------- | --------- | ---------------- |
 | id             | UUID      | Khóa chính       |
 | username       | VARCHAR   | Tên người dùng   |
+| role           | VARCHAR   | Thời gian tạo    |
 | email          | VARCHAR   | Email            |
-| wallet_address | VARCHAR   | Địa chỉ ví       |
+| avatar_url          | VARCHAR   | Avatar            |
+
+| address | VARCHAR   | Địa chỉ ví       |
 | is_verified    | BOOLEAN   | Đã xác minh chưa |
 | created_at     | TIMESTAMP | Thời gian tạo    |
+
 
 #### Bảng `wallets` (wallet-service)
 
@@ -313,6 +72,7 @@ npm run test
 | user_id    | UUID      | FK tới `users`            |
 | address    | VARCHAR   | Địa chỉ ví                |
 | chain      | VARCHAR   | Blockchain (ETH, Polygon) |
+| is_primary | BOOLEAN   |                           |
 | created_at | TIMESTAMP | Thời gian tạo             |
 
 #### Bảng `transactions` (transaction-service)
@@ -325,6 +85,8 @@ npm run test
 | to_address   | VARCHAR   | Người nhận                    |
 | price        | DECIMAL   | Giá giao dịch (ETH)           |
 | tx_hash      | VARCHAR   | Hash giao dịch                |
+| chain        | VARCHAR   | Blockchain (ETH, Polygon)     |
+| status       | VARCHAR   |       pending, completed, failed                        |
 | timestamp    | TIMESTAMP | Thời gian                     |
 
 #### Bảng `logs` (log hành động)
@@ -344,6 +106,9 @@ npm run test
 | nft_id     | VARCHAR   | ID của NFT (liên kết MongoDB) |
 | seller     | VARCHAR   | Địa chỉ người bán             |
 | price      | DECIMAL   | Giá đặt                       |
+| chain        | VARCHAR   | Blockchain (ETH, Polygon)     |
+| buyer        | VARCHAR   |      |
+
 | status     | VARCHAR   | Trạng thái (open, matched)    |
 | created_at | TIMESTAMP | Thời gian tạo                 |
 
@@ -365,7 +130,11 @@ npm run test
 | starting_price | DECIMAL   | Giá khởi điểm                 |
 | current_bid    | DECIMAL   | Giá đấu hiện tại              |
 | bidder         | VARCHAR   | Địa chỉ người đấu             |
+| seller         | VARCHAR   |            |
 | end_time       | TIMESTAMP | Thời gian kết thúc            |
+| chain        | VARCHAR   | Blockchain (ETH, Polygon)     |
+| status        | VARCHAR   | active, ended     |
+
 | created_at     | TIMESTAMP | Thời gian tạo                 |
 
 #### Bảng `chains` (transaction-service, lịch sử giao dịch)
@@ -374,6 +143,7 @@ npm run test
 | ------- | ------- | ----------------------------- |
 | id      | UUID    | Khóa chính                    |
 | name    | VARCHAR | Tên chain (Ethereum, Polygon) |
+| contract_address    | VARCHAR |  |
 | rpc_url | VARCHAR | URL RPC của chain             |
 
 ---
@@ -387,17 +157,19 @@ npm run test
   "_id": ObjectId,
   "tokenId": String,
   "tokenURI": String,
-  "owner": String, // Địa chỉ ví
-  "collectionId": ObjectId, // Liên kết tới collections
+  "owner": String,
+  "collectionId": ObjectId,
+  "chain": String, // "eth-sepolia", "base-sepolia", "polygon-mumbai"
   "metadata": {
     "name": String,
     "description": String,
     "image": String,
     "traits": [
-      { "key": String, "value": String } // Ví dụ: {"key": "Color", "value": "Blue"}
+      { "key": String, "value": String }
     ]
   },
   "isLazy": Boolean,
+  "status": String, // "minted", "lazy", "burned"
   "createdAt": Date
 }
 ```
@@ -407,11 +179,18 @@ npm run test
 ```json
 {
   "_id": ObjectId,
-  "userId": String, // Liên kết tới users trong PostgreSQL
+  "creatorId": String, // Liên kết tới users.id trong PostgreSQL
+  "creatorRole": String, // "user" hoặc "admin"
   "name": String,
   "description": String,
-  "image": String, // Ảnh đại diện
-  "createdAt": Date
+  "image": String, // Ảnh đại diện chính (ipfs://<hash>)
+  "images": [String], // Danh sách ảnh bổ sung (mảng các ipfs://<hash>)
+  "isVerified": Boolean, // Đã được admin xác minh chưa
+  "chain": String, // "eth-sepolia", "base-sepolia", "polygon-mumbai"
+  "nftCount": Number, // Số lượng NFT trong collection
+  "contractAddress": String,
+  "createdAt": Date,
+  "updatedAt": Date
 }
 ```
 

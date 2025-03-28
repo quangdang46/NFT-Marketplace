@@ -50,6 +50,7 @@ export class AuthService implements IAuthService {
     const user: {
       address: string;
       id: number;
+      role: string;
     } = await this.serviceClient.sendToService(
       'user-service',
       { cmd: 'get_user' },
@@ -57,7 +58,7 @@ export class AuthService implements IAuthService {
     );
     if (!user) throw new UnauthorizedException('User not found');
 
-    const payload: JwtPayload = { address: user.address, id: user.id };
+    const payload: JwtPayload = { address: user.address, id: user.id,role:user.role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.sign(payload),
       this.jwtService.sign(payload, { expiresIn: '7d' }),
