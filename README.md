@@ -1,5 +1,3 @@
-Dưới đây là phiên bản cập nhật của bảng chi tiết dựa trên những gì chúng ta đã trao đổi, được trình bày ở dạng **Markdown thuần túy** (không dùng ```markdown``` bao quanh), để bạn có thể copy-paste trực tiếp. Tôi đã tích hợp các thay đổi từ các cuộc thảo luận trước, bao gồm việc sử dụng `@nestjs-modules/ioredis` cho Redis, RPC URL từ Ankr, và trạng thái triển khai hiện tại từ code đã cung cấp. Bảng này sẽ phản ánh đầy đủ tiến độ và đảm bảo hợp lệ với cú pháp Markdown.
-
 ---
 
 # Bảng chi tiết: Chức năng, Người dùng, Microservices với GraphQL và Cơ sở dữ liệu
