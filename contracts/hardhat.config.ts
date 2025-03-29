@@ -14,7 +14,9 @@ const config: HardhatUserConfig = {
       accounts: [process.env.PRIVATE_KEY!],
     },
     "polygon-mumbai": {
-      url: process.env.MUMBAI_RPC_URL || "https://rpc-mumbai.maticvigil.com",
+      url:
+        process.env.POLYGON_MUMBAI_RPC_URL ||
+        "https://rpc-mumbai.maticvigil.com",
       accounts: [process.env.PRIVATE_KEY!],
     },
   },
