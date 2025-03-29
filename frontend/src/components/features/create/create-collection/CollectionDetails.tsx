@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import {
   FormField,
@@ -20,14 +21,14 @@ import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
-import { ChainInfo } from "@/components/features/create/create-collection";
+import { mockChains } from "@/lib/constant/chains";
 
 interface CollectionDetailsProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
   isLoading: boolean;
   onChainChange?: (chain: string) => void;
   onImageChange?: (file: File | null) => void;
-  availableChains: ChainInfo[];
 }
 
 export function CollectionDetails({
@@ -35,12 +36,10 @@ export function CollectionDetails({
   isLoading,
   onChainChange,
   onImageChange,
-  availableChains,
 }: CollectionDetailsProps) {
-  const [selectedChain, setSelectedChain] = useState("base");
+  const [selectedChain, setSelectedChain] = useState("Sepolia");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
 
   return (
     <div className="dark space-y-6 bg-[#0e0a1a] dark:bg-[#0e0a1a] p-6 rounded-lg">
@@ -69,21 +68,19 @@ export function CollectionDetails({
                       <SelectTrigger className="w-full bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0">
                         <SelectValue>
                           {field.value &&
-                          availableChains.find(
+                          mockChains.find(
                             (chain) => chain.id === field.value
                           ) ? (
                             <div className="flex items-center gap-2">
-                              <div
-                                className={`${
-                                  availableChains.find(
-                                    (chain) => chain.id === field.value
-                                  )?.color
-                                } rounded-full w-4 h-4`}
-                              ></div>
                               {
-                                availableChains.find(
+                                mockChains.find(
                                   (chain) => chain.id === field.value
-                                )?.label
+                                )?.icon
+                              }
+                              {
+                                mockChains.find(
+                                  (chain) => chain.id === field.value
+                                )?.name
                               }
                             </div>
                           ) : (
@@ -96,17 +93,15 @@ export function CollectionDetails({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-[#1a1525] border-[#3a3450] text-white">
-                      {availableChains.map((chain) => (
+                      {mockChains.map((chain) => (
                         <SelectItem
                           key={chain.id}
                           value={chain.id}
                           className="text-white focus:bg-[#2a2535] focus:text-white"
                         >
                           <div className="flex items-center gap-2">
-                            <div
-                              className={`${chain.color} rounded-full w-4 h-4`}
-                            ></div>
-                            {chain.label}
+                            {chain.icon}
+                            {chain.name}
                           </div>
                         </SelectItem>
                       ))}

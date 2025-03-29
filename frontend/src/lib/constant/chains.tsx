@@ -17,7 +17,7 @@ export const mockChains: Chain[] = [
   },
   {
     id: "ethereum",
-    name: "Ethereum",
+    name: "Sepolia",
     icon: <Ethereum />,
     symbol: "ETH",
   },

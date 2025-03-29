@@ -13,47 +13,23 @@ import {
   formSchema,
   type AllowlistStage,
   type PublicMint,
-} from "@/types/create.type";
+} from "@/types/create-collection.type";
 import type { z } from "zod";
 import { RotateCcw } from "lucide-react";
-
-
-// Define chain data structure
-export type ChainInfo = {
-  id: string
-  label: string
-  color: string
-}
-
-
+import { mockChains } from "@/lib/constant/chains";
+import { formattedAllowlistStages } from "@/lib/utils/format";
+import { useAccount } from "wagmi";
 export default function CreateCollection() {
-
-    const availableChains: ChainInfo[] = [
-      { id: "ethereum", label: "Ethereum", color: "bg-purple-500" },
-      { id: "base", label: "Base", color: "bg-blue-500" },
-      { id: "sepolia", label: "Sepolia", color: "bg-blue-300" },
-      { id: "apechain", label: "ApeChain", color: "bg-blue-400" },
-      { id: "abstract", label: "Abstract", color: "bg-green-500" },
-      { id: "berachain", label: "Berachain", color: "bg-orange-500" },
-      { id: "monad", label: "Monad", color: "bg-indigo-500" },
-      { id: "arbitrum", label: "Arbitrum", color: "bg-blue-600" },
-      { id: "sei", label: "Sei", color: "bg-red-500" },
-      { id: "bnb", label: "BNB Chain", color: "bg-yellow-500" },
-      { id: "polygon", label: "Polygon", color: "bg-purple-600" },
-    ];
-
-    // Create a map for easy lookup
-    const chainDisplayNames = availableChains.reduce((acc, chain) => {
-      acc[chain.id] = chain.label;
-      return acc;
-    }, {} as Record<string, string>);
-
-
-
+  const { chain } = useAccount();
+  // Create a map for easy lookup
+  const chainDisplayNames = mockChains.reduce((acc, chain) => {
+    acc[chain.id] = chain.name;
+    return acc;
+  }, {} as Record<string, string>);
 
   const [isLoading, setIsLoading] = useState(false);
   const [allowlistStages, setAllowlistStages] = useState<AllowlistStage[]>([]);
-  const [selectedChain, setSelectedChain] = useState("sepolia");
+  const [selectedChain, setSelectedChain] = useState("Sepolia");
   const [publicMint, setPublicMint] = useState<PublicMint>({
     mintPrice: "0.00",
     durationDays: "1",
@@ -82,7 +58,7 @@ export default function CreateCollection() {
   const [formIsValid, setFormIsValid] = useState(false);
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: { chain: "base", name: "", symbol: "", description: "" },
+    defaultValues: { chain: "Sepolia", name: "", symbol: "", description: "" },
   });
 
   // Watch for chain changes
@@ -100,10 +76,12 @@ export default function CreateCollection() {
     setTimeout(() => setIsLoading(false), 2000);
   };
 
-
   // Get the button text based on the selected chain
   const getButtonText = () => {
     if (isLoading) return "Processing...";
+    if (chain?.name === selectedChain) {
+      return `Create Collection on ${chain?.name}`;
+    }
     return `Switch Wallet to ${
       chainDisplayNames[selectedChain] || selectedChain
     }`;
@@ -111,17 +89,12 @@ export default function CreateCollection() {
 
   // Check form validity
   useEffect(() => {
-    // Basic form validation from react-hook-form
     const basicFormValid = form.formState.isValid;
 
-    // Additional validation for required fields not in the schema
     const hasRequiredFields =
-      // Check if collection image is selected
       collectionImageFile !== null &&
-      // Check if artwork is selected for "same" type or metadata URL is provided for "unique" type
       ((selectedArtType === "same" && artworkFile !== null) ||
         (selectedArtType === "unique" && metadataUrl.trim() !== "")) &&
-      // Check mint details
       maxSupply.trim() !== "" &&
       mintLimit.trim() !== "";
 
@@ -136,95 +109,9 @@ export default function CreateCollection() {
     mintLimit,
   ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Collect all form data
-    const completeFormData = {
-      // Basic form fields from formSchema
-      ...values,
-
-      // NFT Art Type data
-      artType: selectedArtType,
-      ...(selectedArtType === "same"
-        ? { artwork: artworkFile }
-        : { metadataUrl }),
-
-      // Mint Details
-      mintPrice,
-      royaltyFee,
-      maxSupply,
-      mintLimit,
-      mintStartDate,
-      allowlistStages,
-      publicMint,
-
-      // Collection Image
-      collectionImage: collectionImageFile,
-    };
-
-    console.log("Form submitted:", completeFormData);
-
-    // For demonstration, let's also log what would be sent in a FormData object
-    const formData = new FormData();
-
-    // Add basic form fields
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value as string);
-    });
-
-    // Add files
-    if (collectionImageFile) {
-      formData.append("collectionImage", collectionImageFile);
-    }
-
-    // Add NFT art type data
-    formData.append("artType", selectedArtType);
-    if (selectedArtType === "same" && artworkFile) {
-      formData.append("artwork", artworkFile);
-    } else if (selectedArtType === "unique") {
-      formData.append("metadataUrl", metadataUrl);
-    }
-
-    // Add mint details
-    formData.append("mintPrice", mintPrice);
-    formData.append("royaltyFee", royaltyFee);
-    formData.append("maxSupply", maxSupply);
-    formData.append("mintLimit", mintLimit);
-    formData.append("mintStartDate", mintStartDate.toISOString());
-
-    // Add allowlist stages and public mint (as JSON strings)
-    formData.append("allowlistStages", JSON.stringify(allowlistStages));
-    formData.append("publicMint", JSON.stringify(publicMint));
-
-    // Log what would be sent (can't log the actual FormData contents directly)
-    console.log("FormData would contain:", {
-      basicFields: values,
-      files: {
-        collectionImage: collectionImageFile?.name,
-        artwork: artworkFile?.name,
-      },
-      artType: selectedArtType,
-      metadataUrl: metadataUrl,
-      mintDetails: {
-        mintPrice,
-        royaltyFee,
-        maxSupply,
-        mintLimit,
-        mintStartDate,
-      },
-      allowlistStages,
-      publicMint,
-    });
-
-    toggleLoading();
-    toast("Form submitted", {
-      description: "Your NFT collection has been created",
-    });
-  };
-
   const handleClearForm = () => {
-    form.reset({ chain: "base", name: "", symbol: "", description: "" });
-    setSelectedChain("base");
+    form.reset({ chain: "Sepolia", name: "", symbol: "", description: "" });
+    setSelectedChain("Sepolia");
     setAllowlistStages([]);
     setPublicMint({
       mintPrice: "0.00",
@@ -241,7 +128,6 @@ export default function CreateCollection() {
     setMintLimit("");
     setMintStartDate(new Date());
 
-    // Clear any file inputs
     const collectionImageInput = document.getElementById(
       "collection-image"
     ) as HTMLInputElement;
@@ -255,6 +141,43 @@ export default function CreateCollection() {
     toast("Form cleared", {
       description: "All form fields have been reset",
     });
+  };
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!collectionImageFile) {
+      toast.error("Please upload a collection image");
+      return;
+    }
+    if (selectedArtType === "same" && !artworkFile) {
+      toast.error("Please upload an artwork file for 'Same' type");
+      return;
+    }
+    if (selectedArtType === "unique" && !metadataUrl.trim()) {
+      toast.error("Please provide a metadata URL for 'Unique' type");
+      return;
+    }
+
+    toggleLoading();
+
+    // Chuẩn bị variables cho GraphQL mutation
+    const variables = {
+      chain: values.chain,
+      name: values.name,
+      symbol: values.symbol,
+      description: values.description,
+      artType: selectedArtType,
+      metadataUrl: selectedArtType === "unique" ? metadataUrl : null,
+      artwork: selectedArtType === "same" ? artworkFile : null,
+      collectionImage: collectionImageFile,
+      mintPrice,
+      royaltyFee,
+      maxSupply,
+      mintLimit,
+      mintStartDate: mintStartDate.toISOString(),
+      allowlistStages: formattedAllowlistStages(allowlistStages),
+      publicMint,
+    };
+    console.log("Submitting variables:", variables);
   };
 
   return (
@@ -278,7 +201,6 @@ export default function CreateCollection() {
             isLoading={isLoading}
             onChainChange={(chain) => setSelectedChain(chain)}
             onImageChange={(file) => setCollectionImageFile(file)}
-            availableChains={availableChains}
           />
           <NFTArtSection
             isLoading={isLoading}

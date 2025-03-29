@@ -22,7 +22,10 @@ import {
 import { HelpCircle } from "lucide-react";
 import { AllowlistStageDialog } from "./AllowlistStageDialog";
 import { PublicStageDialog } from "./PublicStageDialog";
-import type { AllowlistStage, PublicMint } from "@/types/create.type";
+import type {
+  AllowlistStage,
+  PublicMint,
+} from "@/types/create-collection.type";
 
 interface MintDetailsProps {
   isLoading: boolean;

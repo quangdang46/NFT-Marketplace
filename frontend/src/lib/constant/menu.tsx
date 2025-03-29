@@ -22,11 +22,8 @@ export const navItems: NavItem[] = [
     id: "Create",
     label: "Create",
     href: "/create",
-    hasDropdown: true,
-    dropdownItems: [
-      { label: "Collection", href: "/create/collection" },
-      { label: "NFT", href: "/create/nft" },
-    ],
+    hasDropdown: false,
+    dropdownItems: [],
   },
   {
     id: "profile",

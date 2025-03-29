@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { AllowlistStage } from "@/types/create.type";
+import type { AllowlistStage } from "@/types/create-collection.type";
 
 interface AllowlistStageDialogProps {
   isOpen: boolean;
