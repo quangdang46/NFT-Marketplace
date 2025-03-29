@@ -19,6 +19,7 @@ import { RotateCcw } from "lucide-react";
 import { mockChains } from "@/lib/constant/chains";
 import { formattedAllowlistStages } from "@/lib/utils/format";
 import { useAccount } from "wagmi";
+import { uploadImage } from "@/lib/utils/upload";
 export default function CreateCollection() {
   const { chain } = useAccount();
   // Create a map for easy lookup
@@ -158,8 +159,11 @@ export default function CreateCollection() {
     }
 
     toggleLoading();
+    // example upload file
+    const url = await uploadImage(collectionImageFile);
+    console.log("Collection image URL:", url);
+    // example upload file
 
-    // Chuẩn bị variables cho GraphQL mutation
     const variables = {
       chain: values.chain,
       name: values.name,

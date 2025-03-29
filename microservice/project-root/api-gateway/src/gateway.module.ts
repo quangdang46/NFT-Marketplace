@@ -33,6 +33,7 @@ import { UserResolver } from '@/v1/user/user.resolver';
 import { WalletResolver } from '@/v1/wallet/wallet.resolver';
 import { AuctionResolver } from '@/v1/auction/auction.resolver';
 import { OrderResolver } from '@/v1/order/order.resolver';
+import { FileResolver } from '@/v1/file/file.resolver';
 
 // Định nghĩa kiểu EventsMap và Status
 type EventsMap = Record<string, (...args: any[]) => void>;
@@ -90,12 +91,13 @@ const PROVIDERS = [
   JwtService,
   GatewayService,
   AuthResolver,
-  CollectionResolver,
-  NftResolver,
+  // CollectionResolver,
+  // NftResolver,
   UserResolver,
-  WalletResolver,
-  AuctionResolver,
-  OrderResolver,
+  // WalletResolver,
+  // AuctionResolver,
+  // OrderResolver,
+  FileResolver,
   {
     provide: 'RABBITMQ_OPTIONS',
     useFactory: () => getRabbitMQConfig(SERVICE_NAME),
@@ -183,7 +185,7 @@ export class GatewayModule implements OnModuleInit {
     this.rabbitMQHealthService.startPeriodicHealthCheck();
   }
 
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RateLimitMiddleware).forRoutes('/*path');
-  }
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(RateLimitMiddleware).forRoutes('/*path');
+  // }
 }

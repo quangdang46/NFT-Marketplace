@@ -23,11 +23,26 @@ export type AuthResponse = {
   refreshToken: Scalars['String']['output'];
 };
 
+export type CreateUserResponse = {
+  __typename?: 'CreateUserResponse';
+  userId: Scalars['String']['output'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  createUser: CreateUserResponse;
   logout: Scalars['Boolean']['output'];
   refreshToken: AuthResponse;
   verify: AuthResponse;
+  verifyUser: VerifyUserResponse;
+};
+
+
+export type MutationCreateUserArgs = {
+  _address: Scalars['String']['input'];
+  email: Scalars['String']['input'];
+  role?: InputMaybe<Scalars['String']['input']>;
+  username: Scalars['String']['input'];
 };
 
 
@@ -41,10 +56,32 @@ export type MutationVerifyArgs = {
   signature: Scalars['String']['input'];
 };
 
+
+export type MutationVerifyUserArgs = {
+  userId: Scalars['String']['input'];
+};
+
 export type Query = {
   __typename?: 'Query';
+  getSignedUrl: Scalars['String']['output'];
+  getUser: User;
   me: UserResponse;
   nonce: Scalars['String']['output'];
+};
+
+
+export type QueryGetUserArgs = {
+  userId: Scalars['String']['input'];
+};
+
+export type User = {
+  __typename?: 'User';
+  email: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  is_verified: Scalars['Boolean']['output'];
+  role: Scalars['String']['output'];
+  username: Scalars['String']['output'];
+  wallet_address: Scalars['String']['output'];
 };
 
 export type UserResponse = {
@@ -52,6 +89,16 @@ export type UserResponse = {
   address: Scalars['String']['output'];
   id: Scalars['String']['output'];
 };
+
+export type VerifyUserResponse = {
+  __typename?: 'VerifyUserResponse';
+  status: Scalars['String']['output'];
+};
+
+export type GetSignedUrlQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSignedUrlQuery = { __typename?: 'Query', getSignedUrl: string };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -84,6 +131,43 @@ export type VerifyMutationVariables = Exact<{
 export type VerifyMutation = { __typename?: 'Mutation', verify: { __typename?: 'AuthResponse', accessToken: string, refreshToken: string } };
 
 
+export const GetSignedUrlDocument = gql`
+    query GetSignedUrl {
+  getSignedUrl
+}
+    `;
+
+/**
+ * __useGetSignedUrlQuery__
+ *
+ * To run a query within a React component, call `useGetSignedUrlQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSignedUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSignedUrlQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetSignedUrlQuery(baseOptions?: Apollo.QueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
+      }
+export function useGetSignedUrlLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
+        }
+export function useGetSignedUrlSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
+        }
+export type GetSignedUrlQueryHookResult = ReturnType<typeof useGetSignedUrlQuery>;
+export type GetSignedUrlLazyQueryHookResult = ReturnType<typeof useGetSignedUrlLazyQuery>;
+export type GetSignedUrlSuspenseQueryHookResult = ReturnType<typeof useGetSignedUrlSuspenseQuery>;
+export type GetSignedUrlQueryResult = Apollo.QueryResult<GetSignedUrlQuery, GetSignedUrlQueryVariables>;
 export const LogoutDocument = gql`
     mutation Logout {
   logout

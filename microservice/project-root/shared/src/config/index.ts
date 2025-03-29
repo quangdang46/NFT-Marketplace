@@ -7,9 +7,10 @@ import { MongooseModuleOptions } from "@nestjs/mongoose";
 import { ethers } from "ethers";
 
 export const getRabbitMQConfig = (servicePrefix: string): RmqOptions => {
-  const url = process.env.RABBITMQ_URL || "amqp://localhost:5672";
+  const url = process.env.RABBITMQ_URL;
+  if (!url) throw new Error("RabbitMQ URL not found in environment variables");
   const queue =
-    process.env[`${servicePrefix.toUpperCase()}-NAME`] ||
+    process.env[`${servicePrefix.toUpperCase()}-QUEUE`] ||
     `${servicePrefix.toLowerCase()}-queue`;
   console.log(`[RabbitMQ Config] URL: ${url}, Queue: ${queue}`);
   return {
@@ -143,5 +144,18 @@ export const getMarketplace = () => {
   return {
     marketplaceFeeRecipient,
     marketplaceFeePercentage,
+  };
+};
+
+export const getPinataConfig = () => {
+  const pinataJwt = process.env.PINATA_JWT;
+  const pinataGateway = process.env.NEXT_PUBLIC_GATEWAY_URL;
+  if (!pinataJwt || !pinataGateway) {
+    throw new Error("Pinata config not found in environment variables");
+  }
+  console.log(`[Pinata Config] JWT: ${pinataJwt}, Gateway: ${pinataGateway}`);
+  return {
+    pinataJwt,
+    pinataGateway,
   };
 };
