@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +30,11 @@ interface MintDetailsProps {
   setAllowlistStages: (stages: AllowlistStage[]) => void;
   publicMint: PublicMint;
   setPublicMint: (mint: PublicMint) => void;
+  onMintPriceChange?: (price: string) => void;
+  onRoyaltyFeeChange?: (fee: string) => void;
+  onMaxSupplyChange?: (supply: string) => void;
+  onMintLimitChange?: (limit: string) => void;
+  onMintStartDateChange?: (date: Date) => void;
 }
 
 export function MintDetails({
@@ -38,8 +43,13 @@ export function MintDetails({
   setAllowlistStages,
   publicMint,
   setPublicMint,
+  onMintPriceChange,
+  onRoyaltyFeeChange,
+  onMaxSupplyChange,
+  onMintLimitChange,
+  onMintStartDateChange,
 }: MintDetailsProps) {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
   const [isAllowlistDialogOpen, setIsAllowlistDialogOpen] = useState(false);
   const [isPublicMintDialogOpen, setIsPublicMintDialogOpen] = useState(false);
   const [currentStage, setCurrentStage] = useState<AllowlistStage | null>(null);
@@ -49,6 +59,27 @@ export function MintDetails({
   const [royaltyFee, setRoyaltyFee] = useState("0");
   const [maxSupply, setMaxSupply] = useState("");
   const [mintLimit, setMintLimit] = useState("");
+
+  // Notify parent component when values change
+  useEffect(() => {
+    if (onMintStartDateChange) onMintStartDateChange(date);
+  }, [date, onMintStartDateChange]);
+
+  useEffect(() => {
+    if (onMintPriceChange) onMintPriceChange(collectionMintPrice);
+  }, [collectionMintPrice, onMintPriceChange]);
+
+  useEffect(() => {
+    if (onRoyaltyFeeChange) onRoyaltyFeeChange(royaltyFee);
+  }, [royaltyFee, onRoyaltyFeeChange]);
+
+  useEffect(() => {
+    if (onMaxSupplyChange) onMaxSupplyChange(maxSupply);
+  }, [maxSupply, onMaxSupplyChange]);
+
+  useEffect(() => {
+    if (onMintLimitChange) onMintLimitChange(mintLimit);
+  }, [mintLimit, onMintLimitChange]);
 
   const handleDeleteStage = (stageId: string) => {
     setAllowlistStages(allowlistStages.filter((stage) => stage.id !== stageId));
@@ -82,6 +113,13 @@ export function MintDetails({
   const handleSavePublicMint = (updatedPublicMint: PublicMint) => {
     setPublicMint(updatedPublicMint);
     setIsPublicMintDialogOpen(false);
+  };
+
+  const handleDateSelect = (newDate: Date | undefined) => {
+    if (newDate) {
+      setDate(newDate);
+      if (onMintStartDateChange) onMintStartDateChange(newDate);
+    }
   };
 
   return (
@@ -200,7 +238,7 @@ export function MintDetails({
                 <CalendarComponent
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={handleDateSelect}
                   initialFocus
                   className="bg-[#1a1525] text-white"
                 />
@@ -323,7 +361,7 @@ export function MintDetails({
                 <div className="border border-[#1a1525] dark:border-[#1a1525] rounded-md p-3 bg-[#0e0a1a] flex justify-center">
                   <Button
                     variant="ghost"
-                    className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:white"
+                    className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:text-gray-400"
                     onClick={handleAddStage}
                     style={{ backgroundColor: "transparent" }}
                   >

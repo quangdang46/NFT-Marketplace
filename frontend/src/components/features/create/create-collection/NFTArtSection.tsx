@@ -1,10 +1,8 @@
-
-
 "use client";
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -14,19 +12,37 @@ import Image from "next/image";
 
 interface NFTArtSectionProps {
   isLoading: boolean;
+  onArtTypeChange?: (type: "same" | "unique") => void;
+  onArtworkChange?: (file: File | null) => void;
+  onMetadataUrlChange?: (url: string) => void;
 }
 
-export function NFTArtSection({ isLoading }: NFTArtSectionProps) {
+export function NFTArtSection({
+  isLoading,
+  onArtTypeChange,
+  onArtworkChange,
+  onMetadataUrlChange,
+}: NFTArtSectionProps) {
   const [selectedType, setSelectedType] = useState<"same" | "unique">("unique");
   const [showMetadataUrl, setShowMetadataUrl] = useState(true);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [metadataUrl, setMetadataUrl] = useState("");
 
+  // Notify parent component when values change
+  useEffect(() => {
+    if (onArtTypeChange) onArtTypeChange(selectedType);
+  }, [selectedType, onArtTypeChange]);
+
+  useEffect(() => {
+    if (onMetadataUrlChange) onMetadataUrlChange(metadataUrl);
+  }, [metadataUrl, onMetadataUrlChange]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
+      if (onArtworkChange) onArtworkChange(file);
 
       // Create a preview URL for the image
       const reader = new FileReader();
@@ -42,6 +58,7 @@ export function NFTArtSection({ isLoading }: NFTArtSectionProps) {
     e.stopPropagation();
     setSelectedImage(null);
     setImagePreview(null);
+    if (onArtworkChange) onArtworkChange(null);
     const input = document.getElementById("nft-artwork") as HTMLInputElement;
     if (input) input.value = "";
   };
@@ -65,6 +82,7 @@ export function NFTArtSection({ isLoading }: NFTArtSectionProps) {
                 onClick={() => {
                   setSelectedType("same");
                   setShowMetadataUrl(false);
+                  if (onArtTypeChange) onArtTypeChange("same");
                 }}
               >
                 <div className="flex-shrink-0">
@@ -101,6 +119,7 @@ export function NFTArtSection({ isLoading }: NFTArtSectionProps) {
                 onClick={() => {
                   setSelectedType("unique");
                   setShowMetadataUrl(true);
+                  if (onArtTypeChange) onArtTypeChange("unique");
                 }}
               >
                 <div className="flex-shrink-0 grid grid-cols-2 gap-1">
@@ -168,7 +187,11 @@ export function NFTArtSection({ isLoading }: NFTArtSectionProps) {
                   <Input
                     placeholder="https://ipfs.io/ipfs/<CID>"
                     value={metadataUrl}
-                    onChange={(e) => setMetadataUrl(e.target.value)}
+                    onChange={(e) => {
+                      setMetadataUrl(e.target.value);
+                      if (onMetadataUrlChange)
+                        onMetadataUrlChange(e.target.value);
+                    }}
                     className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
@@ -241,4 +264,3 @@ export function NFTArtSection({ isLoading }: NFTArtSectionProps) {
     </div>
   );
 }
-

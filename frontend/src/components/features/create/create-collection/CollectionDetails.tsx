@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
 import {
   FormField,
   FormItem,
@@ -22,35 +20,27 @@ import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
+import { ChainInfo } from "@/components/features/create/create-collection";
 
 interface CollectionDetailsProps {
   form: any;
   isLoading: boolean;
   onChainChange?: (chain: string) => void;
+  onImageChange?: (file: File | null) => void;
+  availableChains: ChainInfo[];
 }
 
 export function CollectionDetails({
   form,
   isLoading,
   onChainChange,
+  onImageChange,
+  availableChains,
 }: CollectionDetailsProps) {
   const [selectedChain, setSelectedChain] = useState("base");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Chain icons and colors mapping
-  const chainIcons: Record<string, { color: string; label: string }> = {
-    ethereum: { color: "bg-purple-500", label: "Ethereum" },
-    base: { color: "bg-blue-500", label: "Base" },
-    apechain: { color: "bg-blue-400", label: "ApeChain" },
-    abstract: { color: "bg-green-500", label: "Abstract" },
-    berachain: { color: "bg-orange-500", label: "Berachain" },
-    monad: { color: "bg-indigo-500", label: "Monad" },
-    arbitrum: { color: "bg-blue-600", label: "Arbitrum" },
-    sei: { color: "bg-red-500", label: "Sei" },
-    bnb: { color: "bg-yellow-500", label: "BNB Chain" },
-    polygon: { color: "bg-purple-600", label: "Polygon" },
-  };
 
   return (
     <div className="dark space-y-6 bg-[#0e0a1a] dark:bg-[#0e0a1a] p-6 rounded-lg">
@@ -78,14 +68,23 @@ export function CollectionDetails({
                     <FormControl>
                       <SelectTrigger className="w-full bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0">
                         <SelectValue>
-                          {field.value && chainIcons[field.value] ? (
+                          {field.value &&
+                          availableChains.find(
+                            (chain) => chain.id === field.value
+                          ) ? (
                             <div className="flex items-center gap-2">
                               <div
                                 className={`${
-                                  chainIcons[field.value].color
+                                  availableChains.find(
+                                    (chain) => chain.id === field.value
+                                  )?.color
                                 } rounded-full w-4 h-4`}
                               ></div>
-                              {chainIcons[field.value].label}
+                              {
+                                availableChains.find(
+                                  (chain) => chain.id === field.value
+                                )?.label
+                              }
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
@@ -97,96 +96,20 @@ export function CollectionDetails({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-[#1a1525] border-[#3a3450] text-white">
-                      <SelectItem
-                        value="ethereum"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-purple-500 rounded-full w-4 h-4"></div>
-                          Ethereum
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="base"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-blue-500 rounded-full w-4 h-4"></div>
-                          Base
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="apechain"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-blue-400 rounded-full w-4 h-4"></div>
-                          ApeChain
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="abstract"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-green-500 rounded-full w-4 h-4"></div>
-                          Abstract
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="berachain"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-orange-500 rounded-full w-4 h-4"></div>
-                          Berachain
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="monad"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-indigo-500 rounded-full w-4 h-4"></div>
-                          Monad
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="arbitrum"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-blue-600 rounded-full w-4 h-4"></div>
-                          Arbitrum
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="sei"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-red-500 rounded-full w-4 h-4"></div>
-                          Sei
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="bnb"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-yellow-500 rounded-full w-4 h-4"></div>
-                          BNB Chain
-                        </div>
-                      </SelectItem>
-                      <SelectItem
-                        value="polygon"
-                        className="text-white focus:bg-[#2a2535] focus:text-white"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div className="bg-purple-600 rounded-full w-4 h-4"></div>
-                          Polygon
-                        </div>
-                      </SelectItem>
+                      {availableChains.map((chain) => (
+                        <SelectItem
+                          key={chain.id}
+                          value={chain.id}
+                          className="text-white focus:bg-[#2a2535] focus:text-white"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`${chain.color} rounded-full w-4 h-4`}
+                            ></div>
+                            {chain.label}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage className="text-red-500" />
@@ -266,6 +189,7 @@ export function CollectionDetails({
                   const file = e.target.files?.[0];
                   if (file) {
                     setSelectedImage(file);
+                    if (onImageChange) onImageChange(file);
 
                     // Create a preview URL for the image
                     const reader = new FileReader();
@@ -294,6 +218,7 @@ export function CollectionDetails({
                         e.preventDefault();
                         setSelectedImage(null);
                         setImagePreview(null);
+                        if (onImageChange) onImageChange(null);
                         const input = document.getElementById(
                           "collection-image"
                         ) as HTMLInputElement;
