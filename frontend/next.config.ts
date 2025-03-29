@@ -11,7 +11,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
     ],
+    dangerouslyAllowSVG: true,
   },
   experimental: {
     optimizeCss: true,

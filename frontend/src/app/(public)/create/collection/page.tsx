@@ -1,4 +1,4 @@
-import CreateCollection from "@/components/features/create/CreateCollection/CreateCollection";
+import CreateCollection from "@/components/features/create/create-collection";
 
 export const metadata = {
   title: "Create Collection | NFT Marketplace",
@@ -8,7 +8,6 @@ export const metadata = {
 export default function CreateCollectionPage() {
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Create Collection</h1>
       <CreateCollection></CreateCollection>
     </div>
   );

@@ -1,5 +1,5 @@
-import NftDropContent from "./components/nft-drop-content";
-import NftDropHeader from "./components/nft-drop-header";
+import NftDropContent from "./nft-drop-content";
+import NftDropHeader from "./nft-drop-header";
 import React from "react";
 export default function CreateOrManage() {
   return (

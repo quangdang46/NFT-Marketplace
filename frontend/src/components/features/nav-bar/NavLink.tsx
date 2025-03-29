@@ -61,7 +61,7 @@ export const NavLink = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="bg-[#1A1F2C]/95 border-white/10 text-white w-48 dropdown-slide-down"
+          className="bg-[#1A1F2C]/95 border-white/10 text-white w-48 dropdown-slide-down z-[100]"
           onPointerEnter={handleOpen} // Giữ mở khi hover vào content
           onPointerLeave={handleClose} // Đóng sau delay khi rời content
         >

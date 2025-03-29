@@ -1,4 +1,3 @@
----
 
 # Bảng chi tiết: Chức năng, Người dùng, Microservices với GraphQL và Cơ sở dữ liệu
 
