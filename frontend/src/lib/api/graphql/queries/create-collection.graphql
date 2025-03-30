@@ -1,0 +1,52 @@
+# create-collection.graphql
+
+input AllowlistStageInput {
+  id: String!
+  mintPrice: String!
+  durationDays: String!
+  durationHours: String!
+  wallets: [String!]!
+  startDate: String!
+}
+
+input PublicMintInput {
+  mintPrice: String!
+  durationDays: String!
+  durationHours: String!
+  startDate: String
+}
+
+input CreateCollectionInput {
+  chain: String!
+  name: String!
+  symbol: String!
+  description: String!
+  artType: String!
+  metadataUrl: String
+  collectionImageUrl: String!
+  artworkUrl: String
+  mintPrice: String!
+  royaltyFee: String!
+  maxSupply: String!
+  mintLimit: String!
+  mintStartDate: String!
+  allowlistStages: [AllowlistStageInput!]!
+  publicMint: PublicMintInput!
+  contractAddress: String
+}
+
+type CreateCollectionResponse {
+  collectionId: String!
+  contractAddress: String!
+}
+
+type Mutation {
+  createCollection(input: CreateCollectionInput!): CreateCollectionResponse!
+}
+
+mutation CreateCollection($input: CreateCollectionInput!) {
+  createCollection(input: $input) {
+    collectionId
+    contractAddress
+  }
+}

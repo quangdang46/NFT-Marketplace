@@ -1,12 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Collection extends Document {
+
   @Prop({ required: true })
   creatorId: string;
 
-  @Prop({ required: true, enum: ['user', 'admin'] })
+  @Prop({ required: true })
   creatorRole: string;
 
   @Prop({ required: true })
@@ -16,31 +17,84 @@ export class Collection extends Document {
   description: string;
 
   @Prop({ required: true })
-  image: string;
+  collectionImageUrl: string; // Đổi từ `image` để đồng bộ với FE
 
   @Prop({ type: [String], default: [] })
-  images: string[];
+  images: string[]; // Giữ lại nếu dùng cho NFT sau này
 
   @Prop({ default: false })
   isVerified: boolean;
 
-  @Prop({
-    required: true,
-    enum: ['eth-sepolia', 'base-sepolia', 'polygon-mumbai'],
-  })
+  @Prop({ required: true })
   chain: string;
 
   @Prop({ required: true })
-  contractAddress: string; // Địa chỉ contract
+  contractAddress: string;
 
   @Prop({ default: 0 })
   nftCount: number;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  @Prop({ required: true })
+  artType: string;
 
-  @Prop()
-  updatedAt?: Date;
+  @Prop({ required: false })
+  metadataUrl?: string;
+
+  @Prop({ required: false })
+  artworkUrl?: string;
+
+  @Prop({ required: true, type: String }) // Có thể đổi thành `number` nếu cần
+  mintPrice: string;
+
+  @Prop({ required: true, type: String }) // Có thể đổi thành `number`
+  royaltyFee: string;
+
+  @Prop({ required: true, type: String }) // Có thể đổi thành `number`
+  maxSupply: string;
+
+  @Prop({ required: true, type: String }) // Có thể đổi thành `number`
+  mintLimit: string;
+
+  @Prop({ required: true })
+  mintStartDate: string;
+
+  @Prop({
+    type: [
+      {
+        id: { type: String, required: true },
+        mintPrice: { type: String, required: true }, // Có thể đổi thành `number`
+        durationDays: { type: String, required: true }, // Có thể đổi thành `number`
+        durationHours: { type: String, required: true }, // Có thể đổi thành `number`
+        wallets: { type: [String], required: true },
+        startDate: { type: String, required: true },
+      },
+    ],
+    default: [],
+  })
+  allowlistStages: {
+    id: string;
+    mintPrice: string;
+    durationDays: string;
+    durationHours: string;
+    wallets: string[];
+    startDate: string;
+  }[];
+
+  @Prop({
+    type: {
+      mintPrice: { type: String, required: true }, // Có thể đổi thành `number`
+      durationDays: { type: String, required: true }, // Có thể đổi thành `number`
+      durationHours: { type: String, required: true }, // Có thể đổi thành `number`
+      startDate: { type: String, required: false },
+    },
+    required: true,
+  })
+  publicMint: {
+    mintPrice: string;
+    durationDays: string;
+    durationHours: string;
+    startDate?: string;
+  };
 }
 
 export const CollectionSchema = SchemaFactory.createForClass(Collection);

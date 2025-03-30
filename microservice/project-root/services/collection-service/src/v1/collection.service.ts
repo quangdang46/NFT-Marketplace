@@ -24,97 +24,147 @@ export class CollectionService {
   ) {
     const privateKey = getPrivateKey();
     if (!privateKey) throw new Error('PRIVATE_KEY not found');
-
     this.chainConfigs = getChainsConfig();
   }
 
   async createCollection(data: {
-    name: string;
-    description: string;
-    image: string;
-    images: string[];
     chain: string;
-    user: { id: number; address: string; role?: string };
+    name: string;
+    symbol: string;
+    description: string;
+    artType: string;
+    metadataUrl?: string;
+    collectionImage: string;
+    artworkUrl?: string;
+    mintPrice: string;
+    royaltyFee: string;
+    maxSupply: string;
+    mintLimit: string;
+    mintStartDate: string;
+    allowlistStages: {
+      id: string;
+      mintPrice: string;
+      durationDays: string;
+      durationHours: string;
+      wallets: string[];
+      startDate: string;
+    }[];
+    publicMint: {
+      mintPrice: string;
+      durationDays: string;
+      durationHours: string;
+      startDate?: string;
+    };
+    contractAddress?: string;
+    creatorId: string;
+    creatorRole: string;
   }) {
-    const { name, description, image, images, chain, user } = data;
+    const {
+      chain,
+      name,
+      symbol,
+      description,
+      artType,
+      metadataUrl,
+      collectionImage,
+      artworkUrl,
+      mintPrice,
+      royaltyFee,
+      maxSupply,
+      mintLimit,
+      mintStartDate,
+      allowlistStages,
+      publicMint,
+      contractAddress,
+      creatorId,
+      creatorRole,
+    } = data;
 
-    if (!this.chainConfigs[chain]) {
+    if (!this.chainConfigs[chain])
       throw new BadRequestException('Unsupported chain');
+
+    let finalContractAddress = contractAddress;
+    if (creatorRole === 'admin' && !contractAddress) {
+      const { provider, signer } = this.chainConfigs[chain];
+      const signerConnected = signer.connect(provider);
+      const factory = new ethers.ContractFactory(
+        NFTManager.abi,
+        NFTManager.bytecode,
+        signerConnected,
+      );
+      const contract = await factory.deploy(
+        name,
+        symbol,
+        ethers.parseUnits(maxSupply, 0),
+        ethers.parseUnits(mintLimit, 0),
+        ethers.parseEther(mintPrice),
+        ...Object.values(getMarketplace()),
+      );
+      await contract.waitForDeployment();
+      finalContractAddress = await contract.getAddress();
+    } else if (!contractAddress) {
+      throw new BadRequestException('Contract address is required for users');
     }
 
-    const { provider, signer } = this.chainConfigs[chain];
-    const signerConnected = signer.connect(provider);
-    const factory = new ethers.ContractFactory(
-      NFTManager.abi,
-      NFTManager.bytecode,
-      signerConnected,
-    );
-
-    const contract = await factory.deploy(
-      name,
-      'NFTC',
-      ...Object.values(getMarketplace()),
-    );
-    await contract.waitForDeployment();
-    const contractAddress = await contract.getAddress();
+    const isAdmin = creatorRole === 'admin';
+    const isVerified = isAdmin;
 
     const collection = new this.collectionModel({
-      creatorId: user.id.toString(),
-      creatorRole: user.role || 'user',
+      creatorId,
+      creatorRole,
       name,
       description,
-      image,
-      images: images || [],
-      isVerified: false,
+      image: collectionImage,
+      images: [],
+      isVerified,
       chain,
-      contractAddress,
+      contractAddress: finalContractAddress,
       nftCount: 0,
+      artType,
+      metadataUrl,
+      artworkUrl,
+      mintPrice,
+      royaltyFee,
+      maxSupply,
+      mintLimit,
+      mintStartDate,
+      allowlistStages,
+      publicMint,
     });
 
-    const savedCollection = (await collection.save()) as { _id: string };
+    const savedCollection = (await collection.save()) as any;
     this.logger.log(
-      `Created collection ${savedCollection._id} with contract ${contractAddress}`,
+      `Created collection ${savedCollection._id} with contract ${finalContractAddress} by ${creatorRole}`,
     );
-    return { collectionId: savedCollection._id.toString(), contractAddress };
-  }
 
-  // Các phương thức khác giữ nguyên
-  async approveCollection(data: {
-    collectionId: string;
-    user: { id: number; address: string; role?: string };
-  }) {
-    if (data.user.role !== 'admin') {
-      throw new BadRequestException('Only admins can approve collections');
-    }
-    const collection = await this.collectionModel.findById(data.collectionId);
-    if (!collection) throw new BadRequestException('Collection not found');
-    collection.isVerified = true;
-    await collection.save();
-    this.logger.log(
-      `Approved collection ${data.collectionId} by admin ${data.user.id}`,
-    );
-    return { status: 'approved' };
-  }
-
-  async getCollection(collectionId: string) {
-    const collection = await this.collectionModel.findById(collectionId);
-    if (!collection) throw new BadRequestException('Collection not found');
     return {
-      status: collection.isVerified ? 'approved' : 'pending',
-      chain: collection.chain,
-      contractAddress: collection.contractAddress,
-      nftCount: collection.nftCount,
+      collectionId: savedCollection._id.toString(),
+      contractAddress: finalContractAddress,
     };
   }
 
-  async updateNftCount(collectionId: string, count: number) {
+  async approveCollection(collectionId: string) {
     const collection = await this.collectionModel.findById(collectionId);
     if (!collection) throw new BadRequestException('Collection not found');
-    collection.nftCount += count;
+    if (collection.isVerified)
+      throw new BadRequestException('Collection is already approved');
+    collection.isVerified = true;
     await collection.save();
-    this.logger.log(
-      `Updated nftCount for collection ${collectionId} to ${collection.nftCount}`,
-    );
-    return { success: true };
+    this.logger.log(`Approved collection ${collectionId}`);
+    return true;
+  }
+
+  async getPendingCollections() {
+    const collections = (await this.collectionModel
+      .find({ isVerified: false })
+      .select('name creatorId creatorRole createdAt')
+      .exec()) as any[];
+    return collections.map((collection) => ({
+      collectionId: collection._id.toString(),
+      name: collection.name,
+      creatorId: collection.creatorId,
+      creatorRole: collection.creatorRole,
+      createdAt: collection.createdAt.toISOString(),
+    }));
   }
 }

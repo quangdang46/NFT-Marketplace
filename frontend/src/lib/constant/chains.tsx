@@ -2,7 +2,7 @@ import Base from "@/components/icons/Base";
 import Ethereum from "@/components/icons/Ethereum";
 import Polygon from "@/components/icons/Polygon";
 export interface Chain {
-  id: string;
+  id: number;
   name: string;
   icon: React.ReactNode;
   symbol: string;
@@ -10,21 +10,21 @@ export interface Chain {
 
 export const mockChains: Chain[] = [
   {
-    id: "base",
-    name: "Base",
+    id: 84531,
+    name: "Base Goerli",
     icon: <Base />,
-    symbol: "SOL",
+    symbol: "ETH",
   },
   {
-    id: "ethereum",
-    name: "Sepolia",
+    id: 11155111,
+    name: "Sepolia Ether",
     icon: <Ethereum />,
     symbol: "ETH",
   },
   {
-    id: "polygon",
-    name: "Polygon",
+    id: 80001,
+    name: "Polygon Mumbai",
     icon: <Polygon />,
-    symbol: "POLY",
+    symbol: "ETH",
   },
 ];

@@ -58,6 +58,7 @@ export default function AuthProvider({
         setAuthStatus(data.me ? "authenticated" : "unauthenticated");
       } catch (error) {
         console.error("Error fetching auth status:", error);
+        dispatch(disconnectWallet());
         setAuthStatus("unauthenticated");
       } finally {
         fetchingStatusRef.current = false;
@@ -121,6 +122,8 @@ export default function AuthProvider({
           console.error("Error verifying signature:", error);
           Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
           Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
+          dispatch(disconnectWallet());
+
           setAuthStatus("unauthenticated");
           return false;
         } finally {

@@ -1,72 +1,94 @@
-// v1/collection.controller.ts
 import { CollectionService } from '@/v1/collection.service';
-import { Controller, Logger } from '@nestjs/common'; // Import Controller và Logger từ NestJS
-import { MessagePattern, Payload } from '@nestjs/microservices'; // Import MessagePattern để xử lý tin nhắn RabbitMQ
+import { Controller, Logger } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
 
-@Controller('collection') // Định nghĩa controller với path và version
+@Controller('collection')
 export class CollectionController {
-  private readonly logger = new Logger(CollectionController.name); // Tạo logger cho controller
+  private readonly logger = new Logger(CollectionController.name);
 
   constructor(private readonly collectionService: CollectionService) {
-    this.logger.log('Collection Controller initialized'); // Ghi log khi controller khởi tạo
+    this.logger.log('Collection Controller initialized');
   }
 
-  // Xử lý tin nhắn ping
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
-    return 'pong'; // Trả về "pong" để xác nhận
-  }
-
-  // Xử lý tin nhắn restart (nếu cần)
-  @MessagePattern('restart')
-  handleRestart() {
-    this.logger.log('Restarting consumer for collection-service-queue');
-    // Logic để đăng ký lại consumer nếu cần
+    return 'pong';
   }
 
   @MessagePattern({ cmd: 'create_collection' })
-  async createCollection(
-    @Payload()
-    data: {
-      name: string;
-      description: string;
-      image: string;
-      images: string[];
-      chain: string;
-      user: { id: number; address: string; role?: string };
-    },
-  ) {
-    this.logger.log(`Received create_collection request for ${data.name}`);
-    return this.collectionService.createCollection(data);
+  async createCollection(data: {
+    chain: string;
+    name: string;
+    symbol: string;
+    description: string;
+    artType: string;
+    metadataUrl?: string;
+    collectionImageUrl: string;
+    artworkUrl?: string;
+    mintPrice: string;
+    royaltyFee: string;
+    maxSupply: string;
+    mintLimit: string;
+    mintStartDate: string;
+    allowlistStages: {
+      id: string;
+      mintPrice: string;
+      durationDays: string;
+      durationHours: string;
+      wallets: string[];
+      startDate: string;
+    }[];
+    publicMint: {
+      mintPrice: string;
+      durationDays: string;
+      durationHours: string;
+      startDate?: string;
+    };
+    contractAddress?: string;
+    user: { id: string; role: string };
+  }) {
+    const collection = await this.collectionService.createCollection({
+      chain: data.chain,
+      name: data.name,
+      symbol: data.symbol,
+      description: data.description,
+      artType: data.artType,
+      metadataUrl: data.metadataUrl,
+      collectionImage: data.collectionImageUrl,
+      artworkUrl: data.artworkUrl,
+      mintPrice: data.mintPrice,
+      royaltyFee: data.royaltyFee,
+      maxSupply: data.maxSupply,
+      mintLimit: data.mintLimit,
+      mintStartDate: data.mintStartDate,
+      allowlistStages: data.allowlistStages,
+      publicMint: data.publicMint,
+      contractAddress: data.contractAddress,
+      creatorId: data.user.id,
+      creatorRole: data.user.role,
+    });
+    return {
+      collectionId: collection.collectionId,
+      contractAddress: collection.contractAddress,
+    };
   }
 
   @MessagePattern({ cmd: 'approve_collection' })
-  async approveCollection(
-    @Payload()
-    data: {
-      collectionId: string;
-      user: { id: number; address: string; role?: string };
-    },
-  ) {
-    this.logger.log(
-      `Received approve_collection request for ${data.collectionId}`,
+  async approveCollection(data: {
+    collectionId: string;
+    user: { id: string; role: string };
+  }) {
+    if (data.user.role !== 'admin')
+      throw new Error('Only admins can approve collections');
+    const result = await this.collectionService.approveCollection(
+      data.collectionId,
     );
-    return this.collectionService.approveCollection(data);
+    return { status: result ? 'approved' : 'failed' };
   }
 
-  @MessagePattern({ cmd: 'get_collection' })
-  async getCollection(@Payload() data: { collectionId: string }) {
-    this.logger.log(`Received get_collection request for ${data.collectionId}`);
-    return this.collectionService.getCollection(data.collectionId);
-  }
-
-  @MessagePattern({ cmd: 'update_nft_count' })
-  async updateNftCount(
-    @Payload() data: { collectionId: string; count: number },
-  ) {
-    this.logger.log(
-      `Received update_nft_count request for ${data.collectionId}`,
-    );
-    return this.collectionService.updateNftCount(data.collectionId, data.count);
+  @MessagePattern({ cmd: 'get_pending_collections' })
+  async getPendingCollections() {
+    const collections = await this.collectionService.getPendingCollections();
+    return { collections };
   }
 }

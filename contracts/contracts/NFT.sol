@@ -13,9 +13,15 @@ contract NFTManager is ERC721URIStorage, Ownable, IERC2981 {
 
     uint256 private _tokenIdCounter;
     address public marketplaceFeeRecipient;
-    uint256 public marketplaceFeePercentage; // Phí marketplace (phần trăm, ví dụ: 2.5% = 250)
-    mapping(uint256 => address) public royaltyRecipients; // Creator nhận royalty
-    mapping(uint256 => uint256) public royaltyPercentages; // Royalty % cho mỗi NFT
+    uint256 public marketplaceFeePercentage;
+    mapping(uint256 => address) public royaltyRecipients;
+    mapping(uint256 => uint256) public royaltyPercentages;
+
+    // Thêm các biến từ entity
+    uint256 public maxSupply; // Tổng cung tối đa
+    uint256 public mintLimit; // Giới hạn mint mỗi ví
+    uint256 public mintPrice; // Giá mint mỗi NFT (wei)
+    mapping(address => uint256) public mintCountPerWallet; // Đếm số NFT đã mint mỗi ví
 
     // Auction
     struct Auction {
@@ -43,23 +49,29 @@ contract NFTManager is ERC721URIStorage, Ownable, IERC2981 {
         string memory name,
         string memory symbol,
         address _feeRecipient,
-        uint256 _feePercentage
+        uint256 _feePercentage,
+        uint256 _maxSupply,
+        uint256 _mintLimit,
+        uint256 _mintPrice
     ) ERC721(name, symbol) Ownable(msg.sender) {
         marketplaceFeeRecipient = _feeRecipient;
         marketplaceFeePercentage = _feePercentage;
-        _tokenIdCounter = 1; // Bắt đầu từ 1 để khớp với NFTMarketplace
+        maxSupply = _maxSupply;
+        mintLimit = _mintLimit;
+        mintPrice = _mintPrice;
+        _tokenIdCounter = 0; // Bắt đầu từ 0 để kiểm soát maxSupply
     }
 
-    // Bulk Mint (từ CollectionNFT gốc)
+    // Bulk Mint (Admin only)
     function bulkMint(address to, string[] memory tokenURIs) external onlyOwner returns (uint256[] memory) {
+        require(_tokenIdCounter + tokenURIs.length <= maxSupply, "Exceeds max supply");
         uint256[] memory tokenIds = new uint256[](tokenURIs.length);
         for (uint256 i = 0; i < tokenURIs.length; i++) {
-            _tokenIdCounter++;
-            uint256 tokenId = _tokenIdCounter;
+            uint256 tokenId = _tokenIdCounter++;
             _safeMint(to, tokenId);
             _setTokenURI(tokenId, tokenURIs[i]);
-            royaltyRecipients[tokenId] = to; // Gán royalty cho người nhận
-            royaltyPercentages[tokenId] = 1000; // Mặc định 10%
+            royaltyRecipients[tokenId] = to;
+            royaltyPercentages[tokenId] = 1000; // Mặc định 10%, có thể cập nhật sau
             tokenIds[i] = tokenId;
             emit NFTMinted(tokenId, to, tokenURIs[i]);
         }
@@ -67,23 +79,29 @@ contract NFTManager is ERC721URIStorage, Ownable, IERC2981 {
     }
 
     // Mint thủ công (Admin only)
-    function mintManual(address recipient, string memory uri) external onlyOwner returns (uint256) {
+    function mintManual(address recipient, string memory uri, uint256 royaltyPercentage) external onlyOwner returns (uint256) {
+        require(_tokenIdCounter < maxSupply, "Exceeds max supply");
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(recipient, tokenId);
         _setTokenURI(tokenId, uri);
         royaltyRecipients[tokenId] = recipient;
-        royaltyPercentages[tokenId] = 1000; // Mặc định 10%
+        royaltyPercentages[tokenId] = royaltyPercentage; // Dùng giá trị từ input
         emit NFTMinted(tokenId, recipient, uri);
         return tokenId;
     }
 
     // Mint tự động (User)
-    function mintNFT(string memory uri) external returns (uint256) {
+    function mintNFT(string memory uri) external payable returns (uint256) {
+        require(_tokenIdCounter < maxSupply, "Exceeds max supply");
+        require(msg.value >= mintPrice, "Insufficient payment");
+        require(mintCountPerWallet[msg.sender] < mintLimit, "Exceeds mint limit per wallet");
+
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, uri);
         royaltyRecipients[tokenId] = msg.sender;
-        royaltyPercentages[tokenId] = 1000; // Mặc định 10%
+        royaltyPercentages[tokenId] = 1000; // Mặc định 10%, có thể cập nhật sau
+        mintCountPerWallet[msg.sender]++;
         emit NFTMinted(tokenId, msg.sender, uri);
         return tokenId;
     }
@@ -95,6 +113,7 @@ contract NFTManager is ERC721URIStorage, Ownable, IERC2981 {
         uint256 royaltyPercentage,
         bytes memory signature
     ) external payable onlyOwner {
+        require(_tokenIdCounter < maxSupply, "Exceeds max supply");
         bytes32 hash = keccak256(abi.encodePacked(buyer, uri, royaltyPercentage));
         bytes32 messageHash = MessageHashUtils.toEthSignedMessageHash(hash);
         address signer = ECDSA.recover(messageHash, signature);
@@ -177,7 +196,13 @@ contract NFTManager is ERC721URIStorage, Ownable, IERC2981 {
         return (royaltyRecipients[tokenId], royaltyAmount);
     }
 
-    // Override supportsInterface để hỗ trợ IERC2981
+// Hàm cập nhật royalty (Admin only)
+    function setRoyalty(uint256 tokenId, uint256 percentage) external onlyOwner {
+        require(percentage <= 10000, "Royalty too high");
+        royaltyPercentages[tokenId] = percentage;
+    }
+
+    // Override supportsInterface
     function supportsInterface(bytes4 interfaceId)
         public
         view

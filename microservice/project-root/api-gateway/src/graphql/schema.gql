@@ -12,6 +12,23 @@ type AuthResponse {
   refreshToken: String!
 }
 
+type CreateCollectionResponse {
+  collectionId: String!
+  contractAddress: String!
+}
+
+type ApproveCollectionResponse {
+  success: Boolean!
+}
+
+type PendingCollection {
+  collectionId: String!
+  name: String!
+  creatorId: String!
+  creatorRole: String!
+  createdAt: String!
+}
+
 type User {
   id: String!
   username: String!
@@ -32,6 +49,7 @@ type VerifyUserResponse {
 type Query {
   nonce: String!
   me: UserResponse!
+  getPendingCollections: [PendingCollection!]!
   getUser(userId: String!): User!
   getSignedUrl: String!
 }
@@ -40,6 +58,43 @@ type Mutation {
   verify(message: String!, signature: String!): AuthResponse!
   logout: Boolean!
   refreshToken(refreshToken: String!): AuthResponse!
+  createCollection(input: CreateCollectionInput!): CreateCollectionResponse!
+  approveCollection(collectionId: String!): ApproveCollectionResponse!
   createUser(username: String!, email: String!, _address: String!, role: String): CreateUserResponse!
   verifyUser(userId: String!): VerifyUserResponse!
+}
+
+input CreateCollectionInput {
+  chain: String!
+  name: String!
+  symbol: String!
+  description: String!
+  artType: String!
+  metadataUrl: String
+  collectionImageUrl: String!
+  artworkUrl: String
+  mintPrice: String!
+  royaltyFee: String!
+  maxSupply: String!
+  mintLimit: String!
+  mintStartDate: String!
+  allowlistStages: [AllowlistStageInput!]!
+  publicMint: PublicMintInput!
+  contractAddress: String
+}
+
+input AllowlistStageInput {
+  id: String!
+  mintPrice: String!
+  durationDays: String!
+  durationHours: String!
+  wallets: [String!]!
+  startDate: String!
+}
+
+input PublicMintInput {
+  mintPrice: String!
+  durationDays: String!
+  durationHours: String!
+  startDate: String
 }

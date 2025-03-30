@@ -16,7 +16,7 @@ export default function NewCollection() {
         </p>
 
         <Button
-          className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+          className="w-full bg-pink-600 hover:bg-pink-700 text-white cursor-pointer"
           onClick={() => {
             redirect("/create/collection");
           }}

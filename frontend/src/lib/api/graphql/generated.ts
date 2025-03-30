@@ -17,10 +17,49 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type AllowlistStageInput = {
+  durationDays: Scalars['String']['input'];
+  durationHours: Scalars['String']['input'];
+  id: Scalars['String']['input'];
+  mintPrice: Scalars['String']['input'];
+  startDate: Scalars['String']['input'];
+  wallets: Array<Scalars['String']['input']>;
+};
+
+export type ApproveCollectionResponse = {
+  __typename?: 'ApproveCollectionResponse';
+  success: Scalars['Boolean']['output'];
+};
+
 export type AuthResponse = {
   __typename?: 'AuthResponse';
   accessToken: Scalars['String']['output'];
   refreshToken: Scalars['String']['output'];
+};
+
+export type CreateCollectionInput = {
+  allowlistStages: Array<AllowlistStageInput>;
+  artType: Scalars['String']['input'];
+  artworkUrl?: InputMaybe<Scalars['String']['input']>;
+  chain: Scalars['String']['input'];
+  collectionImageUrl: Scalars['String']['input'];
+  contractAddress?: InputMaybe<Scalars['String']['input']>;
+  description: Scalars['String']['input'];
+  maxSupply: Scalars['String']['input'];
+  metadataUrl?: InputMaybe<Scalars['String']['input']>;
+  mintLimit: Scalars['String']['input'];
+  mintPrice: Scalars['String']['input'];
+  mintStartDate: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  publicMint: PublicMintInput;
+  royaltyFee: Scalars['String']['input'];
+  symbol: Scalars['String']['input'];
+};
+
+export type CreateCollectionResponse = {
+  __typename?: 'CreateCollectionResponse';
+  collectionId: Scalars['String']['output'];
+  contractAddress: Scalars['String']['output'];
 };
 
 export type CreateUserResponse = {
@@ -30,11 +69,23 @@ export type CreateUserResponse = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  approveCollection: ApproveCollectionResponse;
+  createCollection: CreateCollectionResponse;
   createUser: CreateUserResponse;
   logout: Scalars['Boolean']['output'];
   refreshToken: AuthResponse;
   verify: AuthResponse;
   verifyUser: VerifyUserResponse;
+};
+
+
+export type MutationApproveCollectionArgs = {
+  collectionId: Scalars['String']['input'];
+};
+
+
+export type MutationCreateCollectionArgs = {
+  input: CreateCollectionInput;
 };
 
 
@@ -61,8 +112,25 @@ export type MutationVerifyUserArgs = {
   userId: Scalars['String']['input'];
 };
 
+export type PendingCollection = {
+  __typename?: 'PendingCollection';
+  collectionId: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  creatorId: Scalars['String']['output'];
+  creatorRole: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type PublicMintInput = {
+  durationDays: Scalars['String']['input'];
+  durationHours: Scalars['String']['input'];
+  mintPrice: Scalars['String']['input'];
+  startDate?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  getPendingCollections: Array<PendingCollection>;
   getSignedUrl: Scalars['String']['output'];
   getUser: User;
   me: UserResponse;
@@ -94,6 +162,13 @@ export type VerifyUserResponse = {
   __typename?: 'VerifyUserResponse';
   status: Scalars['String']['output'];
 };
+
+export type CreateCollectionMutationVariables = Exact<{
+  input: CreateCollectionInput;
+}>;
+
+
+export type CreateCollectionMutation = { __typename?: 'Mutation', createCollection: { __typename?: 'CreateCollectionResponse', collectionId: string, contractAddress: string } };
 
 export type GetSignedUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -131,6 +206,40 @@ export type VerifyMutationVariables = Exact<{
 export type VerifyMutation = { __typename?: 'Mutation', verify: { __typename?: 'AuthResponse', accessToken: string, refreshToken: string } };
 
 
+export const CreateCollectionDocument = gql`
+    mutation CreateCollection($input: CreateCollectionInput!) {
+  createCollection(input: $input) {
+    collectionId
+    contractAddress
+  }
+}
+    `;
+export type CreateCollectionMutationFn = Apollo.MutationFunction<CreateCollectionMutation, CreateCollectionMutationVariables>;
+
+/**
+ * __useCreateCollectionMutation__
+ *
+ * To run a mutation, you first call `useCreateCollectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCollectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCollectionMutation, { data, loading, error }] = useCreateCollectionMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateCollectionMutation(baseOptions?: Apollo.MutationHookOptions<CreateCollectionMutation, CreateCollectionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCollectionMutation, CreateCollectionMutationVariables>(CreateCollectionDocument, options);
+      }
+export type CreateCollectionMutationHookResult = ReturnType<typeof useCreateCollectionMutation>;
+export type CreateCollectionMutationResult = Apollo.MutationResult<CreateCollectionMutation>;
+export type CreateCollectionMutationOptions = Apollo.BaseMutationOptions<CreateCollectionMutation, CreateCollectionMutationVariables>;
 export const GetSignedUrlDocument = gql`
     query GetSignedUrl {
   getSignedUrl

@@ -91,7 +91,7 @@ const PROVIDERS = [
   JwtService,
   GatewayService,
   AuthResolver,
-  // CollectionResolver,
+  CollectionResolver,
   // NftResolver,
   UserResolver,
   // WalletResolver,

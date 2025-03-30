@@ -1,10 +1,12 @@
-import { Resolver, Mutation, Args, Context } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Context, Query } from '@nestjs/graphql';
 import { GatewayService } from '../gateway.service';
 import { UseGuards } from '@nestjs/common';
-import { JwtGuard, AuthRequest } from '@project/shared';
+import { JwtGuard } from '@project/shared';
 import {
-  ApproveCollectionResponse,
   CreateCollectionResponse,
+  ApproveCollectionResponse,
+  PendingCollection,
+  CreateCollectionInput,
 } from '@/graphql/types/collection.type';
 
 @Resolver()
@@ -14,21 +16,17 @@ export class CollectionResolver {
   @Mutation(() => CreateCollectionResponse)
   @UseGuards(JwtGuard)
   async createCollection(
-    @Args('name') name: string,
-    @Args('description') description: string,
-    @Args('image') image: string,
-    @Args('images', { type: () => [String], nullable: true }) images: string[],
-    @Args('chain') chain: string,
+    @Args('input') input: CreateCollectionInput,
     @Context() context: { req: any },
   ) {
-    const user = context.req.user;
+    const user = context.req.user; // Giả sử user có { id: string, role: string }
     const result: {
       collectionId: string;
       contractAddress: string;
     } = await this.gatewayService.sendToService(
       'collection-service',
       { cmd: 'create_collection' },
-      { name, description, image, images, chain, user },
+      { ...input, user: { id: user.id, role: user.role } },
     );
     return {
       collectionId: result.collectionId,
@@ -43,13 +41,31 @@ export class CollectionResolver {
     @Context() context: { req: any },
   ) {
     const user = context.req.user;
+    if (user.role !== 'admin')
+      throw new Error('Only admins can approve collections');
     const result: {
-      status: string;
+      status: 'approved' | 'rejected';
     } = await this.gatewayService.sendToService(
       'collection-service',
       { cmd: 'approve_collection' },
-      { collectionId, user },
+      { collectionId, user: { id: user.id, role: user.role } },
     );
     return { success: result.status === 'approved' };
+  }
+
+  @Query(() => [PendingCollection])
+  @UseGuards(JwtGuard)
+  async getPendingCollections(@Context() context: { req: any }) {
+    const user = context.req.user;
+    if (user.role !== 'ADMIN')
+      throw new Error('Only admins can view pending collections');
+    const result: {
+      collections: PendingCollection[];
+    } = await this.gatewayService.sendToService(
+      'collection-service',
+      { cmd: 'get_pending_collections' },
+      {},
+    );
+    return result.collections;
   }
 }
