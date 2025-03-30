@@ -2,13 +2,18 @@ import { MiddlewareFactory } from "@/types/MiddlewareFactory";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 export const authMiddleware: MiddlewareFactory = (next) => {
   return async (req: NextRequest, _next: NextFetchEvent) => {
-    const path = req.nextUrl.pathname;
+    const PROTECTED_ROUTES = ["/create"];
 
-    // Bảo vệ route admin
-    if (path.startsWith("/admin")) {
-      const token = req.cookies.get("authToken")?.value;
+    const { pathname } = req.nextUrl;
+
+    const isProtectedRoute = PROTECTED_ROUTES.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`)
+    );
+    if (isProtectedRoute) {
+      const token = req.cookies.get("auth_token")?.value;
+
       if (!token) {
-        return NextResponse.redirect(new URL("/", req.url));
+        return NextResponse.redirect(new URL("/404", req.url));
       }
     }
 

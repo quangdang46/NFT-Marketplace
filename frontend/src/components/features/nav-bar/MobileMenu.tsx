@@ -7,14 +7,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import Link from "next/link";
-
-interface NavItem {
-  id: string;
-  label: string;
-  href: string;
-  hasDropdown: boolean;
-  dropdownItems?: { label: string; href: string }[];
-}
+import { NavItem } from "@/lib/constant/menu";
 
 interface MobileMenuProps {
   navItems: NavItem[];

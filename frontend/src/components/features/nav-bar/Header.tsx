@@ -1,18 +1,24 @@
 "use client";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { navItems } from "@/lib/constant/menu";
+import { getNavItems } from "@/lib/constant/menu";
 import { MobileMenu } from "@/components/features/nav-bar/MobileMenu";
 import { SearchBar } from "@/components/features/nav-bar/SearchBar";
 import { NavLink } from "@/components/features/nav-bar/NavLink";
 import { WalletButton } from "@/components/features/wallet-button/WalletButton";
 import { ModeToggle } from "@/components/ui/darkmode";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 export function Header() {
   const [activeTab] = useState("collections");
   const isMobile = useIsMobile();
+  // Get authentication status from Redux
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
+  // Get the appropriate nav items based on authentication status
+  const navItems = getNavItems(isAuthenticated);
   return (
     <header className="bg-[#1A1F2C]/95 backdrop-blur-sm border-b border-white/5 py-3">
       <div className="flex items-center justify-between px-2 sm:px-4">

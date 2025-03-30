@@ -20,12 +20,15 @@ import {
   MeDocument,
   LogoutDocument,
 } from "@/lib/api/graphql/generated";
-
+import { useDispatch } from "react-redux";
+import { connectWallet, disconnectWallet } from "@/store/slices/authSlice";
 export default function AuthProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const dispatch = useDispatch();
+
   const fetchingStatusRef = useRef(false);
   const verifyingRef = useRef(false);
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>(
@@ -111,7 +114,7 @@ export default function AuthProvider({
             secure: true,
             sameSite: "strict",
           });
-
+          dispatch(connectWallet({ token: accessToken }));
           setAuthStatus("authenticated");
           return true;
         } catch (error) {
@@ -131,6 +134,7 @@ export default function AuthProvider({
           console.log("Logout response:", data); // Debug
           Cookies.remove("auth_token", { secure: true, sameSite: "strict" });
           Cookies.remove("refresh_token", { secure: true, sameSite: "strict" });
+          dispatch(disconnectWallet());
           setAuthStatus("unauthenticated");
         } catch (error) {
           console.error("Error during sign out:", error);
