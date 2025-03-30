@@ -12,7 +12,6 @@ export class UserController {
 
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
-    this.logger.log('Received ping message');
     return 'pong';
   }
 

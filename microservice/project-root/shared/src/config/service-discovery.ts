@@ -45,7 +45,7 @@ export class ServiceDiscovery implements OnApplicationShutdown {
       });
 
       await this.rabbitMQClient.ensureConnected();
-      this.logger.log(`Service ${this.serviceId} registered with Consul`);
+      // this.logger.log(`Service ${this.serviceId} registered with Consul`);
 
       // Gọi passHealthCheck bất đồng bộ
       this.passHealthCheck().catch((error) => {
@@ -70,12 +70,12 @@ export class ServiceDiscovery implements OnApplicationShutdown {
         throw new Error("RabbitMQ not connected");
       }
 
-      this.logger.log(`Sending ping to ${this.serviceId}...`);
+      // this.logger.log(`Sending ping to ${this.serviceId}...`);
       const response = await this.rabbitMQClient.send<string>(
         { cmd: "ping" },
         {}
       );
-      this.logger.log(`Received response: ${response}`);
+      // this.logger.log(`Received response: ${response}`);
       if (response !== "pong") {
         throw new Error("Ping failed");
       }
@@ -84,7 +84,7 @@ export class ServiceDiscovery implements OnApplicationShutdown {
         id: `service:${this.serviceId}`,
         note: "Service is healthy",
       });
-      this.logger.log(`Health check passed for ${this.serviceId}`);
+      // this.logger.log(`Health check passed for ${this.serviceId}`);
     } catch (error) {
       this.logger.error(
         `Failed to pass check for ${this.serviceId}:`,
@@ -120,7 +120,7 @@ export class ServiceDiscovery implements OnApplicationShutdown {
   async onApplicationShutdown() {
     try {
       await this.consul.agent.service.deregister(this.serviceId);
-      this.logger.log(`Deregistered service ${this.serviceId} from Consul`);
+      // this.logger.log(`Deregistered service ${this.serviceId} from Consul`);
     } catch (error) {
       this.logger.error(
         `Failed to deregister service ${this.serviceId}:`,

@@ -30,7 +30,7 @@ export class RabbitMQHealthService {
       try {
         await this.rabbitMQClient.connect();
         clientReady = true;
-        this.logger.log("RabbitMQ client is ready");
+        // this.logger.log("RabbitMQ client is ready");
         break;
       } catch (error) {
         this.logger.warn(
@@ -72,7 +72,7 @@ export class RabbitMQHealthService {
         }
 
         await this.serviceDiscovery.passHealthCheck();
-        this.logger.log("Initial health check passed");
+        // this.logger.log("Initial health check passed");
         return;
       } catch (error) {
         this.logger.error(
@@ -110,7 +110,7 @@ export class RabbitMQHealthService {
         }
 
         await this.serviceDiscovery.passHealthCheck();
-        this.logger.log("Periodic health check passed");
+        // this.logger.log("Periodic health check passed");
       } catch (error) {
         this.logger.error(`Periodic health check failed: ${error.message}`);
         let reconnected = false;

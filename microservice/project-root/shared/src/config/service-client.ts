@@ -19,7 +19,7 @@ export class ServiceClient {
     for (const service of this.initialServices) {
       const queue = await this.serviceDiscovery.getServiceQueue(service);
       this.clients[service] = new RabbitMQClient(service);
-      this.logger.log(`Initialized client for ${service} with queue: ${queue}`);
+      // this.logger.log(`Initialized client for ${service} with queue: ${queue}`);
     }
   }
 
@@ -35,9 +35,9 @@ export class ServiceClient {
       const queue = await this.serviceDiscovery.getServiceQueue(service);
       client = new RabbitMQClient(service);
       this.clients[service] = client;
-      this.logger.log(
-        `Dynamically added client for ${service} with queue: ${queue}`
-      );
+      // this.logger.log(
+      //   `Dynamically added client for ${service} with queue: ${queue}`
+      // );
     }
 
     let attempt = 0;
@@ -57,7 +57,7 @@ export class ServiceClient {
             setTimeout(() => reject(new Error("Timeout")), 5000)
           ),
         ]);
-        this.logger.log(`Received from ${service}: ${JSON.stringify(result)}`);
+        // this.logger.log(`Received from ${service}: ${JSON.stringify(result)}`);
         return result as T;
       } catch (error) {
         attempt++;

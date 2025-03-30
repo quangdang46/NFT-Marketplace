@@ -23,11 +23,11 @@ export class RabbitMQClient implements OnApplicationShutdown {
       const connection = await amqplib.connect(this.options.options.urls[0]);
       const channel = await connection.createChannel();
       const queue = this.options.options.queue;
-      this.logger.warn(`Attempting to delete queue ${queue} to fix mismatch`);
+      // this.logger.warn(`Attempting to delete queue ${queue} to fix mismatch`);
       await channel.deleteQueue(queue);
       await channel.close();
       await connection.close();
-      this.logger.log(`Queue ${queue} deleted successfully`);
+      // this.logger.log(`Queue ${queue} deleted successfully`);
     } catch (error) {
       this.logger.error(
         `Failed to delete queue ${this.options.options.queue}:`,
@@ -54,7 +54,7 @@ export class RabbitMQClient implements OnApplicationShutdown {
       this.client = ClientProxyFactory.create(this.options);
       await this.client.connect();
       this.isConnected = true;
-      this.logger.log("Successfully connected to RMQ broker");
+      // this.logger.log("Successfully connected to RMQ broker");
     } catch (error) {
       this.isConnected = false;
       this.logger.error(
@@ -91,22 +91,23 @@ export class RabbitMQClient implements OnApplicationShutdown {
         throw new Error("Failed to connect to RabbitMQ after retries");
       }
     }
-    this.logger.log("RabbitMQ client is connected and ready");
+    // this.logger.log("RabbitMQ client is connected and ready");
   }
 
   async send<T>(pattern: any, data: any): Promise<T> {
     await this.ensureConnected();
-    this.logger.log(
-      `Sending message to queue ${this.options.options.queue}: ${JSON.stringify(
-        pattern
-      )} - ${JSON.stringify(data)}`
+    console.log(
+      `\n\x1b[36mSEND TO    :\x1b[0m ${this.options.options.queue}
+   \x1b[32mCMD       :\x1b[0m ${JSON.stringify(pattern)}
+   \x1b[33mDATA SEND :\x1b[0m ${JSON.stringify(data)}`
     );
+
     try {
       const response = await this.client!.send<T>(pattern, data).toPromise();
-      this.logger.log(
-        `Received response from queue ${
-          this.options.options.queue
-        }: ${JSON.stringify(response)}`
+      console.log(
+        `\n\x1b[31mRESPONSE FROM   :\x1b[0m ${this.options.options.queue}
+        \x1b[32mCMD          :\x1b[0m ${JSON.stringify(pattern)}
+        \x1b[33mDATA         :\x1b[0m ${JSON.stringify(response)}`
       );
       return response;
     } catch (error) {

@@ -12,7 +12,6 @@ export class TestController {
 
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
-    this.logger.log('Received ping message');
     return 'pong';
   }
 
@@ -20,8 +19,4 @@ export class TestController {
   handleRestart() {
     this.logger.log('Restarting consumer for test-service-queue');
   }
-
-
-
-  
 }

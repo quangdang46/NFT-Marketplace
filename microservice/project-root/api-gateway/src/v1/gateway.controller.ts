@@ -17,7 +17,6 @@ export class GatewayController {
 
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
-    this.logger.log('Received ping message');
     return 'pong';
   }
 

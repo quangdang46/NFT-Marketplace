@@ -14,7 +14,6 @@ export class CollectionController {
   // Xử lý tin nhắn ping
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
-    this.logger.log('Received ping message');
     return 'pong'; // Trả về "pong" để xác nhận
   }
 

@@ -12,7 +12,6 @@ export class FileController {
 
   @MessagePattern({ cmd: 'ping' })
   handlePing(): string {
-    this.logger.log('Received ping message');
     return 'pong';
   }
 
@@ -23,7 +22,7 @@ export class FileController {
 
   @MessagePattern({ cmd: 'get-signed-url' })
   async getPreSignedUrl() {
-    const url =await this.fileService.getSignedUrl();
+    const url = await this.fileService.getSignedUrl();
     return url;
   }
 }

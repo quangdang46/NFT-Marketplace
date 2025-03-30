@@ -30,11 +30,26 @@ export const getRabbitMQConfig = (servicePrefix: string): RmqOptions => {
 };
 
 export const getTypeOrmConfig = (): TypeOrmModuleOptions => {
-  const host = process.env.POSTGRES_HOST || "localhost";
-  const port = +process.env.POSTGRES_PORT || 5433;
-  const username = process.env.POSTGRES_USER || "postgres";
-  const password = process.env.POSTGRES_PASSWORD || "localhost";
-  const database = process.env.POSTGRES_DB || "nftmarket";
+  const host = process.env.POSTGRES_HOST;
+  if (!host) {
+    throw new Error("Postgres Host not found in environment variables");
+  }
+  const port = +process.env.POSTGRES_PORT;
+  if (!port) {
+    throw new Error("Postgres Port not found in environment variables");
+  }
+  const username = process.env.POSTGRES_USER;
+  if (!username) {
+    throw new Error("Postgres User not found in environment variables");
+  }
+  const password = process.env.POSTGRES_PASSWORD;
+  if (!password) {
+    throw new Error("Postgres Password not found in environment variables");
+  }
+  const database = process.env.POSTGRES_DB;
+  if (!database) {
+    throw new Error("Postgres Database not found in environment variables");
+  }
   console.log(
     `[TypeOrm Config] Host: ${host}:${port}, Database: ${database}, User: ${username}`
   );
@@ -72,8 +87,14 @@ export const getRedisConfig = (): RedisModuleOptions => {
 };
 
 export const getConsulConfig = (servicePrefix: string) => {
-  const host = process.env.CONSUL_HOST || "localhost";
-  const port = process.env.CONSUL_PORT || "8500";
+  const host = process.env.CONSUL_HOST;
+  if (!host) {
+    throw new Error("Consul Host not found in environment variables");
+  }
+  const port = process.env.CONSUL_PORT;
+  if (!port) {
+    throw new Error("Consul Port not found in environment variables");
+  }
 
   const serviceName =
     process.env[`${servicePrefix.toUpperCase()}-NAME`] ||
@@ -111,7 +132,6 @@ export const getPrivateKey = () => {
   if (!key) {
     throw new Error("Private Key not found in environment variables");
   }
-  console.log(`[Private Key] Length: ${key.length}`);
   return key;
 };
 
@@ -153,7 +173,6 @@ export const getPinataConfig = () => {
   if (!pinataJwt || !pinataGateway) {
     throw new Error("Pinata config not found in environment variables");
   }
-  console.log(`[Pinata Config] JWT: ${pinataJwt}, Gateway: ${pinataGateway}`);
   return {
     pinataJwt,
     pinataGateway,
