@@ -19,10 +19,11 @@ export class CollectionResolver {
     @Args('input') input: CreateCollectionInput,
     @Context() context: { req: any },
   ) {
-    const user = context.req.user; // Giả sử user có { id: string, role: string }
+    const user = context.req.user;
     const result: {
-      collectionId: string;
-      contractAddress: string;
+      collectionId?: string;
+      contractAddress?: string;
+      steps?: { id: string; params: any }[];
     } = await this.gatewayService.sendToService(
       'collection-service',
       { cmd: 'create_collection' },
@@ -31,6 +32,7 @@ export class CollectionResolver {
     return {
       collectionId: result.collectionId,
       contractAddress: result.contractAddress,
+      steps: result.steps,
     };
   }
 

@@ -5,11 +5,10 @@ This project demonstrates a basic Hardhat use case. It comes with a sample contr
 Try running some of the following tasks:
 
 ```shell
-npx hardhat run scripts/deploy.js --network eth-sepolia
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
 npx hardhat compile
+npx hardhat run scripts/deploy.js --network eth-sepolia
+
+npx hardhat node
+npx hardhat run scripts/test.js --network localhost
+
 ```

@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// FE: CreateCollection.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -17,47 +15,18 @@ import { type z } from "zod";
 import { RotateCcw } from "lucide-react";
 import { mockChains } from "@/lib/constant/chains";
 import { formattedAllowlistStages } from "@/lib/utils/format";
-import {
-  useAccount,
-  useSwitchChain,
-  useWriteContract,
-  useBalance,
-  useWaitForTransactionReceipt,
-  useConnect,
-} from "wagmi";
+import { useAccount, useSwitchChain, useConnect, useWalletClient } from "wagmi";
 import { injected } from "@wagmi/connectors";
 import { uploadImage } from "@/lib/utils/upload";
-import { ethers } from "ethers";
 import client from "@/lib/api/apolloClient";
 import { CreateCollectionDocument } from "@/lib/api/graphql/generated";
-import { getMarketplace } from "@/lib/utils/getEnv";
-import * as NFTManager from "@/lib/constant/NFTManager.json";
+import { BrowserProvider } from "ethers";
 export default function CreateCollection() {
   const { address, chain, isConnected } = useAccount();
   const { connectAsync } = useConnect();
   const { switchChain } = useSwitchChain();
-  const { data: balance } = useBalance({ address });
-
+  const { data: walletClient } = useWalletClient();
   const [userRole, setUserRole] = useState<"admin" | "user" | null>(null);
-  const [gasPriceOption, setGasPriceOption] = useState<
-    "low" | "medium" | "high" | "custom"
-  >("medium");
-  const [customGasPrice, setCustomGasPrice] = useState<string>("");
-  const [customGasLimit, setCustomGasLimit] = useState<string>("");
-  const [useCustomGas, setUseCustomGas] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      setUserRole("user"); // Giả lập
-    };
-    fetchUserRole();
-  }, []);
-
-  const chainDisplayNames = mockChains.reduce((acc, chain) => {
-    acc[chain.id] = chain.name;
-    return acc;
-  }, {} as Record<string, string>);
-
   const [isLoading, setIsLoading] = useState(false);
   const [allowlistStages, setAllowlistStages] = useState<any[]>([]);
   const [selectedChain, setSelectedChain] = useState("Sepolia");
@@ -66,7 +35,6 @@ export default function CreateCollection() {
     durationDays: "1",
     durationHours: "0",
   });
-
   const [selectedArtType, setSelectedArtType] = useState<"same" | "unique">(
     "unique"
   );
@@ -86,54 +54,38 @@ export default function CreateCollection() {
     resolver: zodResolver(formSchema),
     defaultValues: { chain: "Sepolia", name: "", symbol: "", description: "" },
   });
-
-  const {
-    writeContractAsync,
-    data: hash,
-    error: writeError,
-  } = useWriteContract();
-  const {
-    isLoading: isTxLoading,
-    isSuccess: isTxSuccess,
-    data: txReceipt,
-  } = useWaitForTransactionReceipt({ hash });
+  const watchedChain = form.watch("chain");
 
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "chain" && value.chain)
-        setSelectedChain(value.chain as string);
-    });
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
+    const fetchUserRole = async () => {
+      setUserRole("user"); // Giả lập
+    };
+    fetchUserRole();
+  }, []);
+
+  const chainDisplayNames = mockChains.reduce((acc, chain) => {
+    acc[chain.id] = chain.name;
+    return acc;
+  }, {} as Record<string, string>);
 
   useEffect(() => {
-    if (isConnected && chain && chain.name !== selectedChain) {
-      const chainId = mockChains.find((c) => c.name === selectedChain)?.id;
-      if (chainId) switchChain({ chainId });
+    if (watchedChain) setSelectedChain(watchedChain);
+  }, [watchedChain]);
+
+  useEffect(() => {
+    if (!isConnected || !chain || !chain.name) return;
+
+    const targetChain = mockChains.find((c) => c.name === selectedChain);
+    if (targetChain && chain.id !== targetChain.id) {
+      switchChain({ chainId: targetChain.id });
     }
   }, [isConnected, chain, selectedChain, switchChain]);
-
-  useEffect(() => {
-    if (isTxSuccess && txReceipt) {
-      const contractAddress = txReceipt.contractAddress;
-      if (contractAddress)
-        proceedToCreateCollection(form.getValues(), contractAddress);
-      else toast.error("Failed to retrieve contract address");
-    }
-  }, [isTxSuccess, txReceipt]);
-
-  useEffect(() => {
-    if (writeError)
-      toast.error("Failed to deploy contract", {
-        description: writeError.message,
-      });
-  }, [writeError]);
 
   const getButtonText = () => {
     if (!isConnected) return "Connect Wallet";
     if (isLoading) return "Processing...";
     if (chain?.name === selectedChain)
-      return `Create Collection on ${chain?.name}`;
+      return `Create Collection on ${chain.name}`;
     return `Switch Wallet to ${
       chainDisplayNames[selectedChain] || selectedChain
     }`;
@@ -180,7 +132,9 @@ export default function CreateCollection() {
       try {
         await connectAsync({ connector: injected() });
       } catch (error) {
-        toast.error("Failed to connect wallet", { description: error.message });
+        toast.error("Failed to connect wallet", {
+          description: (error as Error).message,
+        });
       }
       return;
     }
@@ -204,102 +158,8 @@ export default function CreateCollection() {
       return;
     }
 
-    if (userRole === "user") {
-      const userBalance = balance
-        ? ethers.utils.formatEther(balance.value)
-        : "0";
-      if (parseFloat(userBalance) < 0.001) {
-        toast.error("Insufficient ETH", {
-          description: "You need sufficient ETH to cover the gas fee.",
-        });
-        return;
-      }
-      const { marketplaceFeeRecipient, marketplaceFeePercentage } =
-        getMarketplace();
-      toast("Notice", {
-        description: (
-          <div>
-            <p>
-              Creating a collection will incur a gas fee. Confirm in your
-              wallet.
-            </p>
-            <div className="mt-2">
-              <label>Gas Price Option:</label>
-              <select
-                value={gasPriceOption}
-                onChange={(e) => setGasPriceOption(e.target.value as any)}
-              >
-                <option value="low">Low (1 Gwei)</option>
-                <option value="medium">Medium (2 Gwei)</option>
-                <option value="high">High (3 Gwei)</option>
-                <option value="custom">Custom</option>
-              </select>
-              {useCustomGas && (
-                <div>
-                  <input
-                    type="number"
-                    value={customGasPrice}
-                    onChange={(e) => setCustomGasPrice(e.target.value)}
-                    placeholder="Gas Price (Gwei)"
-                  />
-                  <input
-                    type="number"
-                    value={customGasLimit}
-                    onChange={(e) => setCustomGasLimit(e.target.value)}
-                    placeholder="Gas Limit (Wei)"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        ),
-        action: {
-          label: "Proceed",
-          onClick: async () => {
-            try {
-              await writeContractAsync({
-                abi: NFTManager.abi,
-                functionName: "constructor",
-                args: [
-                  values.name,
-                  values.symbol,
-                  marketplaceFeeRecipient,
-                  BigInt(marketplaceFeePercentage), // Lấy từ env
-                  BigInt(maxSupply), // Từ form
-                  BigInt(mintLimit), // Từ form
-                ],
-                data: NFTManager.bytecode,
-                chainId: mockChains.find((c) => c.name === selectedChain)?.id,
-                gasPrice:
-                  useCustomGas && customGasPrice
-                    ? BigInt(
-                        ethers.utils
-                          .parseUnits(customGasPrice, "gwei")
-                          .toString()
-                      )
-                    : undefined,
-                gas:
-                  useCustomGas && customGasLimit
-                    ? BigInt(customGasLimit)
-                    : undefined,
-              });
-            } catch (error) {
-              toast.error("Transaction failed", { description: error.message });
-            }
-          },
-        },
-      });
-    } else if (userRole === "admin") {
-      await proceedToCreateCollection(values);
-    }
-  };
-
-  const proceedToCreateCollection = async (
-    values: z.infer<typeof formSchema>,
-    contractAddress?: string
-  ) => {
     setIsLoading(true);
-    const collectionImageUrl = await uploadImage(collectionImageFile!);
+    const collectionImageUrl = await uploadImage(collectionImageFile);
     let artworkUrl = null;
     if (selectedArtType === "same" && artworkFile)
       artworkUrl = await uploadImage(artworkFile);
@@ -310,9 +170,83 @@ export default function CreateCollection() {
       symbol: values.symbol,
       description: values.description,
       artType: selectedArtType,
-      metadataUrl: selectedArtType === "unique" ? metadataUrl : null,
+      uri: selectedArtType === "same" ? artworkUrl : metadataUrl, // Thêm uri
       collectionImageUrl,
       artworkUrl,
+      mintPrice,
+      royaltyFee,
+      maxSupply,
+      mintLimit,
+      mintStartDate: mintStartDate.toISOString(),
+      allowlistStages: formattedAllowlistStages(allowlistStages),
+      publicMint,
+    };
+
+    try {
+      const { data } = await client.mutate({
+        mutation: CreateCollectionDocument,
+        variables: { input },
+      });
+      const { steps, contractAddress } = data.createCollection;
+
+      let finalContractAddress = null;
+      if (userRole === "user" && steps && steps.length > 0) {
+        if (!walletClient) {
+          toast.error("Wallet client is not available. Please reconnect.");
+          return;
+        }
+        const provider = new BrowserProvider(walletClient?.transport);
+        const signer = await provider.getSigner();
+
+        for (const step of steps) {
+          const tx = await signer.sendTransaction({
+            ...step.params,
+            from: address,
+          });
+          const receipt = await tx.wait();
+
+          if (receipt && step.id === "create-token") {
+            finalContractAddress = receipt.contractAddress;
+          }
+        }
+      } else if (userRole === "admin" && contractAddress) {
+        finalContractAddress = contractAddress;
+      } else {
+        throw new Error("Invalid response from server");
+      }
+
+      await proceedToCreateCollection(values, finalContractAddress);
+      toast.success("Collection created successfully", {
+        description: `Contract Address: ${finalContractAddress}. You can now share this address for others to mint.`,
+      });
+    } catch (error) {
+      toast.error("Failed to create collection", {
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const proceedToCreateCollection = async (
+    values: z.infer<typeof formSchema>,
+    contractAddress?: string
+  ) => {
+    const input = {
+      chain: values.chain,
+      name: values.name,
+      symbol: values.symbol,
+      description: values.description,
+      artType: selectedArtType,
+      uri:
+        selectedArtType === "same"
+          ? await uploadImage(artworkFile!)
+          : metadataUrl, // Thêm uri
+      collectionImageUrl: await uploadImage(collectionImageFile!),
+      artworkUrl:
+        selectedArtType === "same" && artworkFile
+          ? await uploadImage(artworkFile)
+          : null,
       mintPrice,
       royaltyFee,
       maxSupply,
@@ -323,20 +257,11 @@ export default function CreateCollection() {
       contractAddress,
     };
 
-    try {
-      const result = await client.mutate({
-        mutation: CreateCollectionDocument,
-      });
-      toast.success("Collection created", {
-        description: `Collection ID: ${result.data.createCollection.collectionId}, Contract: ${result.data.createCollection.contractAddress}`,
-      });
-    } catch (error) {
-      toast.error("Failed to create collection", {
-        description: error.message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    const result = await client.mutate({
+      mutation: CreateCollectionDocument,
+      variables: { input },
+    });
+    return result.data.createCollection;
   };
 
   return (

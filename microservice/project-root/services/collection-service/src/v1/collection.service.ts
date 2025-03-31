@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Collection } from '../entity/collection.entity';
 import { ethers } from 'ethers';
-import * as NFTManager from '@/abis/NFTManager.json';
+import * as NFTManager from '@/abi/NFTManager.json';
 import {
   getChainsConfig,
   getMarketplace,
@@ -33,31 +33,18 @@ export class CollectionService {
     symbol: string;
     description: string;
     artType: string;
-    metadataUrl?: string;
-    collectionImage: string;
+    uri?: string;
+    collectionImageUrl: string;
     artworkUrl?: string;
     mintPrice: string;
     royaltyFee: string;
     maxSupply: string;
     mintLimit: string;
     mintStartDate: string;
-    allowlistStages: {
-      id: string;
-      mintPrice: string;
-      durationDays: string;
-      durationHours: string;
-      wallets: string[];
-      startDate: string;
-    }[];
-    publicMint: {
-      mintPrice: string;
-      durationDays: string;
-      durationHours: string;
-      startDate?: string;
-    };
+    allowlistStages: any[];
+    publicMint: any;
     contractAddress?: string;
-    creatorId: string;
-    creatorRole: string;
+    user: { id: string; role: string };
   }) {
     const {
       chain,
@@ -65,8 +52,8 @@ export class CollectionService {
       symbol,
       description,
       artType,
-      metadataUrl,
-      collectionImage,
+      uri,
+      collectionImageUrl,
       artworkUrl,
       mintPrice,
       royaltyFee,
@@ -76,16 +63,39 @@ export class CollectionService {
       allowlistStages,
       publicMint,
       contractAddress,
-      creatorId,
-      creatorRole,
+      user,
     } = data;
 
     if (!this.chainConfigs[chain])
       throw new BadRequestException('Unsupported chain');
 
-    let finalContractAddress = contractAddress;
-    if (creatorRole === 'admin' && !contractAddress) {
-      const { provider, signer } = this.chainConfigs[chain];
+    const { provider, signer } = this.chainConfigs[chain];
+    const { marketplaceFeeRecipient, marketplaceFeePercentage } =
+      getMarketplace();
+
+    if (user.role === 'user' && !contractAddress) {
+      const factory = new ethers.ContractFactory(
+        NFTManager.abi,
+        NFTManager.bytecode,
+        signer,
+      );
+      const deployData = factory.interface.encodeDeploy([
+        name,
+        uri || 'https://ipfs.io/ipfs/default',
+        ethers.parseUnits(maxSupply, 0),
+        ethers.parseUnits(mintLimit, 0),
+        ethers.parseEther(mintPrice),
+        marketplaceFeeRecipient,
+        marketplaceFeePercentage,
+      ]);
+      const steps = [
+        {
+          id: 'create-token',
+          params: { from: user.id, to: null, value: '0', data: deployData },
+        },
+      ];
+      return { steps };
+    } else if (user.role === 'admin' && !contractAddress) {
       const signerConnected = signer.connect(provider);
       const factory = new ethers.ContractFactory(
         NFTManager.abi,
@@ -94,53 +104,80 @@ export class CollectionService {
       );
       const contract = await factory.deploy(
         name,
-        symbol,
+        uri || 'https://ipfs.io/ipfs/default',
         ethers.parseUnits(maxSupply, 0),
         ethers.parseUnits(mintLimit, 0),
         ethers.parseEther(mintPrice),
-        ...Object.values(getMarketplace()),
+        marketplaceFeeRecipient,
+        marketplaceFeePercentage,
       );
       await contract.waitForDeployment();
-      finalContractAddress = await contract.getAddress();
-    } else if (!contractAddress) {
-      throw new BadRequestException('Contract address is required for users');
+      const finalContractAddress = await contract.getAddress();
+
+      const collection = new this.collectionModel({
+        creatorId: user.id,
+        creatorRole: user.role,
+        name,
+        description,
+        image: collectionImageUrl,
+        uri,
+        images: [],
+        isVerified: true,
+        chain,
+        contractAddress: finalContractAddress,
+        nftCount: 0,
+        artType,
+        artworkUrl, // Xóa metadataUrl
+        mintPrice,
+        royaltyFee,
+        maxSupply,
+        mintLimit,
+        mintStartDate,
+        allowlistStages,
+        publicMint,
+      });
+
+      const savedCollection = (await collection.save()) as Collection;
+      this.logger.log(`Created collection ${savedCollection._id} by admin`);
+      return {
+        collectionId: savedCollection._id.toString(),
+        contractAddress: finalContractAddress,
+      };
+    } else if (contractAddress) {
+      const collection = new this.collectionModel({
+        creatorId: user.id,
+        creatorRole: user.role,
+        name,
+        description,
+        image: collectionImageUrl,
+        uri,
+        images: [],
+        isVerified: user.role === 'admin',
+        chain,
+        contractAddress,
+        nftCount: 0,
+        artType,
+        artworkUrl, // Xóa metadataUrl
+        mintPrice,
+        royaltyFee,
+        maxSupply,
+        mintLimit,
+        mintStartDate,
+        allowlistStages,
+        publicMint,
+      });
+
+      const savedCollection = (await collection.save()) as Collection;
+      this.logger.log(
+        `Saved collection ${savedCollection._id} with contract ${contractAddress}`,
+      );
+      return {
+        collectionId: savedCollection._id.toString(),
+        contractAddress,
+      };
     }
 
-    const isAdmin = creatorRole === 'admin';
-    const isVerified = isAdmin;
-
-    const collection = new this.collectionModel({
-      creatorId,
-      creatorRole,
-      name,
-      description,
-      image: collectionImage,
-      images: [],
-      isVerified,
-      chain,
-      contractAddress: finalContractAddress,
-      nftCount: 0,
-      artType,
-      metadataUrl,
-      artworkUrl,
-      mintPrice,
-      royaltyFee,
-      maxSupply,
-      mintLimit,
-      mintStartDate,
-      allowlistStages,
-      publicMint,
-    });
-
-    const savedCollection = (await collection.save()) as any;
-    this.logger.log(
-      `Created collection ${savedCollection._id} with contract ${finalContractAddress} by ${creatorRole}`,
-    );
-
-    return {
-      collectionId: savedCollection._id.toString(),
-      contractAddress: finalContractAddress,
-    };
+    throw new BadRequestException('Invalid request');
   }
 
   async approveCollection(collectionId: string) {

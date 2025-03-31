@@ -22,7 +22,7 @@ export class CollectionController {
     symbol: string;
     description: string;
     artType: string;
-    metadataUrl?: string;
+    uri?: string; // Giữ uri
     collectionImageUrl: string;
     artworkUrl?: string;
     mintPrice: string;
@@ -30,47 +30,12 @@ export class CollectionController {
     maxSupply: string;
     mintLimit: string;
     mintStartDate: string;
-    allowlistStages: {
-      id: string;
-      mintPrice: string;
-      durationDays: string;
-      durationHours: string;
-      wallets: string[];
-      startDate: string;
-    }[];
-    publicMint: {
-      mintPrice: string;
-      durationDays: string;
-      durationHours: string;
-      startDate?: string;
-    };
+    allowlistStages: any[];
+    publicMint: any;
     contractAddress?: string;
     user: { id: string; role: string };
   }) {
-    const collection = await this.collectionService.createCollection({
-      chain: data.chain,
-      name: data.name,
-      symbol: data.symbol,
-      description: data.description,
-      artType: data.artType,
-      metadataUrl: data.metadataUrl,
-      collectionImage: data.collectionImageUrl,
-      artworkUrl: data.artworkUrl,
-      mintPrice: data.mintPrice,
-      royaltyFee: data.royaltyFee,
-      maxSupply: data.maxSupply,
-      mintLimit: data.mintLimit,
-      mintStartDate: data.mintStartDate,
-      allowlistStages: data.allowlistStages,
-      publicMint: data.publicMint,
-      contractAddress: data.contractAddress,
-      creatorId: data.user.id,
-      creatorRole: data.user.role,
-    });
-    return {
-      collectionId: collection.collectionId,
-      contractAddress: collection.contractAddress,
-    };
+    return this.collectionService.createCollection(data);
   }
 
   @MessagePattern({ cmd: 'approve_collection' })

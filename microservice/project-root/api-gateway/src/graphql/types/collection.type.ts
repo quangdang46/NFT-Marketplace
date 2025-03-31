@@ -1,10 +1,5 @@
 import { ObjectType, Field, InputType } from '@nestjs/graphql';
 
-@ObjectType()
-export class CreateCollectionResponse {
-  @Field() collectionId: string;
-  @Field() contractAddress: string;
-}
 
 @ObjectType()
 export class ApproveCollectionResponse {
@@ -40,20 +35,72 @@ export class PublicMintInput {
 
 @InputType()
 export class CreateCollectionInput {
-  @Field() chain: string;
-  @Field() name: string;
-  @Field() symbol: string;
-  @Field() description: string;
-  @Field() artType: string;
-  @Field({ nullable: true }) metadataUrl?: string;
-  @Field() collectionImageUrl: string;
-  @Field({ nullable: true }) artworkUrl?: string;
-  @Field() mintPrice: string;
-  @Field() royaltyFee: string;
-  @Field() maxSupply: string;
-  @Field() mintLimit: string;
-  @Field() mintStartDate: string;
-  @Field(() => [AllowlistStageInput]) allowlistStages: AllowlistStageInput[];
-  @Field(() => PublicMintInput) publicMint: PublicMintInput;
-  @Field({ nullable: true }) contractAddress?: string;
+  @Field()
+  chain: string;
+
+  @Field()
+  name: string;
+
+  @Field()
+  symbol: string;
+
+  @Field()
+  description: string;
+
+  @Field()
+  artType: string;
+
+  @Field({ nullable: true })
+  uri?: string; // Thêm uri
+
+  @Field()
+  collectionImageUrl: string;
+
+  @Field({ nullable: true })
+  artworkUrl?: string;
+
+  @Field()
+  mintPrice: string;
+
+  @Field()
+  royaltyFee: string;
+
+  @Field()
+  maxSupply: string;
+
+  @Field()
+  mintLimit: string;
+
+  @Field()
+  mintStartDate: string;
+
+  @Field(() => [String], { nullable: true })
+  allowlistStages: string[];
+
+  @Field(() => String, { nullable: true })
+  publicMint: string;
+
+  @Field({ nullable: true })
+  contractAddress?: string;
+}
+
+@ObjectType()
+export class CreateCollectionStep {
+  @Field()
+  id: string;
+
+  @Field(() => String)
+  params: string; // JSON stringified params
+}
+
+@ObjectType()
+export class CreateCollectionResponse {
+  @Field({ nullable: true })
+  collectionId?: string;
+
+  @Field({ nullable: true })
+  contractAddress?: string;
+
+  @Field(() => [CreateCollectionStep], { nullable: true })
+  steps?: CreateCollectionStep[];
 }

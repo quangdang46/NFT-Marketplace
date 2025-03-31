@@ -1,4 +1,5 @@
 const hre = require("hardhat");
+const { ethers } = hre; // Thêm ethers từ hre để dùng ethers.parseEther
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -11,26 +12,29 @@ async function main() {
     throw new Error("Marketplace fee settings not found in .env");
   }
 
-const name = "MyNFTCollection";
-const symbol = "MNC";
-const maxSupply = 1000; // Đây là số
-const mintLimit = 10; // Đây là số
-const mintPrice = ethers.parseEther("0.01");
+  // Thông tin deploy
+  const name = "MyNFTCollection";
+  const uri = "https://ipfs.io/ipfs/QmTestUri"; // URI mẫu cho metadata chung
+  const maxSupply = 1000; // Tổng cung tối đa
+  const mintLimit = 10; // Giới hạn mint mỗi ví
+  const mintPrice = ethers.parseEther("0.01"); // Giá mint mỗi NFT (0.01 ETH)
 
-const NFTManager = await ethers.getContractFactory("NFTManager");
-const nftManager = await NFTManager.deploy(
-  name,
-  symbol,
-  marketplaceFeeRecipient,
-  parseInt(marketplaceFeePercentage),
-  maxSupply,
-  mintLimit,
-  mintPrice,
-);
+  // Deploy contract
+  const NFTManager = await ethers.getContractFactory("NFTManager");
+  const nftManager = await NFTManager.deploy(
+    name,
+    uri, // Thay symbol bằng uri
+    marketplaceFeeRecipient,
+    parseInt(marketplaceFeePercentage),
+    maxSupply,
+    mintLimit,
+    mintPrice
+  );
 
-await nftManager.waitForDeployment();
-console.log("NFTManager deployed to:", await nftManager.getAddress());
+  await nftManager.waitForDeployment();
+  console.log("NFTManager deployed to:", await nftManager.getAddress());
 }
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
