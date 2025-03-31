@@ -12,11 +12,6 @@ type AuthResponse {
   refreshToken: String!
 }
 
-type CreateCollectionResponse {
-  collectionId: String!
-  contractAddress: String!
-}
-
 type ApproveCollectionResponse {
   success: Boolean!
 }
@@ -27,6 +22,17 @@ type PendingCollection {
   creatorId: String!
   creatorRole: String!
   createdAt: String!
+}
+
+type CreateCollectionStep {
+  id: String!
+  params: String!
+}
+
+type CreateCollectionResponse {
+  collectionId: String
+  contractAddress: String
+  steps: [CreateCollectionStep!]
 }
 
 type User {
@@ -67,12 +73,10 @@ type Mutation {
 input CreateCollectionInput {
   chain: String!
   name: String!
-  symbol: String!
   description: String!
   artType: String!
-  metadataUrl: String
+  uri: String!
   collectionImageUrl: String!
-  artworkUrl: String
   mintPrice: String!
   royaltyFee: String!
   maxSupply: String!

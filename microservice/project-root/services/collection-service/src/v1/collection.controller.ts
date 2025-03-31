@@ -19,12 +19,10 @@ export class CollectionController {
   async createCollection(data: {
     chain: string;
     name: string;
-    symbol: string;
     description: string;
     artType: string;
-    uri?: string; // Giữ uri
+    uri: string;
     collectionImageUrl: string;
-    artworkUrl?: string;
     mintPrice: string;
     royaltyFee: string;
     maxSupply: string;

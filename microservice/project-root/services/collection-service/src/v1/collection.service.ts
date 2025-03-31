@@ -30,18 +30,23 @@ export class CollectionService {
   async createCollection(data: {
     chain: string;
     name: string;
-    symbol: string;
     description: string;
     artType: string;
-    uri?: string;
+    uri: string;
     collectionImageUrl: string;
-    artworkUrl?: string;
     mintPrice: string;
     royaltyFee: string;
     maxSupply: string;
     mintLimit: string;
     mintStartDate: string;
-    allowlistStages: any[];
+    allowlistStages: {
+      id: string;
+      mintPrice: string;
+      durationDays: string;
+      durationHours: string;
+      wallets: string[];
+      startDate: string;
+    }[];
     publicMint: any;
     contractAddress?: string;
     user: { id: string; role: string };
@@ -49,21 +54,17 @@ export class CollectionService {
     const {
       chain,
       name,
-      symbol,
-      description,
-      artType,
       uri,
       collectionImageUrl,
-      artworkUrl,
       mintPrice,
       royaltyFee,
       maxSupply,
       mintLimit,
-      mintStartDate,
       allowlistStages,
       publicMint,
       contractAddress,
       user,
+      mintStartDate,
     } = data;
 
     if (!this.chainConfigs[chain])
@@ -72,62 +73,111 @@ export class CollectionService {
     const { provider, signer } = this.chainConfigs[chain];
     const { marketplaceFeeRecipient, marketplaceFeePercentage } =
       getMarketplace();
+    const factory = new ethers.ContractFactory(
+      NFTManager.abi,
+      NFTManager.bytecode,
+      signer,
+    );
 
-    if (user.role === 'user' && !contractAddress) {
-      const factory = new ethers.ContractFactory(
-        NFTManager.abi,
-        NFTManager.bytecode,
-        signer,
-      );
+    if (user.role === 'USER' && !contractAddress) {
       const deployData = factory.interface.encodeDeploy([
         name,
-        uri || 'https://ipfs.io/ipfs/default',
+        uri,
+        marketplaceFeeRecipient,
+        marketplaceFeePercentage,
         ethers.parseUnits(maxSupply, 0),
         ethers.parseUnits(mintLimit, 0),
         ethers.parseEther(mintPrice),
-        marketplaceFeeRecipient,
-        marketplaceFeePercentage,
       ]);
       const steps = [
         {
           id: 'create-token',
-          params: { from: user.id, to: null, value: '0', data: deployData },
+          params: JSON.stringify({
+            from: user.id,
+            to: null,
+            value: '0',
+            data: deployData,
+          }), // Stringify params
         },
       ];
+
+      for (const stage of allowlistStages) {
+        const duration =
+          parseInt(stage.durationDays) * 86400 +
+          parseInt(stage.durationHours) * 3600;
+        const startTime = Math.floor(
+          new Date(stage.startDate).getTime() / 1000,
+        );
+        const stageData = factory.interface.encodeFunctionData(
+          'addAllowlistStage',
+          [
+            stage.id,
+            ethers.parseEther(stage.mintPrice),
+            startTime,
+            duration,
+            stage.wallets,
+          ],
+        );
+        steps.push({
+          id: `set-whitelist-${stage.id}`,
+          params: JSON.stringify({
+            from: user.id,
+            to: null,
+            value: '0',
+            data: stageData,
+          }), // Stringify params
+        });
+      }
+
       return { steps };
-    } else if (user.role === 'admin' && !contractAddress) {
+    } else if (user.role === 'ADMIN' && !contractAddress) {
       const signerConnected = signer.connect(provider);
-      const factory = new ethers.ContractFactory(
-        NFTManager.abi,
-        NFTManager.bytecode,
-        signerConnected,
-      );
       const contract = await factory.deploy(
         name,
-        uri || 'https://ipfs.io/ipfs/default',
+        uri,
+        marketplaceFeeRecipient,
+        marketplaceFeePercentage,
         ethers.parseUnits(maxSupply, 0),
         ethers.parseUnits(mintLimit, 0),
         ethers.parseEther(mintPrice),
-        marketplaceFeeRecipient,
-        marketplaceFeePercentage,
       );
       await contract.waitForDeployment();
       const finalContractAddress = await contract.getAddress();
+
+      const nftContract = new ethers.Contract(
+        finalContractAddress,
+        NFTManager.abi,
+        signerConnected,
+      );
+      await nftContract.setRoyalty(
+        marketplaceFeeRecipient,
+        parseInt(royaltyFee),
+      );
+
+      for (const stage of allowlistStages) {
+        const duration =
+          parseInt(stage.durationDays) * 86400 +
+          parseInt(stage.durationHours) * 3600;
+        const startTime = Math.floor(
+          new Date(stage.startDate).getTime() / 1000,
+        );
+        await nftContract.addAllowlistStage(
+          stage.id,
+          ethers.parseEther(stage.mintPrice),
+          startTime,
+          duration,
+          stage.wallets,
+        );
+      }
 
       const collection = new this.collectionModel({
         creatorId: user.id,
         creatorRole: user.role,
         name,
-        description,
         image: collectionImageUrl,
         uri,
-        images: [],
-        isVerified: true,
         chain,
         contractAddress: finalContractAddress,
-        nftCount: 0,
-        artType,
-        artworkUrl, // Xóa metadataUrl
         mintPrice,
         royaltyFee,
         maxSupply,
@@ -135,12 +185,11 @@ export class CollectionService {
         mintStartDate,
         allowlistStages,
         publicMint,
+        isVerified: true,
       });
-
-      const savedCollection = (await collection.save()) as Collection;
-      this.logger.log(`Created collection ${savedCollection._id} by admin`);
+      const savedCollection = await collection.save();
       return {
-        collectionId: savedCollection._id.toString(),
+        collectionId: savedCollection._id?.toString(),
         contractAddress: finalContractAddress,
       };
     } else if (contractAddress) {
@@ -148,16 +197,10 @@ export class CollectionService {
         creatorId: user.id,
         creatorRole: user.role,
         name,
-        description,
         image: collectionImageUrl,
         uri,
-        images: [],
-        isVerified: user.role === 'admin',
         chain,
         contractAddress,
-        nftCount: 0,
-        artType,
-        artworkUrl, // Xóa metadataUrl
         mintPrice,
         royaltyFee,
         maxSupply,
@@ -165,16 +208,10 @@ export class CollectionService {
         mintStartDate,
         allowlistStages,
         publicMint,
+        isVerified: user.role === 'ADMIN',
       });
-
-      const savedCollection = (await collection.save()) as Collection;
-      this.logger.log(
-        `Saved collection ${savedCollection._id} with contract ${contractAddress}`,
-      );
-      return {
-        collectionId: savedCollection._id.toString(),
-        contractAddress,
-      };
+      const savedCollection = await collection.save();
+      return { collectionId: savedCollection._id?.toString(), contractAddress };
     }
 
     throw new BadRequestException('Invalid request');
@@ -184,24 +221,23 @@ export class CollectionService {
     const collection = await this.collectionModel.findById(collectionId);
     if (!collection) throw new BadRequestException('Collection not found');
     if (collection.isVerified)
-      throw new BadRequestException('Collection is already approved');
+      throw new BadRequestException('Collection already approved');
     collection.isVerified = true;
     await collection.save();
-    this.logger.log(`Approved collection ${collectionId}`);
     return true;
   }
 
   async getPendingCollections() {
-    const collections = (await this.collectionModel
+    const collections = await this.collectionModel
       .find({ isVerified: false })
       .select('name creatorId creatorRole createdAt')
-      .exec()) as any[];
-    return collections.map((collection) => ({
-      collectionId: collection._id.toString(),
-      name: collection.name,
-      creatorId: collection.creatorId,
-      creatorRole: collection.creatorRole,
-      createdAt: collection.createdAt.toISOString(),
+      .exec();
+    return collections.map((c) => ({
+      collectionId: c._id?.toString(),
+      name: c.name,
+      creatorId: c.creatorId,
+      creatorRole: c.creatorRole,
+      // createdAt: c.createdAt.toISOString(),
     }));
   }
 }

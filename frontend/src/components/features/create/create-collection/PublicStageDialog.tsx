@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,7 +11,16 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "lucide-react";
+import { format } from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { PublicMint } from "@/types/create-collection.type";
+import { toast } from "sonner";
 
 interface PublicStageDialogProps {
   isOpen: boolean;
@@ -28,20 +38,41 @@ export function PublicStageDialog({
   const [mintPrice, setMintPrice] = useState(publicMint.mintPrice);
   const [durationDays, setDurationDays] = useState(publicMint.durationDays);
   const [durationHours, setDurationHours] = useState(publicMint.durationHours);
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    publicMint.startDate ? new Date(publicMint.startDate) : undefined
+  );
 
   useEffect(() => {
     if (isOpen) {
       setMintPrice(publicMint.mintPrice);
       setDurationDays(publicMint.durationDays);
       setDurationHours(publicMint.durationHours);
+      setStartDate(
+        publicMint.startDate ? new Date(publicMint.startDate) : undefined
+      );
     }
   }, [publicMint, isOpen]);
 
   const handleSave = () => {
+    // Validation cơ bản
+    if (!/^\d+(\.\d+)?$/.test(mintPrice)) {
+      toast.error("Mint price must be a valid number");
+      return;
+    }
+    if (!/^\d+$/.test(durationDays)) {
+      toast.error("Duration days must be a valid number");
+      return;
+    }
+    if (!/^\d+$/.test(durationHours)) {
+      toast.error("Duration hours must be a valid number");
+      return;
+    }
+
     onSave({
       mintPrice,
       durationDays,
       durationHours,
+      startDate: startDate?.toISOString(),
     });
   };
 
@@ -97,6 +128,32 @@ export function PublicStageDialog({
                 </div>
               </div>
             </div>
+          </div>
+
+          <div>
+            <Label className="text-white">Start Date (Optional)</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {startDate
+                    ? format(startDate, "MM/dd/yyyy h:mm a")
+                    : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-[#1a1525] border-[#3a3450]">
+                <CalendarComponent
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                  className="bg-[#1a1525] text-white"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <DialogFooter className="px-0 pt-2">

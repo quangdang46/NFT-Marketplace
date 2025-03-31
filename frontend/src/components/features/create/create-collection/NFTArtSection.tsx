@@ -1,7 +1,7 @@
+
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Link, Upload, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { toast } from "sonner";
 
 interface NFTArtSectionProps {
   isLoading: boolean;
@@ -29,7 +30,6 @@ export function NFTArtSection({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [metadataUrl, setMetadataUrl] = useState("");
 
-  // Notify parent component when values change
   useEffect(() => {
     if (onArtTypeChange) onArtTypeChange(selectedType);
   }, [selectedType, onArtTypeChange]);
@@ -41,10 +41,21 @@ export function NFTArtSection({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validation
+      const validTypes = ["image/jpeg", "image/png"];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (!validTypes.includes(file.type)) {
+        toast.error("Invalid file type. Only JPG and PNG are allowed.");
+        return;
+      }
+      if (file.size > maxSize) {
+        toast.error("File size exceeds 10MB limit.");
+        return;
+      }
+
       setSelectedImage(file);
       if (onArtworkChange) onArtworkChange(file);
 
-      // Create a preview URL for the image
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -61,6 +72,12 @@ export function NFTArtSection({
     if (onArtworkChange) onArtworkChange(null);
     const input = document.getElementById("nft-artwork") as HTMLInputElement;
     if (input) input.value = "";
+  };
+
+  const handleMetadataUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setMetadataUrl(url);
+    if (onMetadataUrlChange) onMetadataUrlChange(url);
   };
 
   return (
@@ -82,12 +99,13 @@ export function NFTArtSection({
                 onClick={() => {
                   setSelectedType("same");
                   setShowMetadataUrl(false);
+                  setMetadataUrl(""); // Reset metadata URL khi chuyển sang same
                   if (onArtTypeChange) onArtTypeChange("same");
                 }}
               >
                 <div className="flex-shrink-0">
                   <Image
-                    src="https://placehold.co/60x60"
+                    src="https://placehold.co/60x60" // Thay bằng đường dẫn thực tế
                     alt="Same artwork character"
                     width={60}
                     height={60}
@@ -119,12 +137,14 @@ export function NFTArtSection({
                 onClick={() => {
                   setSelectedType("unique");
                   setShowMetadataUrl(true);
+                  setSelectedImage(null); // Reset file khi chuyển sang unique
+                  setImagePreview(null);
                   if (onArtTypeChange) onArtTypeChange("unique");
                 }}
               >
                 <div className="flex-shrink-0 grid grid-cols-2 gap-1">
                   <Image
-                    src="https://placehold.co/28x28"
+                    src="https://placehold.co/28x28" // Thay bằng đường dẫn thực tế
                     alt="Unique artwork character 1"
                     width={28}
                     height={28}
@@ -187,11 +207,7 @@ export function NFTArtSection({
                   <Input
                     placeholder="https://ipfs.io/ipfs/<CID>"
                     value={metadataUrl}
-                    onChange={(e) => {
-                      setMetadataUrl(e.target.value);
-                      if (onMetadataUrlChange)
-                        onMetadataUrlChange(e.target.value);
-                    }}
+                    onChange={handleMetadataUrlChange}
                     className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
@@ -201,7 +217,7 @@ export function NFTArtSection({
                     type="file"
                     id="nft-artwork"
                     className="hidden"
-                    accept="image/*"
+                    accept="image/jpeg,image/png"
                     onChange={handleFileChange}
                   />
 
@@ -228,7 +244,7 @@ export function NFTArtSection({
                       </p>
                       <p className="text-xs text-gray-500">
                         {selectedImage &&
-                          (selectedImage.size / 1024 / 1024).toFixed(2)}{" "}
+                          (selectedImage?.size / 1024 / 1024).toFixed(2)}{" "}
                         MB
                       </p>
                     </div>

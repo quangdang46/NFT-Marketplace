@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,9 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { AllowlistStage } from "@/types/create-collection.type";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "lucide-react";
+import { format } from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { AllowlistStage } from "@/types/create-collection.type";
+import { toast } from "sonner";
 
 interface AllowlistStageDialogProps {
   isOpen: boolean;
@@ -26,37 +36,69 @@ export function AllowlistStageDialog({
   stage,
   onSave,
 }: AllowlistStageDialogProps) {
-  const [mintPrice, setMintPrice] = useState("0.00");
-  const [durationDays, setDurationDays] = useState("1");
-  const [durationHours, setDurationHours] = useState("0");
-  const [wallets, setWallets] = useState("");
-  const [hasError, setHasError] = useState(false);
+  const [id, setId] = useState(stage?.id || crypto.randomUUID());
+  const [mintPrice, setMintPrice] = useState(stage?.mintPrice || "0.00");
+  const [durationDays, setDurationDays] = useState(stage?.durationDays || "1");
+  const [durationHours, setDurationHours] = useState(
+    stage?.durationHours || "0"
+  );
+  const [wallets, setWallets] = useState(stage?.wallets || "");
+  const [startDate, setStartDate] = useState<Date>(
+    stage?.startDate ? new Date(stage.startDate) : new Date()
+  );
 
   useEffect(() => {
-    if (stage && isOpen) {
+    if (isOpen && stage) {
+      setId(stage.id);
       setMintPrice(stage.mintPrice);
       setDurationDays(stage.durationDays);
       setDurationHours(stage.durationHours);
       setWallets(stage.wallets);
-      setHasError(false);
+      setStartDate(new Date(stage.startDate));
+    } else if (isOpen && !stage) {
+      // Reset form khi thêm stage mới
+      setId(crypto.randomUUID());
+      setMintPrice("0.00");
+      setDurationDays("1");
+      setDurationHours("0");
+      setWallets("");
+      setStartDate(new Date());
     }
-  }, [stage, isOpen]);
+  }, [isOpen, stage]);
 
   const handleSave = () => {
+    // Validation cơ bản trước khi lưu
+    if (!id) {
+      toast.error("Stage ID is required");
+      return;
+    }
+    if (!/^\d+(\.\d+)?$/.test(mintPrice)) {
+      toast.error("Mint price must be a valid number");
+      return;
+    }
+    if (!/^\d+$/.test(durationDays)) {
+      toast.error("Duration days must be a valid number");
+      return;
+    }
+    if (!/^\d+$/.test(durationHours)) {
+      toast.error("Duration hours must be a valid number");
+      return;
+    }
     if (!wallets.trim()) {
-      setHasError(true);
+      toast.error("Wallets are required");
       return;
     }
 
-    if (stage) {
-      onSave({
-        ...stage,
-        mintPrice,
-        durationDays,
-        durationHours,
-        wallets,
-      });
-    }
+    const newStage: AllowlistStage = {
+      id,
+      mintPrice,
+      durationDays,
+      durationHours,
+      wallets: wallets.trim(), // Chuỗi địa chỉ cách nhau bởi \n
+      startDate: startDate.toISOString(),
+    };
+
+    onSave(newStage);
   };
 
   return (
@@ -70,6 +112,16 @@ export function AllowlistStageDialog({
         </div>
 
         <div className="p-6 space-y-4">
+          <div>
+            <Label className="text-white">Stage ID</Label>
+            <Input
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              placeholder="e.g. Stage1"
+              className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+
           <div>
             <Label className="text-white">Mint Price</Label>
             <div className="flex mt-2">
@@ -114,25 +166,39 @@ export function AllowlistStageDialog({
           </div>
 
           <div>
-            <Label className="text-white">Allowlist</Label>
-            <p className="text-sm text-gray-400 mt-1">
-              Enter allowlisted wallets separated by new lines or commas
-            </p>
+            <Label className="text-white">Wallets (one per line)</Label>
             <Textarea
-              placeholder="0xAbCdEf123456789abcdef123456789ABCDEF12
-0xBcDeF0987654321bcdef0987654321BCDEF098"
               value={wallets}
-              onChange={(e) => {
-                setWallets(e.target.value);
-                if (e.target.value.trim()) setHasError(false);
-              }}
-              className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white min-h-[120px] mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+              onChange={(e) => setWallets(e.target.value)}
+              placeholder="0x123...\n0x456..."
+              className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 min-h-[100px] focus-visible:ring-0 focus-visible:ring-offset-0"
             />
-            {hasError && (
-              <p className="text-red-500 text-sm mt-1">
-                Input must not be empty
-              </p>
-            )}
+          </div>
+
+          <div>
+            <Label className="text-white">Start Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {startDate
+                    ? format(startDate, "MM/dd/yyyy h:mm a")
+                    : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-[#1a1525] border-[#3a3450]">
+                <CalendarComponent
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(newDate) => newDate && setStartDate(newDate)}
+                  initialFocus
+                  className="bg-[#1a1525] text-white"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <DialogFooter className="px-0 pt-2">

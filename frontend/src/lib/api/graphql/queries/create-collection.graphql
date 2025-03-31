@@ -1,5 +1,4 @@
-# create-collection.graphql
-
+# Input cho giai đoạn whitelist
 input AllowlistStageInput {
   id: String!
   mintPrice: String!
@@ -9,6 +8,7 @@ input AllowlistStageInput {
   startDate: String!
 }
 
+# Input cho public mint
 input PublicMintInput {
   mintPrice: String!
   durationDays: String!
@@ -16,37 +16,50 @@ input PublicMintInput {
   startDate: String
 }
 
+# Input để tạo collection
 input CreateCollectionInput {
   chain: String!
   name: String!
-  symbol: String!
   description: String!
   artType: String!
-  metadataUrl: String
+  uri: String! # Thay metadataUrl thành uri, trỏ đến JSON metadata
   collectionImageUrl: String!
-  artworkUrl: String
   mintPrice: String!
-  royaltyFee: String!
+  royaltyFee: String! # Basis points
   maxSupply: String!
   mintLimit: String!
   mintStartDate: String!
   allowlistStages: [AllowlistStageInput!]!
   publicMint: PublicMintInput!
-  contractAddress: String
+  contractAddress: String # Optional, dùng khi cập nhật collection đã deploy
 }
 
+# Type cho bước giao dịch (dành cho user thường)
+type CreateCollectionStep {
+  id: String!
+  params: String! # JSON stringified params
+}
+
+# Response khi tạo collection
 type CreateCollectionResponse {
-  collectionId: String!
-  contractAddress: String!
+  collectionId: String # Optional, trả về khi lưu vào DB
+  contractAddress: String # Optional, trả về khi deploy xong
+  steps: [CreateCollectionStep!] # Optional, trả về cho user thường để thực hiện giao dịch
 }
 
+# Mutation để tạo collection
 type Mutation {
   createCollection(input: CreateCollectionInput!): CreateCollectionResponse!
 }
 
+# Ví dụ mutation
 mutation CreateCollection($input: CreateCollectionInput!) {
   createCollection(input: $input) {
     collectionId
     contractAddress
+    steps {
+      id
+      params
+    }
   }
 }

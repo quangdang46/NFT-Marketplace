@@ -10,8 +10,12 @@ import { Form } from "@/components/ui/form";
 import { CollectionDetails } from "./CollectionDetails";
 import { NFTArtSection } from "./NFTArtSection";
 import { MintDetails } from "./MintDetails";
-import { formSchema } from "@/types/create-collection.type";
-import { type z } from "zod";
+import {
+  FormData,
+  formSchema,
+  AllowlistStage,
+  PublicMint,
+} from "@/types/create-collection.type";
 import { RotateCcw } from "lucide-react";
 import { mockChains } from "@/lib/constant/chains";
 import { formattedAllowlistStages } from "@/lib/utils/format";
@@ -21,16 +25,16 @@ import { uploadImage } from "@/lib/utils/upload";
 import client from "@/lib/api/apolloClient";
 import { CreateCollectionDocument } from "@/lib/api/graphql/generated";
 import { BrowserProvider } from "ethers";
+
 export default function CreateCollection() {
   const { address, chain, isConnected } = useAccount();
   const { connectAsync } = useConnect();
   const { switchChain } = useSwitchChain();
   const { data: walletClient } = useWalletClient();
-  const [userRole, setUserRole] = useState<"admin" | "user" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [allowlistStages, setAllowlistStages] = useState<any[]>([]);
+  const [allowlistStages, setAllowlistStages] = useState<AllowlistStage[]>([]);
   const [selectedChain, setSelectedChain] = useState("Sepolia");
-  const [publicMint, setPublicMint] = useState<any>({
+  const [publicMint, setPublicMint] = useState<PublicMint>({
     mintPrice: "0.00",
     durationDays: "1",
     durationHours: "0",
@@ -38,35 +42,33 @@ export default function CreateCollection() {
   const [selectedArtType, setSelectedArtType] = useState<"same" | "unique">(
     "unique"
   );
-  const [metadataUrl, setMetadataUrl] = useState("");
-  const [artworkFile, setArtworkFile] = useState<File | null>(null);
   const [collectionImageFile, setCollectionImageFile] = useState<File | null>(
     null
   );
-  const [mintStartDate, setMintStartDate] = useState<Date>(new Date());
-  const [mintPrice, setMintPrice] = useState("0.00");
-  const [royaltyFee, setRoyaltyFee] = useState("0");
-  const [maxSupply, setMaxSupply] = useState("");
-  const [mintLimit, setMintLimit] = useState("");
-  const [formIsValid, setFormIsValid] = useState(false);
+  const [artworkFile, setArtworkFile] = useState<File | null>(null);
+  const [metadataUrl, setMetadataUrl] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  const form = useForm({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { chain: "Sepolia", name: "", symbol: "", description: "" },
+    defaultValues: {
+      chain: "Sepolia",
+      name: "",
+      description: "",
+      artType: "unique",
+      uri: "",
+      collectionImageUrl: "",
+      mintPrice: "0.00",
+      royaltyFee: "0",
+      maxSupply: "",
+      mintLimit: "",
+      mintStartDate: new Date().toISOString(),
+      allowlistStages: [],
+      publicMint: { mintPrice: "0.00", durationDays: "1", durationHours: "0" },
+    },
   });
+
   const watchedChain = form.watch("chain");
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      setUserRole("user"); // Giả lập
-    };
-    fetchUserRole();
-  }, []);
-
-  const chainDisplayNames = mockChains.reduce((acc, chain) => {
-    acc[chain.id] = chain.name;
-    return acc;
-  }, {} as Record<string, string>);
 
   useEffect(() => {
     if (watchedChain) setSelectedChain(watchedChain);
@@ -74,44 +76,51 @@ export default function CreateCollection() {
 
   useEffect(() => {
     if (!isConnected || !chain || !chain.name) return;
-
     const targetChain = mockChains.find((c) => c.name === selectedChain);
     if (targetChain && chain.id !== targetChain.id) {
       switchChain({ chainId: targetChain.id });
     }
   }, [isConnected, chain, selectedChain, switchChain]);
 
-  const getButtonText = () => {
-    if (!isConnected) return "Connect Wallet";
-    if (isLoading) return "Processing...";
-    if (chain?.name === selectedChain)
-      return `Create Collection on ${chain.name}`;
-    return `Switch Wallet to ${
-      chainDisplayNames[selectedChain] || selectedChain
-    }`;
-  };
-
   useEffect(() => {
     const basicFormValid = form.formState.isValid;
-    const hasRequiredFields =
+    const hasRequiredFiles =
       collectionImageFile !== null &&
       ((selectedArtType === "same" && artworkFile !== null) ||
-        (selectedArtType === "unique" && metadataUrl.trim() !== "")) &&
-      maxSupply.trim() !== "" &&
-      mintLimit.trim() !== "";
-    setFormIsValid(basicFormValid && hasRequiredFields);
+        (selectedArtType === "unique" && metadataUrl.trim() !== ""));
+    setIsFormValid(basicFormValid && hasRequiredFiles);
   }, [
     form.formState.isValid,
     collectionImageFile,
     selectedArtType,
     artworkFile,
     metadataUrl,
-    maxSupply,
-    mintLimit,
   ]);
 
+  const getButtonText = () => {
+    if (!isConnected) return "Connect Wallet";
+    if (isLoading) return "Processing...";
+    if (chain?.name === selectedChain)
+      return `Create Collection on ${chain.name}`;
+    return `Switch to ${selectedChain}`;
+  };
+
   const handleClearForm = () => {
-    form.reset({ chain: "Sepolia", name: "", symbol: "", description: "" });
+    form.reset({
+      chain: "Sepolia",
+      name: "",
+      description: "",
+      artType: "unique",
+      uri: "",
+      collectionImageUrl: "",
+      mintPrice: "0.00",
+      royaltyFee: "0",
+      maxSupply: "",
+      mintLimit: "",
+      mintStartDate: new Date().toISOString(),
+      allowlistStages: [],
+      publicMint: { mintPrice: "0.00", durationDays: "1", durationHours: "0" },
+    });
     setSelectedChain("Sepolia");
     setAllowlistStages([]);
     setPublicMint({ mintPrice: "0.00", durationDays: "1", durationHours: "0" });
@@ -119,151 +128,143 @@ export default function CreateCollection() {
     setMetadataUrl("");
     setArtworkFile(null);
     setCollectionImageFile(null);
-    setMintPrice("0.00");
-    setRoyaltyFee("0");
-    setMaxSupply("");
-    setMintLimit("");
-    setMintStartDate(new Date());
-    toast("Form cleared", { description: "All form fields have been reset" });
+    toast("Form cleared");
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!isConnected) {
-      try {
-        await connectAsync({ connector: injected() });
-      } catch (error) {
-        toast.error("Failed to connect wallet", {
-          description: (error as Error).message,
-        });
-      }
-      return;
-    }
-
-    if (chain?.name !== selectedChain) {
-      const chainId = mockChains.find((c) => c.name === selectedChain)?.id;
-      if (chainId) switchChain({ chainId });
-      return;
-    }
-
-    if (!collectionImageFile) {
-      toast.error("Please upload a collection image");
-      return;
-    }
-    if (selectedArtType === "same" && !artworkFile) {
-      toast.error("Please upload an artwork file for 'Same' type");
-      return;
-    }
-    if (selectedArtType === "unique" && !metadataUrl.trim()) {
-      toast.error("Please provide a metadata URL for 'Unique' type");
-      return;
-    }
-
-    setIsLoading(true);
-    const collectionImageUrl = await uploadImage(collectionImageFile);
-    let artworkUrl = null;
-    if (selectedArtType === "same" && artworkFile)
-      artworkUrl = await uploadImage(artworkFile);
-
-    const input = {
-      chain: values.chain,
-      name: values.name,
-      symbol: values.symbol,
-      description: values.description,
-      artType: selectedArtType,
-      uri: selectedArtType === "same" ? artworkUrl : metadataUrl, // Thêm uri
-      collectionImageUrl,
-      artworkUrl,
-      mintPrice,
-      royaltyFee,
-      maxSupply,
-      mintLimit,
-      mintStartDate: mintStartDate.toISOString(),
-      allowlistStages: formattedAllowlistStages(allowlistStages),
-      publicMint,
-    };
-
+const onSubmit = async (values: FormData) => {
+  if (!isConnected) {
     try {
-      const { data } = await client.mutate({
-        mutation: CreateCollectionDocument,
-        variables: { input },
-      });
-      const { steps, contractAddress } = data.createCollection;
-
-      let finalContractAddress = null;
-      if (userRole === "user" && steps && steps.length > 0) {
-        if (!walletClient) {
-          toast.error("Wallet client is not available. Please reconnect.");
-          return;
-        }
-        const provider = new BrowserProvider(walletClient?.transport);
-        const signer = await provider.getSigner();
-
-        for (const step of steps) {
-          const tx = await signer.sendTransaction({
-            ...step.params,
-            from: address,
-          });
-          const receipt = await tx.wait();
-
-          if (receipt && step.id === "create-token") {
-            finalContractAddress = receipt.contractAddress;
-          }
-        }
-      } else if (userRole === "admin" && contractAddress) {
-        finalContractAddress = contractAddress;
-      } else {
-        throw new Error("Invalid response from server");
-      }
-
-      await proceedToCreateCollection(values, finalContractAddress);
-      toast.success("Collection created successfully", {
-        description: `Contract Address: ${finalContractAddress}. You can now share this address for others to mint.`,
-      });
+      await connectAsync({ connector: injected() });
     } catch (error) {
-      toast.error("Failed to create collection", {
+      toast.error("Failed to connect wallet", {
         description: (error as Error).message,
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+    return;
+  }
 
-  const proceedToCreateCollection = async (
-    values: z.infer<typeof formSchema>,
-    contractAddress?: string
-  ) => {
+  if (chain?.name !== selectedChain) {
+    const chainId = mockChains.find((c) => c.name === selectedChain)?.id;
+    if (chainId) switchChain({ chainId });
+    return;
+  }
+
+  if (!collectionImageFile) {
+    toast.error("Please upload a collection image");
+    return;
+  }
+  if (selectedArtType === "same" && !artworkFile) {
+    toast.error("Please upload an artwork file for 'Same' type");
+    return;
+  }
+  if (selectedArtType === "unique" && !metadataUrl.trim()) {
+    toast.error("Please provide a metadata URL for 'Unique' type");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const collectionImageUrl = await uploadImage(collectionImageFile);
+    if (!collectionImageUrl) {
+      throw new Error("Failed to upload collection image");
+    }
+
+    let tokenUri: string;
+    if (selectedArtType === "same") {
+      if (!artworkFile) {
+        throw new Error("Artwork file is missing for 'Same' type");
+      }
+      const artworkUrl = await uploadImage(artworkFile);
+      if (!artworkUrl) {
+        throw new Error("Failed to upload artwork");
+      }
+      const metadata = {
+        name: values.name,
+        description: values.description,
+        image: artworkUrl,
+        attributes: [],
+      };
+      const metadataBlob = new Blob([JSON.stringify(metadata)], {
+        type: "application/json",
+      });
+      const metadataFile = new File(
+        [metadataBlob],
+        `${values.name}-metadata.json`
+      );
+      tokenUri = await uploadImage(metadataFile);
+      if (!tokenUri) {
+        throw new Error("Failed to upload metadata");
+      }
+    } else {
+      tokenUri = metadataUrl;
+      if (!tokenUri) {
+        throw new Error("Metadata URL is missing for 'Unique' type");
+      }
+    }
+
     const input = {
       chain: values.chain,
       name: values.name,
-      symbol: values.symbol,
       description: values.description,
       artType: selectedArtType,
-      uri:
-        selectedArtType === "same"
-          ? await uploadImage(artworkFile!)
-          : metadataUrl, // Thêm uri
-      collectionImageUrl: await uploadImage(collectionImageFile!),
-      artworkUrl:
-        selectedArtType === "same" && artworkFile
-          ? await uploadImage(artworkFile)
-          : null,
-      mintPrice,
-      royaltyFee,
-      maxSupply,
-      mintLimit,
-      mintStartDate: mintStartDate.toISOString(),
-      allowlistStages: formattedAllowlistStages(allowlistStages),
-      publicMint,
-      contractAddress,
+      uri: tokenUri,
+      collectionImageUrl,
+      mintPrice: values.mintPrice,
+      royaltyFee: (parseFloat(values.royaltyFee) * 100).toString(),
+      maxSupply: values.maxSupply,
+      mintLimit: values.mintLimit,
+      mintStartDate: values.mintStartDate,
+      allowlistStages: formattedAllowlistStages(allowlistStages) || [],
+      publicMint: publicMint || {
+        mintPrice: "0.00",
+        durationDays: "1",
+        durationHours: "0",
+      },
     };
 
-    const result = await client.mutate({
+    console.log("Input sent to server:", input); // Log để debug
+
+    const { data } = await client.mutate({
       mutation: CreateCollectionDocument,
       variables: { input },
     });
-    return result.data.createCollection;
-  };
+    const { steps, contractAddress } = data.createCollection;
 
+    let finalContractAddress = contractAddress;
+    if (steps && steps.length > 0) {
+      if (!walletClient) throw new Error("Wallet client not available");
+      const provider = new BrowserProvider(walletClient.transport);
+      const signer = await provider.getSigner();
+
+      for (const step of steps) {
+        // Parse params từ chuỗi JSON thành object
+        const params = JSON.parse(step.params);
+        const tx = await signer.sendTransaction({
+          ...params,
+          from: address,
+        });
+        const receipt = await tx.wait();
+        if (!receipt) throw new Error("Receipt not found");
+        if (step.id === "create-token") {
+          finalContractAddress = receipt.contractAddress;
+        } else if (step.id.startsWith("set-whitelist")) {
+          console.log(`Whitelist stage ${step.id} set successfully`);
+        }
+      }
+    }
+
+    toast.success("Collection created", {
+      description: `Contract Address: ${finalContractAddress}`,
+    });
+  } catch (error) {
+    toast.error("Failed to create collection", {
+      description: (error as Error).message,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <div className="max-w-3xl mx-auto dark">
       <div className="flex justify-end mb-2">
@@ -286,26 +287,40 @@ export default function CreateCollection() {
           />
           <NFTArtSection
             isLoading={isLoading}
-            onArtTypeChange={setSelectedArtType}
+            onArtTypeChange={(type) => {
+              setSelectedArtType(type);
+              form.setValue("artType", type);
+            }}
             onArtworkChange={setArtworkFile}
-            onMetadataUrlChange={setMetadataUrl}
+            onMetadataUrlChange={(url) => {
+              setMetadataUrl(url);
+              form.setValue("uri", url);
+            }}
           />
           <MintDetails
             isLoading={isLoading}
             allowlistStages={allowlistStages}
-            setAllowlistStages={setAllowlistStages}
+            setAllowlistStages={(stages) => {
+              setAllowlistStages(stages);
+              form.setValue("allowlistStages", stages);
+            }}
             publicMint={publicMint}
-            setPublicMint={setPublicMint}
-            onMintPriceChange={setMintPrice}
-            onRoyaltyFeeChange={setRoyaltyFee}
-            onMaxSupplyChange={setMaxSupply}
-            onMintLimitChange={setMintLimit}
-            onMintStartDateChange={setMintStartDate}
+            setPublicMint={(mint) => {
+              setPublicMint(mint);
+              form.setValue("publicMint", mint);
+            }}
+            onMintPriceChange={(price) => form.setValue("mintPrice", price)}
+            onRoyaltyFeeChange={(fee) => form.setValue("royaltyFee", fee)}
+            onMaxSupplyChange={(supply) => form.setValue("maxSupply", supply)}
+            onMintLimitChange={(limit) => form.setValue("mintLimit", limit)}
+            onMintStartDateChange={(date) =>
+              form.setValue("mintStartDate", date.toISOString())
+            }
           />
           <Button
             type="submit"
             className="w-full bg-pink-600 hover:bg-pink-700 text-white"
-            disabled={isLoading || !formIsValid}
+            disabled={isLoading || !isFormValid}
           >
             {getButtonText()}
           </Button>

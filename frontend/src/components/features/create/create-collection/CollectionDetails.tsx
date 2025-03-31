@@ -1,5 +1,7 @@
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
+
 import {
   FormField,
   FormItem,
@@ -22,9 +24,10 @@ import { Upload, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { mockChains } from "@/lib/constant/chains";
+import EthereumIcon from "@/components/icons/Ethereum";
+import { toast } from "sonner";
 
 interface CollectionDetailsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
   isLoading: boolean;
   onChainChange?: (chain: string) => void;
@@ -40,6 +43,31 @@ export function CollectionDetails({
   const [selectedChain, setSelectedChain] = useState("Sepolia");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validTypes = ["image/jpeg", "image/png"];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (!validTypes.includes(file.type)) {
+        toast.error("Invalid file type. Only JPG and PNG are allowed.");
+        return;
+      }
+      if (file.size > maxSize) {
+        toast.error("File size exceeds 10MB limit.");
+        return;
+      }
+
+      setSelectedImage(file);
+      if (onImageChange) onImageChange(file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="dark space-y-6 bg-[#0e0a1a] dark:bg-[#0e0a1a] p-6 rounded-lg">
@@ -85,8 +113,8 @@ export function CollectionDetails({
                             </div>
                           ) : (
                             <div className="flex items-center gap-2">
-                              <div className="bg-blue-500 rounded-full w-4 h-4"></div>
-                              Base
+                              <EthereumIcon />
+                              {selectedChain}
                             </div>
                           )}
                         </SelectValue>
@@ -96,7 +124,7 @@ export function CollectionDetails({
                       {mockChains.map((chain) => (
                         <SelectItem
                           key={chain.id}
-                          value={chain.id}
+                          value={chain.name}
                           className="text-white focus:bg-[#2a2535] focus:text-white"
                         >
                           <div className="flex items-center gap-2">
@@ -114,7 +142,7 @@ export function CollectionDetails({
           )}
         </div>
 
-        {/* Name and Symbol */}
+        {/* Name */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <Label className="text-white dark:text-white">Name</Label>
@@ -129,29 +157,6 @@ export function CollectionDetails({
                     <FormControl>
                       <Input
                         placeholder="The Pond"
-                        className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-          <div>
-            <Label className="text-white dark:text-white">Symbol</Label>
-            {isLoading ? (
-              <Skeleton className="h-10 w-full mt-1" />
-            ) : (
-              <FormField
-                control={form.control}
-                name="symbol"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        placeholder="POND"
                         className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
                         {...field}
                       />
@@ -179,21 +184,8 @@ export function CollectionDetails({
                 type="file"
                 id="collection-image"
                 className="hidden"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setSelectedImage(file);
-                    if (onImageChange) onImageChange(file);
-
-                    // Create a preview URL for the image
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                      setImagePreview(reader.result as string);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
+                accept="image/jpeg,image/png"
+                onChange={handleFileChange}
               />
 
               {imagePreview ? (

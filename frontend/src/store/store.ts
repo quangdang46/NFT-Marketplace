@@ -11,6 +11,7 @@ const persistConfig = {
   key: "root",
   storage,
   whitelist: ["auth"], // only auth will be persisted
+  timeout: 1000,
 };
 const rootReducer = combineReducers({
   auth: authReducer,

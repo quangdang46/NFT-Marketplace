@@ -20,6 +20,7 @@ export class CollectionResolver {
     @Context() context: { req: any },
   ) {
     const user = context.req.user;
+    console.log('Input received:', input);
     const result: {
       collectionId?: string;
       contractAddress?: string;
@@ -27,7 +28,10 @@ export class CollectionResolver {
     } = await this.gatewayService.sendToService(
       'collection-service',
       { cmd: 'create_collection' },
-      { ...input, user: { id: user.id, role: user.role } },
+      {
+        ...input,
+        user: { id: user.id, role: user.role },
+      },
     );
     return {
       collectionId: result.collectionId,
@@ -45,13 +49,12 @@ export class CollectionResolver {
     const user = context.req.user;
     if (user.role !== 'admin')
       throw new Error('Only admins can approve collections');
-    const result: {
-      status: 'approved' | 'rejected';
-    } = await this.gatewayService.sendToService(
-      'collection-service',
-      { cmd: 'approve_collection' },
-      { collectionId, user: { id: user.id, role: user.role } },
-    );
+    const result: { status: 'approved' | 'failed' } =
+      await this.gatewayService.sendToService(
+        'collection-service',
+        { cmd: 'approve_collection' },
+        { collectionId, user: { id: user.id, role: user.role } },
+      );
     return { success: result.status === 'approved' };
   }
 
@@ -59,15 +62,14 @@ export class CollectionResolver {
   @UseGuards(JwtGuard)
   async getPendingCollections(@Context() context: { req: any }) {
     const user = context.req.user;
-    if (user.role !== 'ADMIN')
+    if (user.role !== 'admin')
       throw new Error('Only admins can view pending collections');
-    const result: {
-      collections: PendingCollection[];
-    } = await this.gatewayService.sendToService(
-      'collection-service',
-      { cmd: 'get_pending_collections' },
-      {},
-    );
+    const result: { collections: PendingCollection[] } =
+      await this.gatewayService.sendToService(
+        'collection-service',
+        { cmd: 'get_pending_collections' },
+        {},
+      );
     return result.collections;
   }
 }

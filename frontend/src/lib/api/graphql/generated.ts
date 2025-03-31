@@ -38,28 +38,33 @@ export type AuthResponse = {
 };
 
 export type CreateCollectionInput = {
-  allowlistStages: Array<AllowlistStageInput>;
+  allowlistStages?: InputMaybe<Array<AllowlistStageInput>>;
   artType: Scalars['String']['input'];
-  artworkUrl?: InputMaybe<Scalars['String']['input']>;
   chain: Scalars['String']['input'];
   collectionImageUrl: Scalars['String']['input'];
   contractAddress?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
   maxSupply: Scalars['String']['input'];
-  metadataUrl?: InputMaybe<Scalars['String']['input']>;
   mintLimit: Scalars['String']['input'];
   mintPrice: Scalars['String']['input'];
   mintStartDate: Scalars['String']['input'];
   name: Scalars['String']['input'];
-  publicMint: PublicMintInput;
+  publicMint?: InputMaybe<PublicMintInput>;
   royaltyFee: Scalars['String']['input'];
-  symbol: Scalars['String']['input'];
+  uri: Scalars['String']['input'];
 };
 
 export type CreateCollectionResponse = {
   __typename?: 'CreateCollectionResponse';
-  collectionId: Scalars['String']['output'];
-  contractAddress: Scalars['String']['output'];
+  collectionId?: Maybe<Scalars['String']['output']>;
+  contractAddress?: Maybe<Scalars['String']['output']>;
+  steps?: Maybe<Array<CreateCollectionStep>>;
+};
+
+export type CreateCollectionStep = {
+  __typename?: 'CreateCollectionStep';
+  id: Scalars['String']['output'];
+  params: Scalars['String']['output'];
 };
 
 export type CreateUserResponse = {
@@ -168,7 +173,7 @@ export type CreateCollectionMutationVariables = Exact<{
 }>;
 
 
-export type CreateCollectionMutation = { __typename?: 'Mutation', createCollection: { __typename?: 'CreateCollectionResponse', collectionId: string, contractAddress: string } };
+export type CreateCollectionMutation = { __typename?: 'Mutation', createCollection: { __typename?: 'CreateCollectionResponse', collectionId?: string | null, contractAddress?: string | null, steps?: Array<{ __typename?: 'CreateCollectionStep', id: string, params: string }> | null } };
 
 export type GetSignedUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -211,6 +216,10 @@ export const CreateCollectionDocument = gql`
   createCollection(input: $input) {
     collectionId
     contractAddress
+    steps {
+      id
+      params
+    }
   }
 }
     `;

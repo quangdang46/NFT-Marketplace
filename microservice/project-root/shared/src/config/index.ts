@@ -137,7 +137,7 @@ export const getPrivateKey = () => {
 
 export const getChainsConfig = () => {
   return {
-    "eth-sepolia": {
+    Sepolia: {
       provider: new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL),
       signer: new ethers.Wallet(getPrivateKey()),
     },

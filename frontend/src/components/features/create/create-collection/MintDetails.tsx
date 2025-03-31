@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -100,8 +101,11 @@ export function MintDetails({
       durationDays: "1",
       durationHours: "0",
       wallets: "",
+      startDate: date.toISOString(),
     };
     setAllowlistStages([...allowlistStages, newStage]);
+    setIsAllowlistDialogOpen(true); // Mở dialog để chỉnh sửa ngay
+    setCurrentStage(newStage);
   };
 
   const handleSaveStage = (stage: AllowlistStage) => {
@@ -109,8 +113,11 @@ export function MintDetails({
       setAllowlistStages(
         allowlistStages.map((s) => (s.id === currentStage.id ? stage : s))
       );
+    } else {
+      setAllowlistStages([...allowlistStages, stage]);
     }
     setIsAllowlistDialogOpen(false);
+    setCurrentStage(null);
   };
 
   const handleSavePublicMint = (updatedPublicMint: PublicMint) => {
@@ -123,6 +130,12 @@ export function MintDetails({
       setDate(newDate);
       if (onMintStartDateChange) onMintStartDateChange(newDate);
     }
+  };
+
+  const calculateEndDate = (start: string, days: string, hours: string) => {
+    const startDate = new Date(start);
+    const durationMs = parseInt(days) * 86400000 + parseInt(hours) * 3600000;
+    return new Date(startDate.getTime() + durationMs);
   };
 
   return (
@@ -232,9 +245,7 @@ export function MintDetails({
                   className="w-full justify-start text-left font-normal bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  {date
-                    ? format(date, "MM/dd/yyyy h:mm a")
-                    : "03/29/2025 1:14 AM"}
+                  {date ? format(date, "MM/dd/yyyy h:mm a") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-[#1a1525] border-[#3a3450]">
@@ -256,7 +267,7 @@ export function MintDetails({
             <Skeleton className="h-40 w-full mt-1" />
           ) : (
             <div className="space-y-3 mt-2">
-              {allowlistStages.map((stage, index) => (
+              {allowlistStages.map((stage) => (
                 <div
                   key={stage.id}
                   className="border border-[#3a3450] dark:border-[#3a3450] rounded-md p-4 bg-[#1a1525] dark:bg-[#1a1525] relative cursor-pointer"
@@ -265,10 +276,10 @@ export function MintDetails({
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium text-white dark:text-white">
-                        Allowlist Mint
+                        Allowlist Mint - {stage.id}
                       </h3>
                       <span className="bg-green-900/30 text-green-400 text-xs px-2 py-0.5 rounded">
-                        FREE
+                        {stage.mintPrice} ETH
                       </span>
                     </div>
                     <DropdownMenu>
@@ -308,8 +319,20 @@ export function MintDetails({
                     </DropdownMenu>
                   </div>
                   <div className="flex justify-between mt-2 text-sm text-gray-400">
-                    <span>Mar {29 + index} 2025, 1:14 AM</span>
-                    <span>Ends: Mar {30 + index} 2025, 1:14 AM</span>
+                    <span>
+                      {format(new Date(stage.startDate), "MMM dd yyyy, h:mm a")}
+                    </span>
+                    <span>
+                      Ends:{" "}
+                      {format(
+                        calculateEndDate(
+                          stage.startDate,
+                          stage.durationDays,
+                          stage.durationHours
+                        ),
+                        "MMM dd yyyy, h:mm a"
+                      )}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -324,7 +347,7 @@ export function MintDetails({
                       Public Mint
                     </h3>
                     <span className="bg-green-900/30 text-green-400 text-xs px-2 py-0.5 rounded">
-                      FREE
+                      {publicMint.mintPrice} ETH
                     </span>
                   </div>
                   <DropdownMenu>
@@ -355,23 +378,40 @@ export function MintDetails({
                   </DropdownMenu>
                 </div>
                 <div className="flex justify-between mt-2 text-sm text-gray-400">
-                  <span>Mar 30 2025, 1:14 AM</span>
-                  <span>Ends: Mar 31 2025, 1:14 AM</span>
+                  <span>
+                    {publicMint.startDate
+                      ? format(
+                          new Date(publicMint.startDate),
+                          "MMM dd yyyy, h:mm a"
+                        )
+                      : "Not set"}
+                  </span>
+                  <span>
+                    Ends:{" "}
+                    {publicMint.startDate
+                      ? format(
+                          calculateEndDate(
+                            publicMint.startDate,
+                            publicMint.durationDays,
+                            publicMint.durationHours
+                          ),
+                          "MMM dd yyyy, h:mm a"
+                        )
+                      : "Not set"}
+                  </span>
                 </div>
               </div>
 
-              {allowlistStages.length === 0 && (
-                <div className="border border-[#1a1525] dark:border-[#1a1525] rounded-md p-3 bg-[#0e0a1a] flex justify-center">
-                  <Button
-                    variant="ghost"
-                    className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:text-gray-400"
-                    onClick={handleAddStage}
-                    style={{ backgroundColor: "transparent" }}
-                  >
-                    <Plus className="h-4 w-4" /> Add Allowlist Stage
-                  </Button>
-                </div>
-              )}
+              <div className="border border-[#1a1525] dark:border-[#1a1525] rounded-md p-3 bg-[#0e0a1a] flex justify-center">
+                <Button
+                  variant="ghost"
+                  className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:text-gray-400"
+                  onClick={handleAddStage}
+                  style={{ backgroundColor: "transparent" }}
+                >
+                  <Plus className="h-4 w-4" /> Add Allowlist Stage
+                </Button>
+              </div>
             </div>
           )}
         </div>
