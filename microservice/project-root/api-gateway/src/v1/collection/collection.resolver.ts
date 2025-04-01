@@ -72,4 +72,5 @@ export class CollectionResolver {
       );
     return result.collections;
   }
+  
 }
