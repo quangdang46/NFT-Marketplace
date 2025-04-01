@@ -33,7 +33,13 @@ export class CollectionController {
     contractAddress?: string;
     user: { id: string; role: string };
   }) {
-    return this.collectionService.createCollection(data);
+    try {
+      const result = await this.collectionService.createCollection(data);
+      return result;
+    } catch (error) {
+      console.log(error);
+      throw error; // Đảm bảo lỗi được truyền lại qua RabbitMQ
+    }
   }
 
   @MessagePattern({ cmd: 'approve_collection' })

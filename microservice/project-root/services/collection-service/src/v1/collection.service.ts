@@ -34,54 +34,76 @@ export class CollectionService {
   }
 
   private generateUserSteps(data: any, factory: ethers.ContractFactory) {
-    // Giữ nguyên logic
-    const {
-      name,
-      uri,
-      maxSupply,
-      mintLimit,
-      mintPrice,
-      allowlistStages,
-      user,
-    } = data;
-    const { marketplaceFeeRecipient, marketplaceFeePercentage } =
-      getMarketplace();
-    const deployData = factory.interface.encodeDeploy([
-      name,
-      uri,
-      marketplaceFeeRecipient,
-      marketplaceFeePercentage,
-      ethers.parseUnits(maxSupply, 0),
-      ethers.parseUnits(mintLimit, 0),
-      ethers.parseEther(mintPrice),
-    ]);
-    const steps = [
-      {
-        id: 'create-token',
-        params: JSON.stringify({ from: user.id, value: '0', data: deployData }),
-      },
-    ];
-    for (const stage of allowlistStages) {
-      const duration =
-        parseInt(stage.durationDays) * 86400 +
-        parseInt(stage.durationHours) * 3600;
-      const startTime = Math.floor(new Date(stage.startDate).getTime() / 1000);
-      const stageData = factory.interface.encodeFunctionData(
-        'addAllowlistStage',
-        [
-          stage.id,
-          ethers.parseEther(stage.mintPrice),
-          startTime,
-          duration,
-          stage.wallets,
-        ],
-      );
-      steps.push({
-        id: `set-whitelist-${stage.id}`,
-        params: JSON.stringify({ from: user.id, value: '0', data: stageData }),
+    try {
+      const {
+        name,
+        uri,
+        maxSupply,
+        mintLimit,
+        mintPrice,
+        allowlistStages,
+        user,
+      } = data;
+      const { marketplaceFeeRecipient, marketplaceFeePercentage } =
+        getMarketplace();
+
+      const deployData = factory.interface.encodeDeploy([
+        name,
+        uri,
+        marketplaceFeeRecipient,
+        marketplaceFeePercentage,
+        ethers.parseUnits(maxSupply, 0),
+        ethers.parseUnits(mintLimit, 0),
+        ethers.parseEther(mintPrice),
+      ]);
+
+      const steps = [
+        {
+          id: 'create-token',
+          params: JSON.stringify({
+            from: user.id,
+            value: '0',
+            data: deployData,
+          }),
+        },
+      ];
+
+      // Tạo stageId là số nguyên tăng dần thay vì UUID
+      allowlistStages.forEach((stage: any, index: number) => {
+        const duration =
+          parseInt(stage.durationDays) * 86400 +
+          parseInt(stage.durationHours) * 3600;
+        const startTime = Math.floor(
+          new Date(stage.startDate).getTime() / 1000,
+        );
+        const stageId = index + 1; // Sử dụng index + 1 làm stageId (1, 2, 3, ...)
+
+        const stageData = factory.interface.encodeFunctionData(
+          'addAllowlistStage',
+          [
+            stageId, // Số nguyên thay vì UUID
+            ethers.parseEther(stage.mintPrice),
+            startTime,
+            duration,
+            stage.wallets,
+          ],
+        );
+
+        steps.push({
+          id: `set-whitelist-${stageId}`,
+          params: JSON.stringify({
+            from: user.id,
+            value: '0',
+            data: stageData,
+          }),
+        });
       });
+      return steps;
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to generate steps: ${(error as Error).message}`,
+      );
     }
-    return steps;
   }
 
   private async deployContractForAdmin(
@@ -124,13 +146,18 @@ export class CollectionService {
       signer,
     );
     await contract.setRoyalty(marketplaceFeeRecipient, parseInt(royaltyFee));
-    for (const stage of allowlistStages) {
+
+    // Sử dụng index + 1 làm stageId
+    for (let i = 0; i < allowlistStages.length; i++) {
+      const stage = allowlistStages[i];
       const duration =
         parseInt(stage.durationDays) * 86400 +
         parseInt(stage.durationHours) * 3600;
       const startTime = Math.floor(new Date(stage.startDate).getTime() / 1000);
+      const stageId = i + 1;
+
       await contract.addAllowlistStage(
-        stage.id,
+        stageId, // Số nguyên thay vì UUID
         ethers.parseEther(stage.mintPrice),
         startTime,
         duration,
@@ -162,38 +189,51 @@ export class CollectionService {
   }
 
   async createCollection(data: any) {
-    const { chain, user, contractAddress } = data;
-    const { provider, signer } = this.getChainConfig(chain);
-    const factory = new ethers.ContractFactory(
-      NFTManager.abi,
-      NFTManager.bytecode,
-      signer,
-    );
-
-    if (user.role === 'USER' && !contractAddress) {
-      return { steps: this.generateUserSteps(data, factory) };
-    }
-
-    if (user.role === 'ADMIN' && !contractAddress) {
-      const {
-        contract,
-        signerConnected,
-        contractAddress: finalContractAddress,
-      } = await this.deployContractForAdmin(data, factory, signer);
-      await this.configureContract(finalContractAddress, signerConnected, data);
-      const collectionId = await this.saveCollection(
-        data,
-        finalContractAddress,
+    try {
+      this.logger.log('Received createCollection data:', data);
+      const { chain, user, contractAddress } = data;
+      const { provider, signer } = this.getChainConfig(chain);
+      const factory = new ethers.ContractFactory(
+        NFTManager.abi,
+        NFTManager.bytecode,
+        signer,
       );
-      return { collectionId, contractAddress: finalContractAddress };
-    }
 
-    if (contractAddress) {
-      const collectionId = await this.saveCollection(data, contractAddress);
-      return { collectionId, contractAddress };
-    }
+      if (user.role === 'USER' && !contractAddress) {
+        const steps = this.generateUserSteps(data, factory);
+        return { steps };
+      }
 
-    throw new BadRequestException('Invalid request');
+      if (user.role === 'ADMIN' && !contractAddress) {
+        const {
+          contract,
+          signerConnected,
+          contractAddress: finalContractAddress,
+        } = await this.deployContractForAdmin(data, factory, signer);
+        await this.configureContract(
+          finalContractAddress,
+          signerConnected,
+          data,
+        );
+        const collectionId = await this.saveCollection(
+          data,
+          finalContractAddress,
+        );
+        return { collectionId, contractAddress: finalContractAddress };
+      }
+
+      if (contractAddress) {
+        const collectionId = await this.saveCollection(data, contractAddress);
+        return { collectionId, contractAddress };
+      }
+
+      throw new BadRequestException('Invalid request');
+    } catch (error) {
+      this.logger.error('Error in createCollection:', error);
+      throw new BadRequestException(
+        `Failed to create collection: ${(error as Error).message}`,
+      );
+    }
   }
 
   async approveCollection(collectionId: string) {

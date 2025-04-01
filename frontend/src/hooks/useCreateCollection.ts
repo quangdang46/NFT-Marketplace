@@ -111,62 +111,93 @@ export function useCreateCollection() {
     ...(contractAddress && { contractAddress }),
   });
 
-  const onSubmit = async (values: FormData) => {
-    console.log("onSubmit called with values:", values); // Debug
-    if (!isConnected) {
-      try {
-        await connectAsync({ connector: injected() });
-        return;
-      } catch (error) {
-        toast.error("Failed to connect wallet", { description: (error as Error).message });
-        return;
-      }
-    }
-
-    if (chain?.name !== selectedChain) {
-      const chainId = mockChains.find((c) => c.name === selectedChain)?.id;
-      if (chainId) switchChain({ chainId });
-      return;
-    }
-
-    if (!collectionImageFile || (selectedArtType === "same" && !artworkFile) || (selectedArtType === "unique" && !metadataUrl.trim())) {
-      toast.error("Missing required files or metadata URL");
-      return;
-    }
-
-    setIsLoading(true);
+const onSubmit = async (values: FormData) => {
+  console.log("onSubmit called with values:", values);
+  if (!isConnected) {
     try {
-      const collectionImageUrl = await uploadImage(collectionImageFile) || "";
-      const tokenUri = selectedArtType === "same" ? await uploadMetadata(values, artworkFile!) : metadataUrl;
-
-      const input = createInput(values, tokenUri, collectionImageUrl);
-      console.log("Sending to server:", input);
-
-      const { data } = await client.mutate({ mutation: CreateCollectionDocument, variables: { input } });
-      const { steps, contractAddress } = data.createCollection;
-
-      let finalContractAddress = contractAddress;
-      if (steps?.length) {
-        if (!walletClient) throw new Error("Wallet client not available");
-        const signer = await new BrowserProvider(walletClient.transport).getSigner();
-        for (const step of steps) {
-          const params = JSON.parse(step.params);
-          const tx = await signer.sendTransaction({ ...params, from: address });
-          const receipt = await tx.wait();
-          if (!receipt) throw new Error("Receipt not found");
-          if (step.id === "create-token") finalContractAddress = receipt.contractAddress;
-        }
-      }
-
-      const saveInput = createInput(values, tokenUri, collectionImageUrl, finalContractAddress);
-      await client.mutate({ mutation: CreateCollectionDocument, variables: { input: saveInput } });
-      toast.success("Collection created", { description: `Contract Address: ${finalContractAddress}` });
+      await connectAsync({ connector: injected() });
+      return;
     } catch (error) {
-      toast.error("Failed to create collection", { description: (error as Error).message });
-    } finally {
-      setIsLoading(false);
+      toast.error("Failed to connect wallet", {
+        description: (error as Error).message,
+      });
+      return;
     }
-  };
+  }
+
+  if (chain?.name !== selectedChain) {
+    const chainId = mockChains.find((c) => c.name === selectedChain)?.id;
+    if (chainId) switchChain({ chainId });
+    return;
+  }
+
+  if (
+    !collectionImageFile ||
+    (selectedArtType === "same" && !artworkFile) ||
+    (selectedArtType === "unique" && !metadataUrl.trim())
+  ) {
+    toast.error("Missing required files or metadata URL");
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const collectionImageUrl = (await uploadImage(collectionImageFile)) || "";
+    const tokenUri =
+      selectedArtType === "same"
+        ? await uploadMetadata(values, artworkFile!)
+        : metadataUrl;
+
+    const input = createInput(values, tokenUri, collectionImageUrl);
+    console.log("Sending to server:", input);
+
+    const { data } = await client.mutate({
+      mutation: CreateCollectionDocument,
+      variables: { input },
+    });
+    console.log("Backend response:", data); // Debug
+
+    const { steps, contractAddress } = data.createCollection;
+    let finalContractAddress = contractAddress;
+
+    if (steps?.length) {
+      if (!walletClient) throw new Error("Wallet client not available");
+      const signer = await new BrowserProvider(
+        walletClient.transport
+      ).getSigner();
+      for (const step of steps) {
+        console.log("Processing step:", step); // Debug
+        const params = JSON.parse(step.params);
+        const tx = await signer.sendTransaction({ ...params, from: address });
+        const receipt = await tx.wait();
+        if (!receipt) throw new Error("Receipt not found");
+        if (step.id === "create-token")
+          finalContractAddress = receipt.contractAddress;
+      }
+    }
+
+    const saveInput = createInput(
+      values,
+      tokenUri,
+      collectionImageUrl,
+      finalContractAddress
+    );
+    await client.mutate({
+      mutation: CreateCollectionDocument,
+      variables: { input: saveInput },
+    });
+    toast.success("Collection created", {
+      description: `Contract Address: ${finalContractAddress}`,
+    });
+  } catch (error) {
+    console.error("Submit error:", error); // Debug
+    toast.error("Failed to create collection", {
+      description: (error as Error).message,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return {
     form,

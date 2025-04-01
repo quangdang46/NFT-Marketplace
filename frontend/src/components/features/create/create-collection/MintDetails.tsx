@@ -94,6 +94,7 @@ export function MintDetails({
   };
 
   const handleAddStage = () => {
+    if (allowlistStages.length >= 1) return; // Không cho thêm nếu đã có 1 stage
     const newStage: AllowlistStage = {
       id: crypto.randomUUID(),
       mintPrice: "0.00",
@@ -401,17 +402,20 @@ export function MintDetails({
                 </div>
               </div>
 
-              <div className="border border-[#1a1525] dark:border-[#1a1525] rounded-md p-3 bg-[#0e0a1a] flex justify-center">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:text-gray-400"
-                  onClick={handleAddStage}
-                  style={{ backgroundColor: "transparent" }}
-                >
-                  <Plus className="h-4 w-4" /> Add Allowlist Stage
-                </Button>
-              </div>
+              {/* Chỉ hiển thị nút Add Allowlist Stage nếu chưa có stage nào */}
+              {allowlistStages.length < 1 && (
+                <div className="border border-[#1a1525] dark:border-[#1a1525] rounded-md p-3 bg-[#0e0a1a] flex justify-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:text-gray-400"
+                    onClick={handleAddStage}
+                    style={{ backgroundColor: "transparent" }}
+                  >
+                    <Plus className="h-4 w-4" /> Add Allowlist Stage
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
