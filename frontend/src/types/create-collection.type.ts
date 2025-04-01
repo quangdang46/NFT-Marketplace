@@ -14,8 +14,8 @@ export const formSchema = z.object({
     .refine((val) => parseFloat(val) >= 0 && parseFloat(val) <= 100, {
       message: "Royalty fee must be between 0 and 100",
     }),
-  maxSupply: z.string().regex(/^\d+$/, "Max supply must be a positive integer"),
-  mintLimit: z.string().regex(/^\d+$/, "Mint limit must be a positive integer"),
+  maxSupply: z.string().optional(),
+  mintLimit: z.string().optional(),
   mintStartDate: z.string().min(1, "Mint start date is required"),
   allowlistStages: z.array(z.any()).optional(),
   publicMint: z.object({

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -404,6 +403,7 @@ export function MintDetails({
 
               <div className="border border-[#1a1525] dark:border-[#1a1525] rounded-md p-3 bg-[#0e0a1a] flex justify-center">
                 <Button
+                  type="button"
                   variant="ghost"
                   className="cursor-pointer w-full text-gray-400 flex items-center justify-center gap-2 hover:bg-transparent hover:text-gray-400"
                   onClick={handleAddStage}
