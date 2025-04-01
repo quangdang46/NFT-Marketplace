@@ -28,23 +28,6 @@ export const formSchema = z.object({
 
 export type FormData = z.infer<typeof formSchema>;
 
-// Schema cho Allowlist Stage
-export const allowlistStageSchema = z.object({
-  id: z.string().min(1, "Stage ID is required"),
-  mintPrice: z.string().regex(/^\d+(\.\d+)?$/, "Mint price must be a number"),
-  durationDays: z.string().regex(/^\d+$/, "Duration days must be a number"),
-  durationHours: z.string().regex(/^\d+$/, "Duration hours must be a number"),
-  wallets: z.string().min(1, "Wallets are required"), // Chuỗi địa chỉ cách nhau bởi \n
-  startDate: z.string().min(1, "Start date is required"), // Chuỗi ISO date
-});
-
-// Schema cho Public Mint
-export const publicMintSchema = z.object({
-  mintPrice: z.string().regex(/^\d+(\.\d+)?$/, "Mint price must be a number"),
-  durationDays: z.string().regex(/^\d+$/, "Duration days must be a number"),
-  durationHours: z.string().regex(/^\d+$/, "Duration hours must be a number"),
-  startDate: z.string().optional(), // Optional theo graphql
-});
 
 // Type cho Allowlist Stage
 export type AllowlistStage = {
@@ -63,3 +46,13 @@ export type PublicMint = {
   durationHours: string;
   startDate?: string; // Optional
 };
+
+
+export type StepStatus = "pending" | "processing" | "completed";
+
+export interface PublishCollectionModalProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  step1Status: StepStatus;
+  step2Status: StepStatus;
+}
