@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,39 +6,99 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { Stats } from "@/lib/api/graphql/generated";
 
-export function HomeBanner() {
+interface HomeBannerProps {
+  stats: Stats;
+  chain: string | null;
+}
+
+export function HomeBanner({ stats, chain }: HomeBannerProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const slides = [
+  // Danh sách slide theo chain
+  const chainSlides: Record<
+    string,
     {
-      title: "Discover, Collect, and Sell Extraordinary NFTs",
-      description:
-        "Explore the best multi-chain NFT marketplace with thousands of digital assets across Ethereum, Solana, Polygon and more.",
-      image:
-        "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
-      color1: "hsl(var(--primary))",
-      color2: "#7928ca",
-    },
-    {
-      title: "Join the NFT Revolution",
-      description:
-        "Create and trade NFTs across multiple blockchains with low fees and high security.",
-      image:
-        "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
-      color1: "#0070f3",
-      color2: "#00dfd8",
-    },
-    {
-      title: "Exclusive Auctions & Drops",
-      description:
-        "Participate in exclusive NFT auctions and get early access to limited edition drops.",
-      image:
-        "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
-      color1: "#ff4d4d",
-      color2: "#f9cb28",
-    },
-  ];
+      title: string;
+      description: string;
+      image: string;
+      color1: string;
+      color2: string;
+    }[]
+  > = {
+    all: [
+      {
+        title: `Explore ${stats.artworks.toLocaleString()} NFTs Across All Chains`,
+        description:
+          "Discover thousands of digital assets on Ethereum, Sepolia, Polygon, and more. Join the largest multi-chain NFT marketplace!",
+        image:
+          "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
+        color1: "hsl(var(--primary))",
+        color2: "#7928ca",
+      },
+      {
+        title: "Join the NFT Revolution",
+        description: `Create and trade NFTs across multiple blockchains with ${stats.artists.toLocaleString()} artists and low fees.`,
+        image:
+          "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
+        color1: "#0070f3",
+        color2: "#00dfd8",
+      },
+      {
+        title: "Exclusive Auctions & Drops",
+        description:
+          "Participate in exclusive NFT auctions and get early access to limited edition drops.",
+        image:
+          "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
+        color1: "#ff4d4d",
+        color2: "#f9cb28",
+      },
+    ],
+    "11155111": [
+      // Sepolia
+      {
+        title: `Test ${stats.artworks.toLocaleString()} NFTs on Sepolia`,
+        description:
+          "Discover unique NFTs on the Sepolia testnet, perfect for testing and development.",
+        image:
+          "https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?q=80&w=2074&auto=format&fit=crop",
+        color1: "#ff6f61",
+        color2: "#6b7280",
+      },
+      {
+        title: "Experiment with Zero Risk",
+        description: `Create and trade NFTs on Sepolia with ${stats.artists.toLocaleString()} creators and low gas fees.`,
+        image:
+          "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2074&auto=format&fit=crop",
+        color1: "#ff6f61",
+        color2: "#6b7280",
+      },
+    ],
+    "1": [
+      // Ethereum Mainnet
+      {
+        title: `Discover ${stats.artworks.toLocaleString()} Premium Ethereum NFTs`,
+        description:
+          "Trade high-value NFTs on Ethereum, the leading blockchain for digital assets.",
+        image:
+          "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2064&auto=format&fit=crop",
+        color1: "#3b82f6",
+        color2: "#8b5cf6",
+      },
+      {
+        title: "Join Ethereum's NFT Elite",
+        description: `Own exclusive NFTs from ${stats.artists.toLocaleString()} top artists on the Ethereum blockchain.`,
+        image:
+          "https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?q=80&w=2072&auto=format&fit=crop",
+        color1: "#3b82f6",
+        color2: "#8b5cf6",
+      },
+    ],
+  };
+
+  // Chọn slides dựa trên chain, fallback về "all" nếu không có
+  const slides = chainSlides[chain || "all"] || chainSlides["all"];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -171,7 +232,7 @@ export function HomeBanner() {
                 backgroundImage: `linear-gradient(to right, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
               }}
             >
-              10K+
+              {stats.artworks.toLocaleString()}+
             </p>
             <p className="text-muted-foreground">Artworks</p>
           </div>
@@ -182,7 +243,7 @@ export function HomeBanner() {
                 backgroundImage: `linear-gradient(to right, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
               }}
             >
-              3.2K+
+              {stats.artists.toLocaleString()}+
             </p>
             <p className="text-muted-foreground">Artists</p>
           </div>
@@ -193,7 +254,7 @@ export function HomeBanner() {
                 backgroundImage: `linear-gradient(to right, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
               }}
             >
-              8.5K+
+              {stats.collectors.toLocaleString()}+
             </p>
             <p className="text-muted-foreground">Collectors</p>
           </div>

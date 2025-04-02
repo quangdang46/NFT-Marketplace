@@ -22,10 +22,7 @@ import {
 import { HelpCircle } from "lucide-react";
 import { AllowlistStageDialog } from "./AllowlistStageDialog";
 import { PublicStageDialog } from "./PublicStageDialog";
-import type {
-  AllowlistStage,
-  PublicMint,
-} from "@/types/create-collection.type";
+import type { AllowlistStage, PublicMint } from "@/lib/api/graphql/generated";
 
 interface MintDetailsProps {
   isLoading: boolean;
@@ -100,7 +97,7 @@ export function MintDetails({
       mintPrice: "0.00",
       durationDays: "1",
       durationHours: "0",
-      wallets: "",
+      wallets: [],
       startDate: date.toISOString(),
     };
     setAllowlistStages([...allowlistStages, newStage]);

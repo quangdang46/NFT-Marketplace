@@ -259,4 +259,117 @@ export class CollectionService {
       // createdAt: c.createdAt.toISOString(),
     }));
   }
+
+  // Tính status của Collection
+  private calculateStatus(collection: Collection): 'Ongoing' | 'Ended' {
+    const now = new Date().getTime();
+
+    // Kiểm tra publicMint
+    if (collection.publicMint) {
+      const startDate = new Date(collection.publicMint.startDate).getTime();
+      const durationMs =
+        parseInt(collection.publicMint.durationDays || '0') * 86400000 +
+        parseInt(collection.publicMint.durationHours || '0') * 3600000;
+      const endDate = startDate + durationMs;
+      if (now >= startDate && now <= endDate) {
+        return 'Ongoing';
+      }
+    }
+
+    // Kiểm tra allowlistStages
+    for (const stage of collection.allowlistStages || []) {
+      const startDate = new Date(stage.startDate).getTime();
+      const durationMs =
+        parseInt(stage.durationDays || '0') * 86400000 +
+        parseInt(stage.durationHours || '0') * 3600000;
+      const endDate = startDate + durationMs;
+      if (now >= startDate && now <= endDate) {
+        return 'Ongoing';
+      }
+    }
+
+    return 'Ended';
+  }
+
+  // Lấy danh sách collections với status được tính sẵn
+  async getCollections(chain?: string): Promise<any[]> {
+    const query = chain ? { chain, isVerified: true } : { isVerified: true };
+    const collections = await this.collectionModel.find(query).exec();
+
+    return collections.map((collection) => ({
+      id: collection._id?.toString(),
+      name: collection.name,
+      image: collection.image,
+      mintPrice: collection.mintPrice,
+      maxSupply: collection.maxSupply,
+      mintStartDate: collection.mintStartDate,
+      publicMint: collection.publicMint,
+      allowlistStages: collection.allowlistStages,
+      chain: collection.chain,
+      createdAt: collection.createdAt.toISOString(),
+      totalMinted: collection.totalMinted || '0',
+      creatorId: collection.creatorId,
+      isVerified: collection.isVerified,
+      status: this.calculateStatus(collection),
+    }));
+  }
+
+  // Tính số liệu stats
+  async getStats(
+    chain?: string,
+  ): Promise<{ artworks: number; artists: number; collectors: number }> {
+    // Tính artworks (tổng totalMinted)
+    const artworksAgg = await this.collectionModel.aggregate([
+      chain
+        ? { $match: { chain, isVerified: true } }
+        : { $match: { isVerified: true } },
+      {
+        $group: {
+          _id: null,
+          artworks: { $sum: { $toInt: '$totalMinted' } },
+        },
+      },
+    ]);
+    const artworks = artworksAgg[0]?.artworks || 0;
+
+    // Tính artists (số creatorId duy nhất)
+    const artistsAgg = await this.collectionModel.aggregate([
+      chain
+        ? { $match: { chain, isVerified: true } }
+        : { $match: { isVerified: true } },
+      {
+        $group: {
+          _id: null,
+          artists: { $addToSet: '$creatorId' },
+        },
+      },
+      {
+        $project: {
+          artists: { $size: '$artists' },
+        },
+      },
+    ]);
+    const artists = artistsAgg[0]?.artists || 0;
+
+    // Tính collectors (số buyer duy nhất từ transactions)
+    // const collectorsAgg = await this.transactionModel.aggregate([
+    //   chain ? { $match: { chain } } : { $match: {} },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       collectors: { $addToSet: '$buyer' },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       collectors: { $size: '$collectors' },
+    //     },
+    //   },
+    // ]);
+    // const collectors = collectorsAgg[0]?.collectors || 0;
+
+    const collectors = 0;
+
+    return { artworks, artists, collectors };
+  }
 }

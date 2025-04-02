@@ -60,4 +60,12 @@ export class CollectionController {
     const collections = await this.collectionService.getPendingCollections();
     return { collections };
   }
+
+  // Thêm message pattern để lấy collections và stats
+  @MessagePattern({ cmd: 'get_collections' })
+  async getCollections(data: { chain?: string }) {
+    const collections = await this.collectionService.getCollections(data.chain);
+    const stats = await this.collectionService.getStats(data.chain);
+    return { collections, stats };
+  }
 }

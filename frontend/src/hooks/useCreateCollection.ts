@@ -6,15 +6,9 @@ import { useAccount, useSwitchChain, useConnect, useWalletClient } from "wagmi";
 import { injected } from "@wagmi/connectors";
 import { toast } from "sonner";
 import { BrowserProvider } from "ethers";
-import {
-  FormData,
-  formSchema,
-  AllowlistStage,
-  PublicMint,
-  StepStatus,
-} from "@/types/create-collection.type";
+import { AllowlistStage, PublicMint } from "@/lib/api/graphql/generated";
+import { StepStatus, formSchema, FormData } from "@/types/collection.type";
 import { mockChains } from "@/lib/constant/chains";
-import { formattedAllowlistStages } from "@/lib/utils/format";
 import { uploadImage } from "@/lib/utils/upload";
 import client from "@/lib/api/apolloClient";
 import { CreateCollectionDocument } from "@/lib/api/graphql/generated";
@@ -32,6 +26,7 @@ export function useCreateCollection() {
     mintPrice: "0.00",
     durationDays: "1",
     durationHours: "0",
+    startDate:""
   });
   const [selectedArtType, setSelectedArtType] = useState<"same" | "unique">(
     "unique"
@@ -104,7 +99,7 @@ export function useCreateCollection() {
     form.reset();
     setSelectedChain("Sepolia");
     setAllowlistStages([]);
-    setPublicMint({ mintPrice: "0.00", durationDays: "1", durationHours: "0" });
+    setPublicMint({ mintPrice: "0.00", durationDays: "1", durationHours: "0", startDate:"" });
     setSelectedArtType("unique");
     setMetadataUrl("");
     setArtworkFile(null);
@@ -146,7 +141,7 @@ export function useCreateCollection() {
     maxSupply: values.maxSupply,
     mintLimit: values.mintLimit,
     mintStartDate: values.mintStartDate,
-    allowlistStages: formattedAllowlistStages(allowlistStages) || [],
+    allowlistStages: allowlistStages || [],
     publicMint: publicMint,
     ...(contractAddress && { contractAddress }),
   });

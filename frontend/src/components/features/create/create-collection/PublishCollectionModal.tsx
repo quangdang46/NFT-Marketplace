@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -8,7 +7,7 @@ import {
 import type {
   PublishCollectionModalProps,
   StepStatus,
-} from "@/types/create-collection.type";
+} from "@/types/collection.type";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 export function PublishCollectionModal({

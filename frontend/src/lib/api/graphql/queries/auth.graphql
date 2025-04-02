@@ -1,0 +1,24 @@
+mutation Logout {
+  logout
+}
+query Me {
+  me {
+    id
+    address
+  }
+}
+query Nonce {
+  nonce
+}
+mutation RefreshToken($refreshToken: String!) {
+  refreshToken(refreshToken: $refreshToken) {
+    accessToken
+    refreshToken
+  }
+}
+mutation Verify($message: String!, $signature: String!) {
+  verify(message: $message, signature: $signature) {
+    accessToken
+    refreshToken
+  }
+}

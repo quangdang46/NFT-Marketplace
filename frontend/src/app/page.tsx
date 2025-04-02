@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { HomeContent } from "../components/features/home/HomeContent";
+import { HomeContent } from "../components/features/home"
 import { ChainTabs } from "../components/features/home/ChainTabs";
 
 export const metadata = {

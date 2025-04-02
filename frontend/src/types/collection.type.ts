@@ -28,26 +28,6 @@ export const formSchema = z.object({
 
 export type FormData = z.infer<typeof formSchema>;
 
-
-// Type cho Allowlist Stage
-export type AllowlistStage = {
-  id: string;
-  mintPrice: string;
-  durationDays: string;
-  durationHours: string;
-  wallets: string; // Chuỗi địa chỉ cách nhau bởi \n
-  startDate: string; // Chuỗi ISO date
-};
-
-// Type cho Public Mint
-export type PublicMint = {
-  mintPrice: string;
-  durationDays: string;
-  durationHours: string;
-  startDate?: string; // Optional
-};
-
-
 export type StepStatus = "pending" | "processing" | "completed";
 
 export interface PublishCollectionModalProps {

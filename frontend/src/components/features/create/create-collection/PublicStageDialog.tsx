@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { PublicMint } from "@/types/create-collection.type";
+import { PublicMint } from "@/lib/api/graphql/generated";
 import { toast } from "sonner";
 
 interface PublicStageDialogProps {
@@ -72,7 +71,7 @@ export function PublicStageDialog({
       mintPrice,
       durationDays,
       durationHours,
-      startDate: startDate?.toISOString(),
+      startDate: startDate?.toISOString() || "",
     });
   };
 

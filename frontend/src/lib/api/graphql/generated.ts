@@ -17,6 +17,16 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type AllowlistStage = {
+  __typename?: 'AllowlistStage';
+  durationDays: Scalars['String']['output'];
+  durationHours: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  mintPrice: Scalars['String']['output'];
+  startDate: Scalars['String']['output'];
+  wallets: Array<Scalars['String']['output']>;
+};
+
 export type AllowlistStageInput = {
   durationDays: Scalars['String']['input'];
   durationHours: Scalars['String']['input'];
@@ -37,8 +47,32 @@ export type AuthResponse = {
   refreshToken: Scalars['String']['output'];
 };
 
+export type Collection = {
+  __typename?: 'Collection';
+  allowlistStages?: Maybe<Array<AllowlistStage>>;
+  chain: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  creatorId: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  image: Scalars['String']['output'];
+  isVerified: Scalars['Boolean']['output'];
+  maxSupply: Scalars['String']['output'];
+  mintPrice: Scalars['String']['output'];
+  mintStartDate: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  publicMint?: Maybe<PublicMint>;
+  status: Scalars['String']['output'];
+  totalMinted: Scalars['String']['output'];
+};
+
+export type CollectionsResponse = {
+  __typename?: 'CollectionsResponse';
+  collections: Array<Collection>;
+  stats: Stats;
+};
+
 export type CreateCollectionInput = {
-  allowlistStages?: InputMaybe<Array<AllowlistStageInput>>;
+  allowlistStages: Array<AllowlistStageInput>;
   artType: Scalars['String']['input'];
   chain: Scalars['String']['input'];
   collectionImageUrl: Scalars['String']['input'];
@@ -49,7 +83,7 @@ export type CreateCollectionInput = {
   mintPrice: Scalars['String']['input'];
   mintStartDate: Scalars['String']['input'];
   name: Scalars['String']['input'];
-  publicMint?: InputMaybe<PublicMintInput>;
+  publicMint: PublicMintInput;
   royaltyFee: Scalars['String']['input'];
   uri: Scalars['String']['input'];
 };
@@ -126,6 +160,14 @@ export type PendingCollection = {
   name: Scalars['String']['output'];
 };
 
+export type PublicMint = {
+  __typename?: 'PublicMint';
+  durationDays: Scalars['String']['output'];
+  durationHours: Scalars['String']['output'];
+  mintPrice: Scalars['String']['output'];
+  startDate: Scalars['String']['output'];
+};
+
 export type PublicMintInput = {
   durationDays: Scalars['String']['input'];
   durationHours: Scalars['String']['input'];
@@ -135,6 +177,7 @@ export type PublicMintInput = {
 
 export type Query = {
   __typename?: 'Query';
+  getCollections: CollectionsResponse;
   getPendingCollections: Array<PendingCollection>;
   getSignedUrl: Scalars['String']['output'];
   getUser: User;
@@ -143,8 +186,20 @@ export type Query = {
 };
 
 
+export type QueryGetCollectionsArgs = {
+  chain?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryGetUserArgs = {
   userId: Scalars['String']['input'];
+};
+
+export type Stats = {
+  __typename?: 'Stats';
+  artists: Scalars['Float']['output'];
+  artworks: Scalars['Float']['output'];
+  collectors: Scalars['Float']['output'];
 };
 
 export type User = {
@@ -167,18 +222,6 @@ export type VerifyUserResponse = {
   __typename?: 'VerifyUserResponse';
   status: Scalars['String']['output'];
 };
-
-export type CreateCollectionMutationVariables = Exact<{
-  input: CreateCollectionInput;
-}>;
-
-
-export type CreateCollectionMutation = { __typename?: 'Mutation', createCollection: { __typename?: 'CreateCollectionResponse', collectionId?: string | null, contractAddress?: string | null, steps?: Array<{ __typename?: 'CreateCollectionStep', id: string, params: string }> | null } };
-
-export type GetSignedUrlQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetSignedUrlQuery = { __typename?: 'Query', getSignedUrl: string };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -210,82 +253,26 @@ export type VerifyMutationVariables = Exact<{
 
 export type VerifyMutation = { __typename?: 'Mutation', verify: { __typename?: 'AuthResponse', accessToken: string, refreshToken: string } };
 
+export type CreateCollectionMutationVariables = Exact<{
+  input: CreateCollectionInput;
+}>;
 
-export const CreateCollectionDocument = gql`
-    mutation CreateCollection($input: CreateCollectionInput!) {
-  createCollection(input: $input) {
-    collectionId
-    contractAddress
-    steps {
-      id
-      params
-    }
-  }
-}
-    `;
-export type CreateCollectionMutationFn = Apollo.MutationFunction<CreateCollectionMutation, CreateCollectionMutationVariables>;
 
-/**
- * __useCreateCollectionMutation__
- *
- * To run a mutation, you first call `useCreateCollectionMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateCollectionMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [createCollectionMutation, { data, loading, error }] = useCreateCollectionMutation({
- *   variables: {
- *      input: // value for 'input'
- *   },
- * });
- */
-export function useCreateCollectionMutation(baseOptions?: Apollo.MutationHookOptions<CreateCollectionMutation, CreateCollectionMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateCollectionMutation, CreateCollectionMutationVariables>(CreateCollectionDocument, options);
-      }
-export type CreateCollectionMutationHookResult = ReturnType<typeof useCreateCollectionMutation>;
-export type CreateCollectionMutationResult = Apollo.MutationResult<CreateCollectionMutation>;
-export type CreateCollectionMutationOptions = Apollo.BaseMutationOptions<CreateCollectionMutation, CreateCollectionMutationVariables>;
-export const GetSignedUrlDocument = gql`
-    query GetSignedUrl {
-  getSignedUrl
-}
-    `;
+export type CreateCollectionMutation = { __typename?: 'Mutation', createCollection: { __typename?: 'CreateCollectionResponse', collectionId?: string | null, contractAddress?: string | null, steps?: Array<{ __typename?: 'CreateCollectionStep', id: string, params: string }> | null } };
 
-/**
- * __useGetSignedUrlQuery__
- *
- * To run a query within a React component, call `useGetSignedUrlQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetSignedUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetSignedUrlQuery({
- *   variables: {
- *   },
- * });
- */
-export function useGetSignedUrlQuery(baseOptions?: Apollo.QueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
-      }
-export function useGetSignedUrlLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
-        }
-export function useGetSignedUrlSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
-        }
-export type GetSignedUrlQueryHookResult = ReturnType<typeof useGetSignedUrlQuery>;
-export type GetSignedUrlLazyQueryHookResult = ReturnType<typeof useGetSignedUrlLazyQuery>;
-export type GetSignedUrlSuspenseQueryHookResult = ReturnType<typeof useGetSignedUrlSuspenseQuery>;
-export type GetSignedUrlQueryResult = Apollo.QueryResult<GetSignedUrlQuery, GetSignedUrlQueryVariables>;
+export type GetCollectionsQueryVariables = Exact<{
+  chain?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type GetCollectionsQuery = { __typename?: 'Query', getCollections: { __typename?: 'CollectionsResponse', collections: Array<{ __typename?: 'Collection', id: string, name: string, image: string, mintPrice: string, maxSupply: string, mintStartDate: string, chain: string, createdAt: string, totalMinted: string, creatorId: string, isVerified: boolean, status: string, publicMint?: { __typename?: 'PublicMint', mintPrice: string, startDate: string, durationDays: string, durationHours: string } | null, allowlistStages?: Array<{ __typename?: 'AllowlistStage', id: string, mintPrice: string, startDate: string, durationDays: string, durationHours: string, wallets: Array<string> }> | null }>, stats: { __typename?: 'Stats', artworks: number, artists: number, collectors: number } } };
+
+export type GetSignedUrlQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSignedUrlQuery = { __typename?: 'Query', getSignedUrl: string };
+
+
 export const LogoutDocument = gql`
     mutation Logout {
   logout
@@ -462,3 +449,150 @@ export function useVerifyMutation(baseOptions?: Apollo.MutationHookOptions<Verif
 export type VerifyMutationHookResult = ReturnType<typeof useVerifyMutation>;
 export type VerifyMutationResult = Apollo.MutationResult<VerifyMutation>;
 export type VerifyMutationOptions = Apollo.BaseMutationOptions<VerifyMutation, VerifyMutationVariables>;
+export const CreateCollectionDocument = gql`
+    mutation CreateCollection($input: CreateCollectionInput!) {
+  createCollection(input: $input) {
+    collectionId
+    contractAddress
+    steps {
+      id
+      params
+    }
+  }
+}
+    `;
+export type CreateCollectionMutationFn = Apollo.MutationFunction<CreateCollectionMutation, CreateCollectionMutationVariables>;
+
+/**
+ * __useCreateCollectionMutation__
+ *
+ * To run a mutation, you first call `useCreateCollectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateCollectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createCollectionMutation, { data, loading, error }] = useCreateCollectionMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateCollectionMutation(baseOptions?: Apollo.MutationHookOptions<CreateCollectionMutation, CreateCollectionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateCollectionMutation, CreateCollectionMutationVariables>(CreateCollectionDocument, options);
+      }
+export type CreateCollectionMutationHookResult = ReturnType<typeof useCreateCollectionMutation>;
+export type CreateCollectionMutationResult = Apollo.MutationResult<CreateCollectionMutation>;
+export type CreateCollectionMutationOptions = Apollo.BaseMutationOptions<CreateCollectionMutation, CreateCollectionMutationVariables>;
+export const GetCollectionsDocument = gql`
+    query GetCollections($chain: String) {
+  getCollections(chain: $chain) {
+    collections {
+      id
+      name
+      image
+      mintPrice
+      maxSupply
+      mintStartDate
+      publicMint {
+        mintPrice
+        startDate
+        durationDays
+        durationHours
+      }
+      allowlistStages {
+        id
+        mintPrice
+        startDate
+        durationDays
+        durationHours
+        wallets
+      }
+      chain
+      createdAt
+      totalMinted
+      creatorId
+      isVerified
+      status
+    }
+    stats {
+      artworks
+      artists
+      collectors
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetCollectionsQuery__
+ *
+ * To run a query within a React component, call `useGetCollectionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCollectionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCollectionsQuery({
+ *   variables: {
+ *      chain: // value for 'chain'
+ *   },
+ * });
+ */
+export function useGetCollectionsQuery(baseOptions?: Apollo.QueryHookOptions<GetCollectionsQuery, GetCollectionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCollectionsQuery, GetCollectionsQueryVariables>(GetCollectionsDocument, options);
+      }
+export function useGetCollectionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCollectionsQuery, GetCollectionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCollectionsQuery, GetCollectionsQueryVariables>(GetCollectionsDocument, options);
+        }
+export function useGetCollectionsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetCollectionsQuery, GetCollectionsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetCollectionsQuery, GetCollectionsQueryVariables>(GetCollectionsDocument, options);
+        }
+export type GetCollectionsQueryHookResult = ReturnType<typeof useGetCollectionsQuery>;
+export type GetCollectionsLazyQueryHookResult = ReturnType<typeof useGetCollectionsLazyQuery>;
+export type GetCollectionsSuspenseQueryHookResult = ReturnType<typeof useGetCollectionsSuspenseQuery>;
+export type GetCollectionsQueryResult = Apollo.QueryResult<GetCollectionsQuery, GetCollectionsQueryVariables>;
+export const GetSignedUrlDocument = gql`
+    query GetSignedUrl {
+  getSignedUrl
+}
+    `;
+
+/**
+ * __useGetSignedUrlQuery__
+ *
+ * To run a query within a React component, call `useGetSignedUrlQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSignedUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSignedUrlQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetSignedUrlQuery(baseOptions?: Apollo.QueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
+      }
+export function useGetSignedUrlLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
+        }
+export function useGetSignedUrlSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetSignedUrlQuery, GetSignedUrlQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetSignedUrlQuery, GetSignedUrlQueryVariables>(GetSignedUrlDocument, options);
+        }
+export type GetSignedUrlQueryHookResult = ReturnType<typeof useGetSignedUrlQuery>;
+export type GetSignedUrlLazyQueryHookResult = ReturnType<typeof useGetSignedUrlLazyQuery>;
+export type GetSignedUrlSuspenseQueryHookResult = ReturnType<typeof useGetSignedUrlSuspenseQuery>;
+export type GetSignedUrlQueryResult = Apollo.QueryResult<GetSignedUrlQuery, GetSignedUrlQueryVariables>;

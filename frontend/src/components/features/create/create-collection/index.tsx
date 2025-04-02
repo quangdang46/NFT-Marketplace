@@ -9,7 +9,7 @@ import { NFTArtSection } from "./NFTArtSection";
 import { MintDetails } from "./MintDetails";
 import { PublishCollectionModal } from "./PublishCollectionModal"; // Thêm import
 import { useCreateCollection } from "@/hooks/useCreateCollection";
-import { AllowlistStage, PublicMint } from "@/types/create-collection.type";
+import { AllowlistStage, PublicMint } from "@/lib/api/graphql/generated";
 
 export default function CreateCollection() {
   const {

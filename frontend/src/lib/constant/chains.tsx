@@ -9,22 +9,22 @@ export interface Chain {
 }
 
 export const mockChains: Chain[] = [
-  {
-    id: 84531,
-    name: "Base Goerli",
-    icon: <Base />,
-    symbol: "ETH",
-  },
+  // {
+  //   id: 84531,
+  //   name: "Base Goerli",
+  //   icon: <Base />,
+  //   symbol: "ETH",
+  // },
   {
     id: 11155111,
     name: "Sepolia",
     icon: <Ethereum />,
     symbol: "ETH",
   },
-  {
-    id: 80001,
-    name: "Polygon Mumbai",
-    icon: <Polygon />,
-    symbol: "ETH",
-  },
+  // {
+  //   id: 80001,
+  //   name: "Polygon Mumbai",
+  //   icon: <Polygon />,
+  //   symbol: "ETH",
+  // },
 ];

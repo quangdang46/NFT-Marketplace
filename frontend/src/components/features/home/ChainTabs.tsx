@@ -9,17 +9,17 @@ import { mockChains } from "@/lib/constant/chains";
 export function ChainTabs() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedChain, setSelectedChain] = useState<string>("all");
+  const [selectedChain, setSelectedChain] = useState<string | number>("all");
   const isMobile = useIsMobile();
 
   // Check for mobile once on mount and when window resizes
 
-  const handleChainChange = (chainId: string) => {
+  const handleChainChange = (chainId: number | string) => {
     setSelectedChain(chainId);
 
     // Update URL with search param
     const params = new URLSearchParams(searchParams.toString());
-    params.set("chain", chainId);
+    params.set("chain", chainId+"");
     router.push(`/?${params.toString()}`);
   };
 

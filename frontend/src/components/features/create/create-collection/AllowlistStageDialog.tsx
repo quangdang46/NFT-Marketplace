@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -20,7 +19,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { AllowlistStage } from "@/types/create-collection.type";
+import { AllowlistStage } from "@/lib/api/graphql/generated";
 import { toast } from "sonner";
 
 interface AllowlistStageDialogProps {
@@ -36,13 +35,14 @@ export function AllowlistStageDialog({
   stage,
   onSave,
 }: AllowlistStageDialogProps) {
+  const MAX_WALLET_LENGTH = 42;
   const [id, setId] = useState(stage?.id || crypto.randomUUID());
   const [mintPrice, setMintPrice] = useState(stage?.mintPrice || "0.00");
   const [durationDays, setDurationDays] = useState(stage?.durationDays || "1");
   const [durationHours, setDurationHours] = useState(
     stage?.durationHours || "0"
   );
-  const [wallets, setWallets] = useState(stage?.wallets || "");
+  const [wallets, setWallets] = useState(stage?.wallets || []);
   const [startDate, setStartDate] = useState<Date>(
     stage?.startDate ? new Date(stage.startDate) : new Date()
   );
@@ -61,7 +61,7 @@ export function AllowlistStageDialog({
       setMintPrice("0.00");
       setDurationDays("1");
       setDurationHours("0");
-      setWallets("");
+      setWallets([]);
       setStartDate(new Date());
     }
   }, [isOpen, stage]);
@@ -84,7 +84,7 @@ export function AllowlistStageDialog({
       toast.error("Duration hours must be a valid number");
       return;
     }
-    if (!wallets.trim()) {
+    if (!wallets.length) {
       toast.error("Wallets are required");
       return;
     }
@@ -94,7 +94,7 @@ export function AllowlistStageDialog({
       mintPrice,
       durationDays,
       durationHours,
-      wallets: wallets.trim(), // Chuỗi địa chỉ cách nhau bởi \n
+      wallets, // Chuỗi địa chỉ cách nhau bởi \n
       startDate: startDate.toISOString(),
     };
 
@@ -168,10 +168,17 @@ export function AllowlistStageDialog({
           <div>
             <Label className="text-white">Wallets (one per line)</Label>
             <Textarea
-              value={wallets}
-              onChange={(e) => setWallets(e.target.value)}
+              value={wallets.join("\n")}
+              onChange={(e) => {
+                const newWallets = e.target.value.split("\n").map((wallet) => {
+                  return wallet.length > MAX_WALLET_LENGTH
+                    ? wallet.slice(0, MAX_WALLET_LENGTH)
+                    : wallet;
+                });
+                setWallets(newWallets);
+              }}
               placeholder="0x123...\n0x456..."
-              className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 min-h-[100px] focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="bg-[#1a1525] dark:bg-[#1a1525] border-[#3a3450] dark:border-[#3a3450] text-white dark:text-white mt-2 min-h-[100px] max-h-[300px] overflow-y-auto focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 

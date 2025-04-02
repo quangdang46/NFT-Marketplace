@@ -1,0 +1,129 @@
+# Input cho giai đoạn whitelist
+input AllowlistStageInput {
+  id: String!
+  mintPrice: String!
+  durationDays: String!
+  durationHours: String!
+  wallets: [String!]!
+  startDate: String!
+}
+
+type PublicMint {
+  mintPrice: String!
+  startDate: String!
+  durationDays: String!
+  durationHours: String!
+}
+
+
+input CreateCollectionInput {
+  chain: String!
+  name: String!
+  description: String!
+  artType: String!
+  uri: String!
+  collectionImageUrl: String!
+  mintPrice: String!
+  royaltyFee: String!
+  maxSupply: String!
+  mintLimit: String!
+  mintStartDate: String!
+  allowlistStages: [AllowlistStageInput!]!
+  publicMint: PublicMintInput!
+  contractAddress: String
+}
+
+
+type CreateCollectionStep {
+  id: String!
+  params: String!
+}
+
+
+type CreateCollectionResponse {
+  collectionId: String
+  contractAddress: String
+  steps: [CreateCollectionStep!]
+}
+type AllowlistStage {
+  id: String!
+  mintPrice: String!
+  startDate: String!
+  durationDays: String!
+  durationHours: String!
+  wallets: [String!]!
+}
+
+type Collection {
+  id: String!
+  name: String!
+  image: String!
+  mintPrice: String!
+  maxSupply: String!
+  mintStartDate: String!
+  publicMint: PublicMint
+  allowlistStages: [AllowlistStage!]
+  chain: String!
+  createdAt: String!
+  totalMinted: String!
+  creatorId: String!
+  isVerified: Boolean!
+  status: String!
+}
+
+type Stats {
+  artworks: Float!
+  artists: Float!
+  collectors: Float!
+}
+
+# Ví dụ mutation
+
+mutation CreateCollection($input: CreateCollectionInput!) {
+  createCollection(input: $input) {
+    collectionId
+    contractAddress
+    steps {
+      id
+      params
+    }
+  }
+}
+
+query GetCollections($chain: String) {
+  getCollections(chain: $chain) {
+    collections {
+      id
+      name
+      image
+      mintPrice
+      maxSupply
+      mintStartDate
+      publicMint {
+        mintPrice
+        startDate
+        durationDays
+        durationHours
+      }
+      allowlistStages {
+        id
+        mintPrice
+        startDate
+        durationDays
+        durationHours
+        wallets
+      }
+      chain
+      createdAt
+      totalMinted
+      creatorId
+      isVerified
+      status
+    }
+    stats {
+      artworks
+      artists
+      collectors
+    }
+  }
+}

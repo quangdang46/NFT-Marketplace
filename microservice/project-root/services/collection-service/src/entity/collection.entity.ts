@@ -19,6 +19,8 @@ export class Collection extends Document {
   @Prop({ type: [Object], default: [] }) allowlistStages: any[];
   @Prop({ type: Object }) publicMint: any;
   @Prop({ default: 0 }) nftCount: number;
+  @Prop({ default: '0' })
+  totalMinted: string;
 }
 
 export const CollectionSchema = SchemaFactory.createForClass(Collection);
