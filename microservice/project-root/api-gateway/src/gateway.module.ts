@@ -34,7 +34,8 @@ import { WalletResolver } from '@/v1/wallet/wallet.resolver';
 import { AuctionResolver } from '@/v1/auction/auction.resolver';
 import { OrderResolver } from '@/v1/order/order.resolver';
 import { FileResolver } from '@/v1/file/file.resolver';
-
+import { TestResolver } from '@/v1/test/test.resolver';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 // Định nghĩa kiểu EventsMap và Status
 type EventsMap = Record<string, (...args: any[]) => void>;
 type Status = string;
@@ -70,8 +71,9 @@ const IMPORTS = [
       playground: true,
       introspection: true,
       context: ({ req, res }) => ({ req, res }),
-      path: '/graphql',
-      useGlobalPrefix: false,
+      subscriptions: {
+        'graphql-ws': true,
+      },
     }),
     inject: [],
   }),
@@ -87,6 +89,16 @@ const IMPORTS = [
 const CONTROLLERS = [GatewayController];
 
 const PROVIDERS = [
+  {
+    provide: 'PUB_SUB',
+    useFactory: () => {
+      return new RedisPubSub({
+        publisher: new Redis('redis://localhost:6379'), // Adjust Redis config
+        subscriber: new Redis('redis://localhost:6379'), // Adjust Redis config
+      });
+    },
+    inject: [],
+  },
   JwtGuard,
   JwtService,
   GatewayService,
@@ -98,6 +110,7 @@ const PROVIDERS = [
   // AuctionResolver,
   // OrderResolver,
   FileResolver,
+  TestResolver,
   {
     provide: 'RABBITMQ_OPTIONS',
     useFactory: () => getRabbitMQConfig(SERVICE_NAME),

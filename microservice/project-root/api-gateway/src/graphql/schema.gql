@@ -104,6 +104,7 @@ type Query {
   getCollections(chainId: String): CollectionsResponse!
   getUser(userId: String!): User!
   getSignedUrl: String!
+  hello: String!
 }
 
 type Mutation {
@@ -114,6 +115,7 @@ type Mutation {
   approveCollection(collectionId: String!): ApproveCollectionResponse!
   createUser(username: String!, email: String!, _address: String!, role: String): CreateUserResponse!
   verifyUser(userId: String!): VerifyUserResponse!
+  sendMessage(message: String!): String!
 }
 
 input CreateCollectionInput {
@@ -148,4 +150,8 @@ input PublicMintInput {
   durationDays: String!
   durationHours: String!
   startDate: String
+}
+
+type Subscription {
+  messageAdded: String!
 }
