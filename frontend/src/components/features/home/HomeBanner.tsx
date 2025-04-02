@@ -7,25 +7,23 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { Stats } from "@/lib/api/graphql/generated";
 
+// Slide interface
+interface Slide {
+  title: string;
+  description: string;
+  image: string;
+  color1: string;
+  color2: string;
+}
+
 interface HomeBannerProps {
   stats: Stats;
   chain: string | null;
 }
 
-export function HomeBanner({ stats, chain }: HomeBannerProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // Danh sách slide theo chain
-  const chainSlides: Record<
-    string,
-    {
-      title: string;
-      description: string;
-      image: string;
-      color1: string;
-      color2: string;
-    }[]
-  > = {
+// Get chain slides function
+const getChainSlides = (stats: Stats, chain: string | null): Slide[] => {
+  const slides: Record<string, Slide[]> = {
     all: [
       {
         title: `Explore ${stats.artworks.toLocaleString()} NFTs Across All Chains`,
@@ -55,7 +53,6 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
       },
     ],
     "11155111": [
-      // Sepolia
       {
         title: `Test ${stats.artworks.toLocaleString()} NFTs on Sepolia`,
         description:
@@ -75,7 +72,6 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
       },
     ],
     "1": [
-      // Ethereum Mainnet
       {
         title: `Discover ${stats.artworks.toLocaleString()} Premium Ethereum NFTs`,
         description:
@@ -95,15 +91,170 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
       },
     ],
   };
-  console.log("chainSlides", chain);
-  // Chọn slides dựa trên chain, fallback về "all" nếu không có
-  const slides = chainSlides[chain || "all"] || chainSlides["all"];
 
+  return slides[chain || "all"] || slides["all"];
+};
+
+// Slide Content Component
+function SlideContent({
+  slide,
+  isActive,
+}: {
+  slide: Slide;
+  isActive: boolean;
+}) {
+  return (
+    <motion.div
+      className={`${isActive ? "block" : "hidden"}`}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: isActive ? 1 : 0, x: isActive ? 0 : -20 }}
+      transition={{ duration: 0.5 }}
+    >
+      <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        <span
+          className="bg-clip-text text-transparent"
+          style={{
+            backgroundImage: `linear-gradient(to right, ${slide.color1}, ${slide.color2})`,
+          }}
+        >
+          {slide.title}
+        </span>
+      </h1>
+      <p className="text-lg md:text-xl mb-8 text-muted-foreground max-w-lg">
+        {slide.description}
+      </p>
+    </motion.div>
+  );
+}
+
+// Stats Display Component
+function StatsDisplay({
+  stats,
+  currentSlide,
+  slides,
+}: {
+  stats: Stats;
+  currentSlide: number;
+  slides: Slide[];
+}) {
+  const currentColors = slides[currentSlide] || slides[0];
+  return (
+    <div className="flex gap-8 mt-12">
+      {[
+        { value: stats.artworks, label: "Artworks" },
+        { value: stats.artists, label: "Artists" },
+        { value: stats.collectors, label: "Collectors" },
+      ].map((stat, index) => (
+        <div key={index}>
+          <p
+            className="text-3xl font-bold text-transparent bg-clip-text"
+            style={{
+              backgroundImage: `linear-gradient(to right, ${currentColors.color1}, ${currentColors.color2})`,
+            }}
+          >
+            {stat.value !== undefined
+              ? `${stat.value.toLocaleString()}+`
+              : "N/A"}
+          </p>
+          <p className="text-muted-foreground">{stat.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Navigation Dots Component
+function NavigationDots({
+  slides,
+  currentSlide,
+  onDotClick,
+}: {
+  slides: Slide[];
+  currentSlide: number;
+  onDotClick: (index: number) => void;
+}) {
+  return (
+    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {slides.map((_, index) => (
+        <button
+          key={index}
+          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            currentSlide === index
+              ? "w-6 bg-white"
+              : "bg-white/50 hover:bg-white/80"
+          }`}
+          onClick={() => onDotClick(index)}
+          aria-label={`Go to slide ${index + 1}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+const Background = ({
+  slide,
+  currentSlide,
+  index,
+}: {
+  slide: Slide;
+  currentSlide: number;
+  index: number;
+}) => {
+  return (
+    <motion.div
+      key={index}
+      className="absolute inset-0 z-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: currentSlide === index ? 1 : 0 }}
+      transition={{ duration: 0.7 }}
+      style={{
+        backgroundImage: `linear-gradient(to right, ${slide.color1}20, ${slide.color2}10), url(${slide.image})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-transparent"></div>
+    </motion.div>
+  );
+};
+
+const Buttons = () => {
+  return (
+    <div className="flex flex-col sm:flex-row gap-4">
+      <Link href="/collections" className="w-fit">
+        <Button
+          size="lg"
+          className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-medium"
+        >
+          Explore Collections
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </Link>
+      <Link href="/auctions" className="w-fit">
+        <Button size="lg" variant="outline">
+          <Sparkles className="mr-2 h-4 w-4" />
+          Live Auctions
+        </Button>
+      </Link>
+    </div>
+  );
+};
+
+export function HomeBanner({ stats, chain }: HomeBannerProps) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = getChainSlides(stats, chain);
+
+  // Reset currentSlide when chain changes
+  useEffect(() => {
+    setCurrentSlide(0); // Reset to first slide when chain changes
+  }, [chain]);
+
+  // Slide interval effect
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
-
     return () => clearInterval(interval);
   }, [slides.length]);
 
@@ -111,28 +262,24 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
     setCurrentSlide(index);
   };
 
+  // Safeguard: Ensure slides is not empty
+  if (!slides || slides.length === 0) {
+    return <div>Loading slides...</div>;
+  }
+
   return (
     <div className="relative w-full h-[500px] rounded-xl overflow-hidden mb-12 group">
       {/* Background with gradient overlay */}
       {slides.map((slide, index) => (
-        <motion.div
+        <Background
           key={index}
-          className="absolute inset-0 z-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: currentSlide === index ? 1 : 0 }}
-          transition={{ duration: 0.7 }}
-          style={{
-            backgroundImage: `linear-gradient(to right, ${slide.color1}20, ${slide.color2}10), url(${slide.image})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat", // Optional: explicitly set if needed
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-transparent"></div>
-        </motion.div>
+          slide={slide}
+          currentSlide={currentSlide}
+          index={index}
+        />
       ))}
 
-      {/* Animated particles or shapes */}
+      {/* Animated particles */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <motion.div
           className="absolute w-64 h-64 rounded-full blur-3xl"
@@ -149,10 +296,11 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
           style={{
             top: "-20px",
             left: "-20px",
-            background: `linear-gradient(45deg, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
+            background: `linear-gradient(45deg, ${
+              slides[currentSlide]?.color1 || "#000"
+            }, ${slides[currentSlide]?.color2 || "#000"})`,
           }}
-        ></motion.div>
-
+        />
         <motion.div
           className="absolute w-96 h-96 rounded-full blur-3xl"
           animate={{
@@ -169,112 +317,33 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
           style={{
             bottom: "-40px",
             right: "-20px",
-            background: `linear-gradient(45deg, ${slides[currentSlide].color2}, ${slides[currentSlide].color1})`,
+            background: `linear-gradient(45deg, ${
+              slides[currentSlide]?.color2 || "#000"
+            }, ${slides[currentSlide]?.color1 || "#000"})`,
           }}
-        ></motion.div>
+        />
       </div>
 
-      {/* Content */}
+      {/* Main Content */}
       <div className="relative z-20 flex flex-col justify-center h-full p-8 md:p-12 max-w-2xl">
         {slides.map((slide, index) => (
-          <motion.div
+          <SlideContent
             key={index}
-            className={`${currentSlide === index ? "block" : "hidden"}`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{
-              opacity: currentSlide === index ? 1 : 0,
-              x: currentSlide === index ? 0 : -20,
-            }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              <span
-                className="bg-clip-text text-transparent"
-                style={{
-                  backgroundImage: `linear-gradient(to right, ${slide.color1}, ${slide.color2})`,
-                }}
-              >
-                {slide.title}
-              </span>
-            </h1>
-
-            <p className="text-lg md:text-xl mb-8 text-muted-foreground max-w-lg">
-              {slide.description}
-            </p>
-          </motion.div>
+            slide={slide}
+            isActive={currentSlide === index}
+          />
         ))}
-
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Link href="/collections" className="w-fit">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-medium"
-            >
-              Explore Collections
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-
-          <Link href="/auctions" className="w-fit">
-            <Button size="lg" variant="outline">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Live Auctions
-            </Button>
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div className="flex gap-8 mt-12">
-          <div>
-            <p
-              className="text-3xl font-bold text-transparent bg-clip-text"
-              style={{
-                backgroundImage: `linear-gradient(to right, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
-              }}
-            >
-              {stats.artworks.toLocaleString()}+
-            </p>
-            <p className="text-muted-foreground">Artworks</p>
-          </div>
-          <div>
-            <p
-              className="text-3xl font-bold text-transparent bg-clip-text"
-              style={{
-                backgroundImage: `linear-gradient(to right, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
-              }}
-            >
-              {stats.artists.toLocaleString()}+
-            </p>
-            <p className="text-muted-foreground">Artists</p>
-          </div>
-          <div>
-            <p
-              className="text-3xl font-bold text-transparent bg-clip-text"
-              style={{
-                backgroundImage: `linear-gradient(to right, ${slides[currentSlide].color1}, ${slides[currentSlide].color2})`,
-              }}
-            >
-              {stats.collectors.toLocaleString()}+
-            </p>
-            <p className="text-muted-foreground">Collectors</p>
-          </div>
-        </div>
-
-        {/* Slide indicators */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                currentSlide === index
-                  ? "w-6 bg-white"
-                  : "bg-white/50 hover:bg-white/80"
-              }`}
-              onClick={() => handleDotClick(index)}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        <Buttons />
+        <StatsDisplay
+          stats={stats}
+          currentSlide={currentSlide}
+          slides={slides}
+        />
+        <NavigationDots
+          slides={slides}
+          currentSlide={currentSlide}
+          onDotClick={handleDotClick}
+        />
       </div>
     </div>
   );

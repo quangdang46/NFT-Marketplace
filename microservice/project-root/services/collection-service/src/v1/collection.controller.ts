@@ -16,24 +16,7 @@ export class CollectionController {
   }
 
   @MessagePattern({ cmd: 'create_collection' })
-  async createCollection(data: {
-    chain: string;
-    chainId: string;
-    name: string;
-    description: string;
-    artType: string;
-    uri: string;
-    collectionImageUrl: string;
-    mintPrice: string;
-    royaltyFee: string;
-    maxSupply: string;
-    mintLimit: string;
-    mintStartDate: string;
-    allowlistStages: any[];
-    publicMint: any;
-    contractAddress?: string;
-    user: { id: string; role: string };
-  }) {
+  async createCollection(data: any) {
     try {
       const result = await this.collectionService.createCollection(data);
       return result;
