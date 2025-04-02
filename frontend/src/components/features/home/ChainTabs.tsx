@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Globe } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,15 +11,22 @@ export function ChainTabs() {
   const searchParams = useSearchParams();
   const [selectedChain, setSelectedChain] = useState<string | number>("all");
   const isMobile = useIsMobile();
+  console.log("select chain", selectedChain);
 
-  // Check for mobile once on mount and when window resizes
+  // Đồng bộ giá trị selectedChain với tham số URL khi component mount
+  useEffect(() => {
+    const chainParam = searchParams.get("chain");
+    if (chainParam) {
+      setSelectedChain(chainParam);
+    }
+  }, [searchParams]);
 
   const handleChainChange = (chainId: number | string) => {
     setSelectedChain(chainId);
 
-    // Update URL with search param
+    // Cập nhật URL với tham số tìm kiếm
     const params = new URLSearchParams(searchParams.toString());
-    params.set("chain", chainId+"");
+    params.set("chain", chainId + "");
     router.push(`/?${params.toString()}`);
   };
 
@@ -69,7 +76,7 @@ export function ChainTabs() {
                 key={chain.id}
                 onClick={() => handleChainChange(chain.id)}
                 className={`flex items-center h-10 px-3 rounded-lg transition-all duration-200 cursor-pointer ${
-                  selectedChain === chain.id
+                  String(selectedChain) === String(chain.id)
                     ? "bg-primary text-primary-foreground"
                     : "bg-card text-muted-foreground hover:bg-accent"
                 }`}
@@ -78,7 +85,9 @@ export function ChainTabs() {
                   className="w-5 h-5 rounded-full flex items-center justify-center"
                   style={{
                     backgroundColor: `${
-                      chain.id == selectedChain ? "#ccc" : "transparent"
+                      String(chain.id) === String(selectedChain)
+                        ? "#ccc"
+                        : "transparent"
                     }`,
                   }}
                 >
@@ -86,7 +95,7 @@ export function ChainTabs() {
                 </div>
                 <span
                   className={`ml-2 text-sm font-medium transition-all duration-200 ${
-                    selectedChain === chain.id
+                    String(chain.id) === String(selectedChain)
                       ? "opacity-100 max-w-24"
                       : "opacity-0 max-w-0 overflow-hidden"
                   }`}

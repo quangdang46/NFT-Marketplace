@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -34,7 +33,7 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
           "Discover thousands of digital assets on Ethereum, Sepolia, Polygon, and more. Join the largest multi-chain NFT marketplace!",
         image:
           "https://images.unsplash.com/photo-1742435456486-3a0059c05e38?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D?500x1200",
-        color1: "hsl(var(--primary))",
+        color1: "#00dfd8",
         color2: "#7928ca",
       },
       {
@@ -96,7 +95,7 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
       },
     ],
   };
-
+  console.log("chainSlides", chain);
   // Chọn slides dựa trên chain, fallback về "all" nếu không có
   const slides = chainSlides[chain || "all"] || chainSlides["all"];
 
@@ -123,9 +122,10 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
           animate={{ opacity: currentSlide === index ? 1 : 0 }}
           transition={{ duration: 0.7 }}
           style={{
-            background: `linear-gradient(to right, ${slide.color1}20, ${slide.color2}10), url(${slide.image})`,
+            backgroundImage: `linear-gradient(to right, ${slide.color1}20, ${slide.color2}10), url(${slide.image})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
+            backgroundRepeat: "no-repeat", // Optional: explicitly set if needed
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-transparent"></div>

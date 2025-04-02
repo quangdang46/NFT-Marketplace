@@ -46,6 +46,7 @@ export function useCreateCollection() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       chain: "Sepolia",
+      chainId: "11155111",
       name: "",
       description: "",
       artType: "unique",
@@ -131,6 +132,7 @@ export function useCreateCollection() {
     contractAddress?: string
   ) => ({
     chain: values.chain,
+    chainId: values.chainId,
     name: values.name,
     description: values.description,
     artType: selectedArtType,

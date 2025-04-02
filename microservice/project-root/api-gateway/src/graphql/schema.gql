@@ -31,6 +31,7 @@ type AllowlistStage {
 type Collection {
   id: String!
   name: String!
+  chainId: String!
   image: String!
   mintPrice: String!
   maxSupply: String!
@@ -100,7 +101,7 @@ type Query {
   nonce: String!
   me: UserResponse!
   getPendingCollections: [PendingCollection!]!
-  getCollections(chain: String): CollectionsResponse!
+  getCollections(chainId: String): CollectionsResponse!
   getUser(userId: String!): User!
   getSignedUrl: String!
 }
@@ -117,6 +118,7 @@ type Mutation {
 
 input CreateCollectionInput {
   chain: String!
+  chainId: String!
   name: String!
   description: String!
   artType: String!

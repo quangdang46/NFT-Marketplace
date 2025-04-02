@@ -88,6 +88,10 @@ export function CollectionDetails({
                       field.onChange(value);
                       setSelectedChain(value);
                       form.setValue("chain", value);
+                      const chainId = mockChains
+                        .find((c) => c.name === value)
+                        ?.id.toString();
+                      form.setValue("chainId", chainId || ""); // Lưu chainId
                       if (onChainChange) onChainChange(value);
                     }}
                     value={field.value}

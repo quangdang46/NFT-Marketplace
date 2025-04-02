@@ -18,6 +18,7 @@ export class CollectionController {
   @MessagePattern({ cmd: 'create_collection' })
   async createCollection(data: {
     chain: string;
+    chainId: string;
     name: string;
     description: string;
     artType: string;
@@ -63,9 +64,11 @@ export class CollectionController {
 
   // Thêm message pattern để lấy collections và stats
   @MessagePattern({ cmd: 'get_collections' })
-  async getCollections(data: { chain?: string }) {
-    const collections = await this.collectionService.getCollections(data.chain);
-    const stats = await this.collectionService.getStats(data.chain);
+  async getCollections(data: { chainId?: string }) {
+    const collections = await this.collectionService.getCollections(
+      data.chainId,
+    );
+    const stats = await this.collectionService.getStats(data.chainId);
     return { collections, stats };
   }
 }

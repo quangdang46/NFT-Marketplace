@@ -78,12 +78,13 @@ export class CollectionResolver {
 
   // Thêm query để lấy collections và stats
   @Query(() => CollectionsResponse)
-  async getCollections(@Args('chain', { nullable: true }) chain?: string) {
+  async getCollections(@Args('chainId', { nullable: true }) chainId?: string) {
+    console.log('Chain received:', chainId);
     const result: { collections: Collection[]; stats: Stats } =
       await this.gatewayService.sendToService(
         'collection-service',
         { cmd: 'get_collections' },
-        { chain },
+        { chainId },
       );
     return result;
   }

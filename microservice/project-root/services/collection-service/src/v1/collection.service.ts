@@ -174,6 +174,7 @@ export class CollectionService {
       image: data.collectionImageUrl,
       uri: data.uri,
       chain: data.chain,
+      chainId: data.chainId,
       contractAddress,
       mintPrice: data.mintPrice,
       royaltyFee: data.royaltyFee,
@@ -190,9 +191,14 @@ export class CollectionService {
 
   async createCollection(data: any) {
     try {
-      this.logger.log('Received createCollection data:', data);
-      const { chain, user, contractAddress } = data;
-      const { provider, signer } = this.getChainConfig(chain);
+      const { chain, chainId, user, contractAddress } = data;
+      // Ánh xạ chainId sang chain nếu cần cho getChainConfig
+      const chainNameMap: Record<string, string> = {
+        '11155111': 'Sepolia',
+        '1': 'Ethereum', // Thêm các chain khác nếu cần
+      };
+      const chainForConfig = chainNameMap[chainId] || chain; // Dùng chainId để lấy chain nếu chain không khớp
+      const { provider, signer } = this.getChainConfig(chainForConfig);
       const factory = new ethers.ContractFactory(
         NFTManager.abi,
         NFTManager.bytecode,
@@ -292,8 +298,10 @@ export class CollectionService {
   }
 
   // Lấy danh sách collections với status được tính sẵn
-  async getCollections(chain?: string): Promise<any[]> {
-    const query = chain ? { chain, isVerified: true } : { isVerified: true };
+  async getCollections(chainId?: string): Promise<any[]> {
+    // chưa có admin nên isVerified = true
+    const isVerified = false;
+    const query = chainId ? { chainId, isVerified } : { isVerified };
     const collections = await this.collectionModel.find(query).exec();
 
     return collections.map((collection) => ({
@@ -306,23 +314,25 @@ export class CollectionService {
       publicMint: collection.publicMint,
       allowlistStages: collection.allowlistStages,
       chain: collection.chain,
-      createdAt: collection.createdAt.toISOString(),
+      chainId: collection.chainId,
       totalMinted: collection.totalMinted || '0',
       creatorId: collection.creatorId,
       isVerified: collection.isVerified,
+      createdAt: collection.createdAt.toISOString(),
       status: this.calculateStatus(collection),
     }));
   }
 
   // Tính số liệu stats
   async getStats(
-    chain?: string,
+    chainId?: string,
   ): Promise<{ artworks: number; artists: number; collectors: number }> {
     // Tính artworks (tổng totalMinted)
+    const isVerified = false;
     const artworksAgg = await this.collectionModel.aggregate([
-      chain
-        ? { $match: { chain, isVerified: true } }
-        : { $match: { isVerified: true } },
+      chainId
+        ? { $match: { chainId, isVerified } }
+        : { $match: { isVerified } }, // Tìm bằng chainId
       {
         $group: {
           _id: null,
@@ -332,23 +342,20 @@ export class CollectionService {
     ]);
     const artworks = artworksAgg[0]?.artworks || 0;
 
-    // Tính artists (số creatorId duy nhất)
-    const artistsAgg = await this.collectionModel.aggregate([
-      chain
-        ? { $match: { chain, isVerified: true } }
-        : { $match: { isVerified: true } },
-      {
-        $group: {
-          _id: null,
-          artists: { $addToSet: '$creatorId' },
-        },
-      },
-      {
-        $project: {
-          artists: { $size: '$artists' },
-        },
-      },
-    ]);
+   const artistsAgg = await this.collectionModel.aggregate([
+     chainId ? { $match: { chainId, isVerified } } : { $match: { isVerified } }, // Tìm bằng chainId
+     {
+       $group: {
+         _id: null,
+         artists: { $addToSet: '$creatorId' },
+       },
+     },
+     {
+       $project: {
+         artists: { $size: '$artists' },
+       },
+     },
+   ]);
     const artists = artistsAgg[0]?.artists || 0;
 
     // Tính collectors (số buyer duy nhất từ transactions)

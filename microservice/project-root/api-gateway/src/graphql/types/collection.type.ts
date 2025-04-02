@@ -45,6 +45,7 @@ export class AllowlistStageInput {
 export class Collection {
   @Field() id: string;
   @Field() name: string;
+  @Field() chainId: string;
   @Field() image: string;
   @Field() mintPrice: string;
   @Field() maxSupply: string;
@@ -104,6 +105,7 @@ export class PendingCollection {
 @InputType()
 export class CreateCollectionInput {
   @Field() chain: string;
+  @Field() chainId: string;
   @Field() name: string;
   @Field() description: string;
   @Field() artType: string;

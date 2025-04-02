@@ -18,6 +18,7 @@ type PublicMint {
 
 input CreateCollectionInput {
   chain: String!
+  chainId: String!
   name: String!
   description: String!
   artType: String!
@@ -57,6 +58,7 @@ type AllowlistStage {
 type Collection {
   id: String!
   name: String!
+  chainId: String!
   image: String!
   mintPrice: String!
   maxSupply: String!
@@ -90,8 +92,8 @@ mutation CreateCollection($input: CreateCollectionInput!) {
   }
 }
 
-query GetCollections($chain: String) {
-  getCollections(chain: $chain) {
+query GetCollections($chainId: String) {
+  getCollections(chainId: $chainId) {
     collections {
       id
       name

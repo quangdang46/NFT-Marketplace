@@ -3,18 +3,17 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { HomeBanner } from "./HomeBanner";
-import { mockChains } from "../../../data/mockData";
+import { mockChains } from "@/lib/constant/chains";
 import { toast } from "sonner";
 import client from "@/lib/api/apolloClient";
 import {
   Collection,
-  GetCollectionsDocument,
   Stats,
+  GetCollectionsDocument,
 } from "@/lib/api/graphql/generated";
 export function HomeContent() {
   const searchParams = useSearchParams();
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
-  // const [viewMode, setViewMode] = useState<"grid" | "list" | "compact">("grid");
   const [collections, setCollections] = useState<Collection[]>([]);
   const [stats, setStats] = useState<Stats>({
     artworks: 0,
@@ -25,13 +24,15 @@ export function HomeContent() {
 
   useEffect(() => {
     const chainParam = searchParams.get("chain");
+    console.log("chainParam:", chainParam); // Debug giá trị từ URL
     if (chainParam === "all" || !chainParam) {
       setSelectedChain(null);
-    } else if (mockChains.some((chain) => chain.id === chainParam)) {
+    } else if (mockChains.some((chain) => chain.id.toString() === chainParam)) {
       setSelectedChain(chainParam);
     } else {
       setSelectedChain(null);
     }
+    console.log("selectedChain:", selectedChain); // Debug giá trị sau khi set
   }, [searchParams]);
 
   useEffect(() => {
@@ -40,11 +41,17 @@ export function HomeContent() {
       try {
         const { data } = await client.query({
           query: GetCollectionsDocument,
-          variables: { chain: selectedChain },
+          variables: { chainId: selectedChain },
           fetchPolicy: "network-only",
         });
-        setCollections(data.collections || []);
-        setStats(data.stats || { artworks: 0, artists: 0, collectors: 0 });
+        setCollections(data.getCollections.collections || []);
+        setStats(
+          data.getCollections.stats || {
+            artworks: 0,
+            artists: 0,
+            collectors: 0,
+          }
+        );
       } catch (error) {
         toast.error("Failed to load collections", {
           description: (error as Error).message,
@@ -56,8 +63,9 @@ export function HomeContent() {
 
     fetchCollections();
   }, [selectedChain]);
-  console.log("collections", collections);
-  console.log("stats", stats);
+  console.log(collections);
+  console.log(stats);
+  console.log(isLoading);
   return (
     <div className="pt-4">
       <HomeBanner stats={stats} chain={selectedChain} />

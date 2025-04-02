@@ -51,6 +51,7 @@ export type Collection = {
   __typename?: 'Collection';
   allowlistStages?: Maybe<Array<AllowlistStage>>;
   chain: Scalars['String']['output'];
+  chainId: Scalars['String']['output'];
   createdAt: Scalars['String']['output'];
   creatorId: Scalars['String']['output'];
   id: Scalars['String']['output'];
@@ -75,6 +76,7 @@ export type CreateCollectionInput = {
   allowlistStages: Array<AllowlistStageInput>;
   artType: Scalars['String']['input'];
   chain: Scalars['String']['input'];
+  chainId: Scalars['String']['input'];
   collectionImageUrl: Scalars['String']['input'];
   contractAddress?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
@@ -187,7 +189,7 @@ export type Query = {
 
 
 export type QueryGetCollectionsArgs = {
-  chain?: InputMaybe<Scalars['String']['input']>;
+  chainId?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -261,7 +263,7 @@ export type CreateCollectionMutationVariables = Exact<{
 export type CreateCollectionMutation = { __typename?: 'Mutation', createCollection: { __typename?: 'CreateCollectionResponse', collectionId?: string | null, contractAddress?: string | null, steps?: Array<{ __typename?: 'CreateCollectionStep', id: string, params: string }> | null } };
 
 export type GetCollectionsQueryVariables = Exact<{
-  chain?: InputMaybe<Scalars['String']['input']>;
+  chainId?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -488,8 +490,8 @@ export type CreateCollectionMutationHookResult = ReturnType<typeof useCreateColl
 export type CreateCollectionMutationResult = Apollo.MutationResult<CreateCollectionMutation>;
 export type CreateCollectionMutationOptions = Apollo.BaseMutationOptions<CreateCollectionMutation, CreateCollectionMutationVariables>;
 export const GetCollectionsDocument = gql`
-    query GetCollections($chain: String) {
-  getCollections(chain: $chain) {
+    query GetCollections($chainId: String) {
+  getCollections(chainId: $chainId) {
     collections {
       id
       name
@@ -539,7 +541,7 @@ export const GetCollectionsDocument = gql`
  * @example
  * const { data, loading, error } = useGetCollectionsQuery({
  *   variables: {
- *      chain: // value for 'chain'
+ *      chainId: // value for 'chainId'
  *   },
  * });
  */

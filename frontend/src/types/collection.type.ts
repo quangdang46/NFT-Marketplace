@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const formSchema = z.object({
   chain: z.string().min(1, "Chain is required"),
+  chainId: z.string().min(1, { message: "Chain ID is required" }),
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
   artType: z.enum(["same", "unique"]),
