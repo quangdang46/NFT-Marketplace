@@ -115,6 +115,7 @@ export type Mutation = {
   createUser: CreateUserResponse;
   logout: Scalars['Boolean']['output'];
   refreshToken: AuthResponse;
+  sendMessage: Scalars['String']['output'];
   verify: AuthResponse;
   verifyUser: VerifyUserResponse;
 };
@@ -140,6 +141,11 @@ export type MutationCreateUserArgs = {
 
 export type MutationRefreshTokenArgs = {
   refreshToken: Scalars['String']['input'];
+};
+
+
+export type MutationSendMessageArgs = {
+  message: Scalars['String']['input'];
 };
 
 
@@ -174,7 +180,7 @@ export type PublicMintInput = {
   durationDays: Scalars['String']['input'];
   durationHours: Scalars['String']['input'];
   mintPrice: Scalars['String']['input'];
-  startDate?: InputMaybe<Scalars['String']['input']>;
+  startDate: Scalars['String']['input'];
 };
 
 export type Query = {
@@ -183,6 +189,7 @@ export type Query = {
   getPendingCollections: Array<PendingCollection>;
   getSignedUrl: Scalars['String']['output'];
   getUser: User;
+  hello: Scalars['String']['output'];
   me: UserResponse;
   nonce: Scalars['String']['output'];
 };
@@ -202,6 +209,24 @@ export type Stats = {
   artists: Scalars['Float']['output'];
   artworks: Scalars['Float']['output'];
   collectors: Scalars['Float']['output'];
+};
+
+export type Subscription = {
+  __typename?: 'Subscription';
+  collectionApproved: Collection;
+  collectionCreated: Collection;
+  messageAdded: Scalars['String']['output'];
+  statsUpdated: Stats;
+};
+
+
+export type SubscriptionCollectionApprovedArgs = {
+  chainId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type SubscriptionCollectionCreatedArgs = {
+  chainId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type User = {
@@ -268,6 +293,20 @@ export type GetCollectionsQueryVariables = Exact<{
 
 
 export type GetCollectionsQuery = { __typename?: 'Query', getCollections: { __typename?: 'CollectionsResponse', collections: Array<{ __typename?: 'Collection', id: string, name: string, image: string, mintPrice: string, maxSupply: string, mintStartDate: string, chain: string, createdAt: string, totalMinted: string, creatorId: string, isVerified: boolean, status: string, publicMint?: { __typename?: 'PublicMint', mintPrice: string, startDate: string, durationDays: string, durationHours: string } | null, allowlistStages?: Array<{ __typename?: 'AllowlistStage', id: string, mintPrice: string, startDate: string, durationDays: string, durationHours: string, wallets: Array<string> }> | null }>, stats: { __typename?: 'Stats', artworks: number, artists: number, collectors: number } } };
+
+export type CollectionCreatedSubscriptionVariables = Exact<{
+  chainId?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type CollectionCreatedSubscription = { __typename?: 'Subscription', collectionCreated: { __typename?: 'Collection', id: string, name: string, chainId: string, status: string } };
+
+export type CollectionApprovedSubscriptionVariables = Exact<{
+  chainId?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type CollectionApprovedSubscription = { __typename?: 'Subscription', collectionApproved: { __typename?: 'Collection', id: string, name: string, status: string } };
 
 export type GetSignedUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -561,6 +600,71 @@ export type GetCollectionsQueryHookResult = ReturnType<typeof useGetCollectionsQ
 export type GetCollectionsLazyQueryHookResult = ReturnType<typeof useGetCollectionsLazyQuery>;
 export type GetCollectionsSuspenseQueryHookResult = ReturnType<typeof useGetCollectionsSuspenseQuery>;
 export type GetCollectionsQueryResult = Apollo.QueryResult<GetCollectionsQuery, GetCollectionsQueryVariables>;
+export const CollectionCreatedDocument = gql`
+    subscription CollectionCreated($chainId: String) {
+  collectionCreated(chainId: $chainId) {
+    id
+    name
+    chainId
+    status
+  }
+}
+    `;
+
+/**
+ * __useCollectionCreatedSubscription__
+ *
+ * To run a query within a React component, call `useCollectionCreatedSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useCollectionCreatedSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCollectionCreatedSubscription({
+ *   variables: {
+ *      chainId: // value for 'chainId'
+ *   },
+ * });
+ */
+export function useCollectionCreatedSubscription(baseOptions?: Apollo.SubscriptionHookOptions<CollectionCreatedSubscription, CollectionCreatedSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<CollectionCreatedSubscription, CollectionCreatedSubscriptionVariables>(CollectionCreatedDocument, options);
+      }
+export type CollectionCreatedSubscriptionHookResult = ReturnType<typeof useCollectionCreatedSubscription>;
+export type CollectionCreatedSubscriptionResult = Apollo.SubscriptionResult<CollectionCreatedSubscription>;
+export const CollectionApprovedDocument = gql`
+    subscription CollectionApproved($chainId: String) {
+  collectionApproved(chainId: $chainId) {
+    id
+    name
+    status
+  }
+}
+    `;
+
+/**
+ * __useCollectionApprovedSubscription__
+ *
+ * To run a query within a React component, call `useCollectionApprovedSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useCollectionApprovedSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCollectionApprovedSubscription({
+ *   variables: {
+ *      chainId: // value for 'chainId'
+ *   },
+ * });
+ */
+export function useCollectionApprovedSubscription(baseOptions?: Apollo.SubscriptionHookOptions<CollectionApprovedSubscription, CollectionApprovedSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<CollectionApprovedSubscription, CollectionApprovedSubscriptionVariables>(CollectionApprovedDocument, options);
+      }
+export type CollectionApprovedSubscriptionHookResult = ReturnType<typeof useCollectionApprovedSubscription>;
+export type CollectionApprovedSubscriptionResult = Apollo.SubscriptionResult<CollectionApprovedSubscription>;
 export const GetSignedUrlDocument = gql`
     query GetSignedUrl {
   getSignedUrl

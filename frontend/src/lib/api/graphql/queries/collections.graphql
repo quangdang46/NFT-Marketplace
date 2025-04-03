@@ -15,7 +15,6 @@ type PublicMint {
   durationHours: String!
 }
 
-
 input CreateCollectionInput {
   chain: String!
   chainId: String!
@@ -34,12 +33,10 @@ input CreateCollectionInput {
   contractAddress: String
 }
 
-
 type CreateCollectionStep {
   id: String!
   params: String!
 }
-
 
 type CreateCollectionResponse {
   collectionId: String
@@ -127,5 +124,22 @@ query GetCollections($chainId: String) {
       artists
       collectors
     }
+  }
+}
+
+subscription CollectionCreated($chainId: String) {
+  collectionCreated(chainId: $chainId) {
+    id
+    name
+    chainId
+    status
+  }
+}
+
+subscription CollectionApproved($chainId: String) {
+  collectionApproved(chainId: $chainId) {
+    id
+    name
+    status
   }
 }

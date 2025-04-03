@@ -149,9 +149,12 @@ input PublicMintInput {
   mintPrice: String!
   durationDays: String!
   durationHours: String!
-  startDate: String
+  startDate: String!
 }
 
 type Subscription {
+  collectionCreated(chainId: String): Collection!
+  collectionApproved(chainId: String): Collection!
+  statsUpdated: Stats!
   messageAdded: String!
 }

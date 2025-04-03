@@ -10,6 +10,8 @@ import {
   Collection,
   Stats,
   GetCollectionsDocument,
+  CollectionApprovedDocument,
+  CollectionCreatedDocument,
 } from "@/lib/api/graphql/generated";
 export function HomeContent() {
   const searchParams = useSearchParams();
@@ -22,9 +24,10 @@ export function HomeContent() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Cập nhật selectedChain từ URL
   useEffect(() => {
     const chainParam = searchParams.get("chain");
-    console.log("chainParam:", chainParam); // Debug giá trị từ URL
+    console.log("chainParam:", chainParam);
     if (chainParam === "all" || !chainParam) {
       setSelectedChain(null);
     } else if (mockChains.some((chain) => chain.id.toString() === chainParam)) {
@@ -32,9 +35,9 @@ export function HomeContent() {
     } else {
       setSelectedChain(null);
     }
-    console.log("selectedChain:", selectedChain); // Debug giá trị sau khi set
   }, [searchParams]);
 
+  // Lấy danh sách collections ban đầu
   useEffect(() => {
     const fetchCollections = async () => {
       setIsLoading(true);
@@ -53,7 +56,7 @@ export function HomeContent() {
           }
         );
       } catch (error) {
-        toast.error("Failed to load collections", {
+        toast.error("Không thể tải collections", {
           description: (error as Error).message,
         });
       } finally {
@@ -63,11 +66,69 @@ export function HomeContent() {
 
     fetchCollections();
   }, [selectedChain]);
-  console.log(collections);
-  console.log(stats);
-  console.log(isLoading);
+
+  // Subscription: Lắng nghe collection mới
+  useEffect(() => {
+    const subscription = client
+      .subscribe({
+        query: CollectionCreatedDocument,
+        variables: { chainId: selectedChain },
+      })
+      .subscribe({
+        next: ({ data }) => {
+          const newCollection = data?.collectionCreated;
+          if (newCollection) {
+            setCollections((prev) => [newCollection, ...prev]);
+            toast.success(`Collection mới: ${newCollection.name}`);
+          }
+        },
+        error: (error) => {
+          console.error("Lỗi subscription collectionCreated:", error);
+        },
+      });
+
+    return () => subscription.unsubscribe();
+  }, [selectedChain]);
+
+  // Subscription: Lắng nghe collection được duyệt
+  useEffect(() => {
+    const subscription = client
+      .subscribe({
+        query: CollectionApprovedDocument,
+        variables: { chainId: selectedChain },
+      })
+      .subscribe({
+        next: ({ data }) => {
+          const approvedCollection = data?.collectionApproved;
+          if (approvedCollection) {
+            setCollections((prev) =>
+              prev.map((col) =>
+                col.id === approvedCollection.id
+                  ? { ...col, status: approvedCollection.status }
+                  : col
+              )
+            );
+            toast.success(`Collection được duyệt: ${approvedCollection.name}`);
+          }
+        },
+        error: (error) => {
+          console.error("Lỗi subscription collectionApproved:", error);
+        },
+      });
+
+    return () => subscription.unsubscribe();
+  }, [selectedChain]);
+
+  console.log("Collections:", collections);
+  console.log("Stats:", stats);
+  console.log("Đang tải:", isLoading);
   return (
     <div className="pt-4">
+      <ul>
+      {collections.map((col) => (
+        <li key={col.id}>{col.name} - {col.status}</li>
+      ))}
+    </ul>
       <HomeBanner stats={stats} chain={selectedChain} />
       {/* <CarouselNFT ></CarouselNFT>
       <NFTCollections />

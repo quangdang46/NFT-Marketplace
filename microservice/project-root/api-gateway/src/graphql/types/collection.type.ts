@@ -15,7 +15,7 @@ export class PublicMintInput {
   @Field() mintPrice: string;
   @Field() durationDays: string;
   @Field() durationHours: string;
-  @Field({ nullable: true }) startDate?: string;
+  @Field() startDate: string;
 }
 
 // Type cho AllowlistStage (dùng cho output)
