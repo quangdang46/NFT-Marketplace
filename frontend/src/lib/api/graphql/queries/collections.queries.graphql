@@ -1,0 +1,37 @@
+query GetCollections($chainId: String) {
+  getCollections(chainId: $chainId) {
+    collections {
+      id
+      name
+      image
+      mintPrice
+      maxSupply
+      mintStartDate
+      publicMint {
+        mintPrice
+        startDate
+        durationDays
+        durationHours
+      }
+      allowlistStages {
+        id
+        mintPrice
+        startDate
+        durationDays
+        durationHours
+        wallets
+      }
+      chain
+      createdAt
+      totalMinted
+      creatorId
+      isVerified
+      status
+    }
+    stats {
+      artworks
+      artists
+      collectors
+    }
+  }
+}

@@ -1,0 +1,96 @@
+# Input cho giai đoạn whitelist
+# Input for creating an allowlist stage
+input CreateAllowlistStageInput {
+  id: String! # Unique identifier for the allowlist stage
+  mintPrice: String! # Mint price for the allowlist stage
+  durationDays: String! # Duration of the allowlist stage in days
+  durationHours: String! # Duration of the allowlist stage in hours
+  wallets: [String!]! # List of whitelisted wallets
+  startDate: String! # Start date of the allowlist stage
+}
+
+# Fragment for public mint fields
+fragment PublicMintFields on PublicMint {
+  mintPrice: String! # Mint price for the public mint
+  startDate: String! # Start date of the public mint
+  durationDays: String! # Duration of the public mint in days
+  durationHours: String! # Duration of the public mint in hours
+}
+
+# Public mint configuration
+type PublicMint {
+  ...PublicMintFields
+}
+
+# Input for public mint configuration
+input PublicMintInput {
+  ...PublicMintFields
+}
+
+# Input for creating a collection
+input CreateCollectionInput {
+  chain: String! # Chain of the collection
+  chainId: String! # Chain ID of the collection
+  name: String! # Name of the collection
+  description: String! # Description of the collection
+  artType: String! # Type of art in the collection
+  uri: String! # URI of the collection
+  collectionImageUrl: String! # URL of the collection image
+  mintPrice: String! # Mint price of the collection
+  royaltyFee: String! # Royalty fee of the collection
+  maxSupply: String! # Maximum supply of the collection
+  mintLimit: String! # Mint limit per wallet
+  mintStartDate: String! # Mint start date of the collection
+  allowlistStages: [CreateAllowlistStageInput!]! # List of allowlist stages
+  publicMint: PublicMintInput! # Public mint configuration
+  contractAddress: String # Contract address of the collection
+}
+
+# Step in the create collection process
+type CreateCollectionStep {
+  id: String! # Unique identifier for the step
+  params: String! # Parameters for the step
+}
+
+# Response for creating a collection
+type CreateCollectionResponse {
+  collectionId: String # Unique identifier for the collection
+  contractAddress: String # Contract address of the collection
+  steps: [CreateCollectionStep!] # List of steps in the create collection process
+}
+
+# Allowlist stage configuration
+type AllowlistStage {
+  id: String! # Unique identifier for the allowlist stage
+  mintPrice: String! # Mint price for the allowlist stage
+  startDate: String! # Start date of the allowlist stage
+  durationDays: String! # Duration of the allowlist stage in days
+  durationHours: String! # Duration of the allowlist stage in hours
+  wallets: [String!]! # List of whitelisted wallets
+}
+
+# Collection type
+type Collection {
+  id: String! # Unique identifier for the collection
+  name: String! # Name of the collection
+  chainId: String! # Chain ID of the collection
+  image: String! # URL of the collection image
+  mintPrice: String! # Mint price of the collection
+  maxSupply: String! # Maximum supply of the collection
+  mintStartDate: String! # Mint start date of the collection
+  publicMint: PublicMint # Public mint configuration
+  allowlistStages: [AllowlistStage!] # List of allowlist stages
+  chain: String! # Chain of the collection
+  createdAt: String! # Creation date of the collection
+  totalMinted: String! # Total number of NFTs minted in the collection
+  creatorId: String! # Unique identifier for the creator of the collection
+  isVerified: Boolean! # Whether the collection is verified
+  status: String! # Status of the collection
+}
+
+# Statistics type
+type Stats {
+  artworks: Float! # Number of artworks
+  artists: Float! # Number of artists
+  collectors: Float! # Number of collectors
+}

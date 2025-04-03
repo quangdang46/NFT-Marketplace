@@ -1,0 +1,29 @@
+# Ví dụ mutation
+
+mutation CreateCollection($input: CreateCollectionInput!) {
+  createCollection(input: $input) {
+    collectionId
+    contractAddress
+    steps {
+      id
+      params
+    }
+  }
+}
+
+subscription CollectionCreated($chainId: String) {
+  collectionCreated(chainId: $chainId) {
+    id
+    name
+    chainId
+    status
+  }
+}
+
+subscription CollectionApproved($chainId: String) {
+  collectionApproved(chainId: $chainId) {
+    id
+    name
+    status
+  }
+}
