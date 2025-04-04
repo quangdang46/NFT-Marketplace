@@ -41,21 +41,51 @@ export const wallets = [
   },
 ];
 
-export const supportedChains = [sepolia, polygonMumbai, baseSepolia];
+// Cấu hình đầy đủ thông tin mạng để thêm vào MetaMask
+export const supportedChains: Chain[] = [
+  {
+    ...sepolia,
+    rpcUrls: {
+      default: { http: ["https://rpc.sepolia.org"] },
+      public: { http: ["https://rpc.sepolia.org"] },
+    },
+    blockExplorers: {
+      default: { name: "Etherscan", url: "https://sepolia.etherscan.io" },
+    },
+  },
+  {
+    ...polygonMumbai,
+    rpcUrls: {
+      default: { http: ["https://rpc-mumbai.maticvigil.com"] },
+      public: { http: ["https://rpc-mumbai.maticvigil.com"] },
+    },
+    blockExplorers: {
+      default: { name: "PolygonScan", url: "https://mumbai.polygonscan.com" },
+    },
+  },
+  {
+    ...baseSepolia,
+    rpcUrls: {
+      default: { http: ["https://sepolia.base.org"] },
+      public: { http: ["https://sepolia.base.org"] },
+    },
+    blockExplorers: {
+      default: { name: "BaseScan", url: "https://sepolia.basescan.org" },
+    },
+  },
+];
 
-// Create wagmi config with improved settings
 export const config = createConfig({
   chains: [sepolia, polygonMumbai, baseSepolia],
   transports: {
-    [sepolia.id]: http(),
-    [baseSepolia.id]: http(),
-    [polygonMumbai.id]: http(),
+    [sepolia.id]: http("https://rpc.sepolia.org"),
+    [polygonMumbai.id]: http("https://rpc-mumbai.maticvigil.com"),
+    [baseSepolia.id]: http("https://sepolia.base.org"),
   },
   connectors: [metaMask()],
   syncConnectedChain: true,
 });
 
-// Enhanced context type
 export type WalletModalContextType = {
   modalOpen: boolean;
   openModal: () => void;
