@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   useAccount,
@@ -40,7 +41,7 @@ type ConnectionState =
 
 export function useWallet() {
   const dispatch = useDispatch();
-  const { address, isConnected, connector } = useAccount();
+  const { address, isConnected } = useAccount();
   const {
     connect,
     connectors,
@@ -54,11 +55,39 @@ export function useWallet() {
     isPending: isSwitchPending,
     error: switchError,
   } = useSwitchChain();
+
   const {
     data: balanceData,
     isLoading: isBalanceLoading,
+    isError: isBalanceError,
+    error: balanceError,
     refetch: refetchBalance,
-  } = useBalance({ address, enabled: !!address });
+  } = useBalance({
+    address,
+    chainId,
+    query: {
+      enabled: !!address && !!chainId && !!getChainById(chainId),
+      staleTime: 10 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      initialData: () => {
+        const stored = localStorage.getItem(
+          `walletBalance_${address}_${chainId}`
+        );
+        if (stored) {
+          const { value, decimals, symbol } = JSON.parse(stored);
+          return {
+            value: BigInt(value),
+            decimals,
+            symbol,
+            formatted: (Number(value) / 10 ** decimals).toFixed(4),
+          };
+        }
+        return undefined;
+      },
+      retry: 3, // Thử lại 3 lần nếu RPC lỗi
+      retryDelay: 1000, // Chờ 1 giây giữa các lần thử
+    },
+  });
   const {
     signMessageAsync,
     isPending: isSignPending,
@@ -75,7 +104,8 @@ export function useWallet() {
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const authInProgressRef = useRef(false);
   const chainSwitchInProgressRef = useRef(false);
-
+  const [cachedBalance, setCachedBalance] = useState<string | null>(null);
+  const [cachedSymbol, setCachedSymbol] = useState<string | null>(null);
   const updateState = useCallback(
     (
       newState: Partial<{
@@ -93,7 +123,46 @@ export function useWallet() {
     },
     []
   );
+  // Debug và cập nhật cache
+  useEffect(() => {
+    if (balanceData && address && chainId) {
+      const formattedBalance = Number.parseFloat(balanceData.formatted).toFixed(
+        4
+      );
+      setCachedBalance(formattedBalance);
+      setCachedSymbol(balanceData.symbol);
+      localStorage.setItem(
+        `walletBalance_${address}_${chainId}`,
+        JSON.stringify({
+          value: balanceData.value.toString(),
+          decimals: balanceData.decimals,
+          symbol: balanceData.symbol,
+        })
+      );
+    }
+    if (isBalanceError) {
+      toast.error("Failed to load balance", {
+        description:
+          balanceError?.message ||
+          "Unable to connect to RPC. Please try again.",
+      });
+    }
+  }, [
+    balanceData,
+    address,
+    chainId,
+    isBalanceLoading,
+    isBalanceError,
+    balanceError,
+  ]);
 
+  // Xóa cache khi ngắt kết nối
+  useEffect(() => {
+    if (!isConnected) {
+      setCachedBalance(null);
+      setCachedSymbol(null);
+    }
+  }, [isConnected]);
   // Kiểm tra trạng thái ban đầu từ localStorage
   useEffect(() => {
     const wasAuthenticated =
@@ -434,14 +503,29 @@ export function useWallet() {
   const formattedBalance = balanceData
     ? Number.parseFloat(balanceData.formatted).toFixed(4)
     : null;
-
+  const getFallbackBalance = () => {
+    if (isBalanceError && address && chainId) {
+      const stored = localStorage.getItem(
+        `walletBalance_${address}_${chainId}`
+      );
+      if (stored) {
+        const { value, decimals } = JSON.parse(stored);
+        return Number(value) / 10 ** decimals.toFixed(4);
+      }
+    }
+    return null;
+  };
   return {
     address,
     isConnected,
     chainId,
     currentChain: getChainById(chainId),
-    walletBalance: formattedBalance,
-    walletBalanceSymbol: balanceData?.symbol,
+    walletBalance: isBalanceLoading
+      ? cachedBalance || getFallbackBalance()
+      : balanceData
+      ? formattedBalance
+      : getFallbackBalance(),
+    walletBalanceSymbol: isBalanceLoading ? cachedSymbol : balanceData?.symbol,
     isAuthenticated,
     authError,
     connectionState,

@@ -24,7 +24,6 @@ export function WalletDropdown() {
     currentChain,
     chainId,
     isSwitchingChain,
-    lastUpdated,
   } = useWallet();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -39,12 +38,6 @@ export function WalletDropdown() {
     }
   }, [chainId, currentChainId]);
 
-  // Force update UI when lastUpdated changes
-  useEffect(() => {
-    if (lastUpdated) {
-      // This will trigger a re-render when the wallet state changes
-    }
-  }, [lastUpdated]);
 
   // Close dropdown when switching chain
   useEffect(() => {

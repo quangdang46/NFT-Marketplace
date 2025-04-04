@@ -61,7 +61,11 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      aria-describedby="modal-content"
+    >
       <DialogTitle className="hidden">Sign in</DialogTitle>
       <DialogContent className="[&>button]:hidden max-w-[360px] p-0 bg-[#111111] rounded-xl">
         <div className="flex justify-between items-center p-5">

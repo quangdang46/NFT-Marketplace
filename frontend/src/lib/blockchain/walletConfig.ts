@@ -60,9 +60,16 @@ export const wallets = [
 export const config = createConfig({
   chains: [sepolia, polygonMumbai, baseSepolia],
   transports: {
-    [sepolia.id]: http("https://rpc.sepolia.org"),
-    [polygonMumbai.id]: http("https://rpc-mumbai.maticvigil.com"),
-    [baseSepolia.id]: http("https://sepolia.base.org"),
+    [sepolia.id]: http(
+      process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL || "https://rpc.sepolia.org"
+    ),
+    [polygonMumbai.id]: http(
+      process.env.NEXT_PUBLIC_POLYGON_MUMBAI_RPC_URL ||
+        "https://rpc-mumbai.maticvigil.com"
+    ),
+    [baseSepolia.id]: http(
+      process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org"
+    ),
   },
   connectors: [metaMask()], // Đảm bảo chỉ dùng metaMask() từ "wagmi/connectors"
   syncConnectedChain: true,
