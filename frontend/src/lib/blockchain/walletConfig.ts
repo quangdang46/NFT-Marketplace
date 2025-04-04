@@ -1,47 +1,7 @@
 import { sepolia, polygonMumbai, baseSepolia, Chain } from "wagmi/chains";
 import { createConfig, http } from "wagmi";
-import { metaMask } from "wagmi/connectors";
+import { metaMask } from "wagmi/connectors"; // Đảm bảo import từ "wagmi/connectors", không phải SDK
 
-export function getChainById(chainId?: number): Chain | undefined {
-  if (!chainId) return undefined;
-  return supportedChains.find((chain) => chain.id === chainId);
-}
-
-export function getChainIconUrl(chainId: number): string {
-  switch (chainId) {
-    case sepolia.id:
-      return "/images/chains/sepolia.svg";
-    case polygonMumbai.id:
-      return "/images/chains/polygon.svg";
-    case baseSepolia.id:
-      return "/images/chains/base.svg";
-    default:
-      return "/images/chains/default.svg";
-  }
-}
-
-export const chainColors: Record<number, string> = {
-  [sepolia.id]: "#CFB5F0",
-  [polygonMumbai.id]: "#8247E5",
-  [baseSepolia.id]: "#0052FF",
-};
-
-export function getChainName(chainId: number): string | undefined {
-  const chain = supportedChains.find((chain) => chain.id === chainId);
-  return chain?.name;
-}
-
-export const wallets = [
-  {
-    id: "metaMask",
-    name: "MetaMask",
-    status: "Installed",
-    color: "#E2761B",
-    logo: "🦊",
-  },
-];
-
-// Cấu hình đầy đủ thông tin mạng để thêm vào MetaMask
 export const supportedChains: Chain[] = [
   {
     ...sepolia,
@@ -75,6 +35,28 @@ export const supportedChains: Chain[] = [
   },
 ];
 
+export const chainColors: Record<number, string> = {
+  [sepolia.id]: "#CFB5F0",
+  [polygonMumbai.id]: "#8247E5",
+  [baseSepolia.id]: "#0052FF",
+};
+
+export const getChainById = (chainId?: number): Chain | undefined =>
+  chainId ? supportedChains.find((chain) => chain.id === chainId) : undefined;
+
+export const getChainName = (chainId: number): string =>
+  getChainById(chainId)?.name ?? "Unknown Network";
+
+export const wallets = [
+  {
+    id: "metaMask",
+    name: "MetaMask",
+    status: "Installed",
+    color: "#E2761B",
+    logo: "🦊",
+  },
+];
+
 export const config = createConfig({
   chains: [sepolia, polygonMumbai, baseSepolia],
   transports: {
@@ -82,7 +64,7 @@ export const config = createConfig({
     [polygonMumbai.id]: http("https://rpc-mumbai.maticvigil.com"),
     [baseSepolia.id]: http("https://sepolia.base.org"),
   },
-  connectors: [metaMask()],
+  connectors: [metaMask()], // Đảm bảo chỉ dùng metaMask() từ "wagmi/connectors"
   syncConnectedChain: true,
 });
 
@@ -90,8 +72,6 @@ export type WalletModalContextType = {
   modalOpen: boolean;
   openModal: () => void;
   closeModal: () => void;
-  verificationRequired: boolean;
-  setVerificationRequired: (required: boolean) => void;
   pendingVerification: boolean;
-  setPendingVerification: (pending: boolean) => void;
+  setPendingVerification: (value: boolean) => void;
 };

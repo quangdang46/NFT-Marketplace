@@ -1,21 +1,16 @@
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { memo } from "react";
+import { wallets } from "@/lib/blockchain/walletConfig";
 
 interface WalletSelectStepProps {
-  wallets: {
-    id: string;
-    name: string;
-    status: string;
-    color: string;
-    logo: string;
-  }[];
+  wallets: typeof wallets;
   onConnect: (walletId: string) => void;
   isConnectPending: boolean;
   isAuthenticating: boolean;
   selectedWallet: string | null;
 }
 
-function WalletSelectStepContent({
+export function WalletSelectStep({
   wallets,
   onConnect,
   isConnectPending,
@@ -23,50 +18,35 @@ function WalletSelectStepContent({
   selectedWallet,
 }: WalletSelectStepProps) {
   return (
-    <div className="px-5 pb-3">
-      {wallets.map((wallet) => (
-        <button
-          key={wallet.id}
-          className="flex items-center w-full py-3 text-white hover:bg-white/5 rounded-lg transition-colors"
-          onClick={() => onConnect(wallet.id)}
-          disabled={isConnectPending || isAuthenticating}
-        >
-          <div
-            className="w-10 h-10 mr-3 flex-shrink-0 rounded-md flex items-center justify-center text-xl"
-            style={{ backgroundColor: wallet.color }}
-          >
-            {wallet.logo}
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="font-medium">{wallet.name}</span>
-            <span className="text-xs text-gray-400">{wallet.status}</span>
-          </div>
-          {(isConnectPending || isAuthenticating) &&
-            selectedWallet === wallet.id && (
-              <Loader2 className="h-4 w-4 text-blue-400 animate-spin ml-auto" />
-            )}
-        </button>
-      ))}
-      <div className="border-t border-gray-800 mt-2">
-        <div className="flex justify-between items-center px-0 py-3 text-sm">
-          <span className="text-gray-400">New to wallets?</span>
-          <a
-            href="https://ethereum.org/wallets"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300"
-          >
-            Get started
-          </a>
-        </div>
-        <div className="border-t border-gray-800 px-0 py-3 flex justify-center">
-          <div className="text-xs text-gray-500 flex items-center">
-            Powered by <span className="ml-1 font-semibold">thirdweb</span>
-          </div>
-        </div>
-      </div>
+    <div className="p-5 pt-0">
+      <ul className="space-y-2">
+        {wallets.map((wallet) => (
+          <li key={wallet.id}>
+            <Button
+              variant="outline"
+              className="w-full flex items-center justify-between text-left h-auto py-3 px-4 bg-[#1A1A1A] border-[#2A2A2A] hover:bg-[#222222]"
+              onClick={() => onConnect(wallet.id)}
+              disabled={
+                isConnectPending ||
+                isAuthenticating ||
+                selectedWallet === wallet.id
+              }
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{wallet.logo}</span>
+                <div>
+                  <p className="text-white font-medium">{wallet.name}</p>
+                  <p className="text-gray-500 text-xs">{wallet.status}</p>
+                </div>
+              </div>
+              {(isConnectPending || isAuthenticating) &&
+                selectedWallet === wallet.id && (
+                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                )}
+            </Button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
-
-export const WalletSelectStep = memo(WalletSelectStepContent);

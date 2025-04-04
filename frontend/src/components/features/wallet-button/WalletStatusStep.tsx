@@ -1,26 +1,24 @@
-import { AlertCircle, Loader2, RefreshCw, Shield } from "lucide-react";
-import { memo } from "react";
+import { Loader2, Shield, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { shortenAddress } from "@/lib/utils/shortenAddress";
+import { wallets } from "@/lib/blockchain/walletConfig";
 
 interface WalletStatusStepProps {
   modalStep: "connecting" | "signing" | "success" | "failed";
-  selectedWalletData?: { name: string; color: string; logo: string };
-  address?: string;
+  selectedWalletData: (typeof wallets)[number] | undefined;
+  address: string | undefined;
   onManualSignature: () => void;
   onBack: () => void;
   signatureRetryCount: number;
-  connectError?: Error;
-  authError?: string;
 }
 
-function WalletStatusStepContent({
+export function WalletStatusStep({
   modalStep,
   selectedWalletData,
   address,
   onManualSignature,
   onBack,
   signatureRetryCount,
-  connectError,
-  authError,
 }: WalletStatusStepProps) {
   return (
     <div
@@ -45,7 +43,6 @@ function WalletStatusStepContent({
           )}
         </div>
       </div>
-
       {modalStep === "connecting" && (
         <>
           <h3 className="text-xl font-bold text-white mb-2">
@@ -56,33 +53,28 @@ function WalletStatusStepContent({
           </p>
         </>
       )}
-
       {modalStep === "signing" && (
         <>
           <h3 className="text-xl font-bold text-white mb-2">
             Waiting for Signature
           </h3>
-          <div className="flex items-center justify-center mb-4">
-            <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
-          </div>
           <p className="text-gray-400 text-center mb-4">
             Please sign the message in your wallet to verify ownership
           </p>
           <p className="text-amber-400 text-xs text-center mb-2">
             Signature is required to connect
           </p>
-          <button
-            onClick={onManualSignature}
-            className="text-blue-400 hover:text-blue-300 text-xs mt-2 mb-4 px-3 py-1.5 border border-blue-800/30 rounded-lg transition-colors flex items-center"
-          >
-            <RefreshCw className="h-3 w-3 mr-1.5" />
-            {signatureRetryCount > 0
-              ? "Retry Signature Request"
-              : "Open Signature Popup"}
-          </button>
+          {signatureRetryCount > 0 && (
+            <Button
+              variant="ghost"
+              onClick={onManualSignature}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              Retry Signing
+            </Button>
+          )}
         </>
       )}
-
       {modalStep === "success" && (
         <>
           <h3 className="text-xl font-bold text-white mb-2">Connected!</h3>
@@ -92,14 +84,11 @@ function WalletStatusStepContent({
               Wallet verified successfully
             </span>
           </p>
-          {address && (
-            <p className="text-gray-400 text-xs text-center mb-2">
-              {`${address.slice(0, 6)}...${address.slice(-4)}`}
-            </p>
-          )}
+          <p className="text-gray-400 text-sm">
+            Wallet {shortenAddress(address || "")} successfully connected
+          </p>
         </>
       )}
-
       {modalStep === "failed" && (
         <>
           <h3 className="text-xl font-bold text-white mb-2">
@@ -108,21 +97,27 @@ function WalletStatusStepContent({
           <p className="text-gray-400 text-center mb-8">
             <span className="flex items-center justify-center">
               <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-              {authError ||
-                connectError?.message ||
-                "Failed to verify wallet ownership"}
+              <span>Failed to verify wallet ownership</span>
             </span>
           </p>
-          <button
-            onClick={onBack}
-            className="text-blue-400 hover:text-blue-300 text-sm mt-2 px-4 py-2 border border-blue-800/30 rounded-lg transition-colors"
-          >
-            Try again
-          </button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              onClick={onManualSignature}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              Retry Signing
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="text-blue-400 hover:text-blue-300 text-sm"
+            >
+              Try Another Wallet
+            </Button>
+          </div>
         </>
       )}
     </div>
   );
 }
-
-export const WalletStatusStep = memo(WalletStatusStepContent);

@@ -1,6 +1,19 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+
+type ModalStep = "select" | "connecting" | "signing" | "success" | "failed";
+
+interface WalletModalLogicProps {
+  isOpen: boolean;
+  connectionState: string;
+  isConnectPending: boolean;
+  isAuthenticated: boolean;
+  isAuthenticating: boolean;
+  authenticateWithSiwe: () => Promise<boolean>;
+  signatureRejected: boolean;
+  setPendingVerification: (value: boolean) => void;
+  onClose: () => void;
+}
 
 export function useWalletModalLogic({
   isOpen,
@@ -12,85 +25,58 @@ export function useWalletModalLogic({
   signatureRejected,
   setPendingVerification,
   onClose,
-}: {
-  isOpen: boolean;
-  connectionState: string;
-  isConnectPending: boolean;
-  isAuthenticated: boolean;
-  isAuthenticating: boolean;
-  authenticateWithSiwe: () => Promise<boolean>;
-  signatureRejected: boolean;
-  setPendingVerification: (value: boolean) => void;
-  onClose: () => void;
-}) {
-  const [modalStep, setModalStep] = useState<
-    "select" | "connecting" | "signing" | "success" | "failed"
-  >("select");
-  const modalStateRef = useRef(modalStep);
-  const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    modalStateRef.current = modalStep;
-  }, [modalStep]);
+}: WalletModalLogicProps) {
+  const [modalStep, setModalStep] = useState<ModalStep>("select");
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setModalStep("select");
-      if (authTimeoutRef.current) clearTimeout(authTimeoutRef.current);
-      if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       return;
     }
 
-    if (connectionState === "connecting" || isConnectPending) {
-      setModalStep("connecting");
-      connectTimeoutRef.current = setTimeout(() => {
-        if (modalStateRef.current === "connecting") {
-          setModalStep("failed");
-          console.error("Connection timeout: No response from wallet");
-        }
-      }, 60000);
-    } else if (
-      connectionState === "connected" &&
-      !isAuthenticated &&
-      !isAuthenticating
-    ) {
-      setModalStep("signing");
-      if (!authTimeoutRef.current) {
-        authTimeoutRef.current = setTimeout(() => {
-          authenticateWithSiwe()
-            .then((success) => {
-              if (success) {
-                setModalStep("success");
-                setPendingVerification(false);
-                onClose();
-              } else {
-                setModalStep("failed");
-              }
-            })
-            .catch((error) => {
-              console.error("Authentication failed:", error);
-              setModalStep("failed");
+    switch (connectionState) {
+      case "connecting":
+      case "isConnectPending":
+        setModalStep("connecting");
+        timeoutRef.current = setTimeout(() => {
+          if (modalStep === "connecting") {
+            setModalStep("failed");
+            toast.error("Connection timeout", {
+              description: "Please check your wallet.",
             });
-        }, 500);
-      }
-    } else if (connectionState === "authenticated") {
-      setModalStep("success");
-      setPendingVerification(false);
-      onClose();
-    } else if (
-      connectionState === "authentication_failed" ||
-      signatureRejected
-    ) {
-      setModalStep("failed");
+          }
+        }, 10000);
+        break;
+      case "connected":
+        if (!isAuthenticated && !isAuthenticating) {
+          setModalStep("signing");
+          authenticateWithSiwe().then((success) => {
+            setModalStep(
+              success ? "success" : signatureRejected ? "signing" : "failed"
+            );
+            if (success) {
+              setPendingVerification(false);
+              setTimeout(onClose, 1000);
+            }
+          });
+        }
+        break;
+      case "authenticated":
+        setModalStep("success");
+        setPendingVerification(false);
+        setTimeout(onClose, 1000);
+        break;
+      case "authentication_failed":
+        setModalStep("failed");
+        break;
+      default:
+        setModalStep("select");
     }
 
     return () => {
-      if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
-      if (authTimeoutRef.current) {
-        clearTimeout(authTimeoutRef.current);
-        authTimeoutRef.current = null;
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [
     isOpen,
@@ -102,6 +88,7 @@ export function useWalletModalLogic({
     signatureRejected,
     setPendingVerification,
     onClose,
+    modalStep,
   ]);
 
   return { modalStep, setModalStep };

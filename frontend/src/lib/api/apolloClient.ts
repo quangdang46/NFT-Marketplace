@@ -149,7 +149,7 @@ const errorLink = onError(
                 return () => subscriber.unsubscribe();
               })
               .catch((refreshError) => {
-                console.error("Refresh token thất bại:", refreshError);
+                console.log("Refresh token thất bại:", refreshError);
                 Cookies.remove("auth_token", {
                   secure: true,
                   sameSite: "strict",
@@ -168,7 +168,7 @@ const errorLink = onError(
         console.log(`[Lỗi GraphQL]: ${err.message}`);
       }
     }
-    if (networkError) console.error(`[Lỗi mạng]: ${networkError}`);
+    if (networkError) console.log(`[Lỗi mạng]: ${networkError}`);
   }
 );
 
