@@ -5,11 +5,12 @@ import { getNavItems } from "@/lib/constant/menu";
 import { MobileMenu } from "@/components/features/nav-bar/MobileMenu";
 import { SearchBar } from "@/components/features/nav-bar/SearchBar";
 import { NavLink } from "@/components/features/nav-bar/NavLink";
-import { WalletButton } from "@/components/features/wallet-button/WalletButton";
+
 import { ModeToggle } from "@/components/ui/darkmode";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { ConnectButton } from "@/components/features/wallet-button/ConnectButton";
 
 export function Header() {
   const [activeTab] = useState("collections");
@@ -55,7 +56,11 @@ export function Header() {
 
         {/* Wallet & Earn Buttons */}
         <div className="flex items-center space-x-2 ml-auto">
-          <WalletButton />
+          <ConnectButton
+            variant="outline"
+            size="default"
+            className="rounded-lg border-gray-200 shadow-sm"
+          />
           <ModeToggle></ModeToggle>
 
           {/* Mobile Menu */}

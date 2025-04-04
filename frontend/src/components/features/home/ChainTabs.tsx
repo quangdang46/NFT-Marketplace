@@ -11,7 +11,6 @@ export function ChainTabs() {
   const searchParams = useSearchParams();
   const [selectedChain, setSelectedChain] = useState<string | number>("all");
   const isMobile = useIsMobile();
-  console.log("select chain", selectedChain);
 
   // Đồng bộ giá trị selectedChain với tham số URL khi component mount
   useEffect(() => {

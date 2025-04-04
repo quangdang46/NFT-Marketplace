@@ -14,17 +14,17 @@ export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    connectWallet: (state, action: PayloadAction<AuthState>) => {
+    connectWalletRedux: (state, action: PayloadAction<AuthState>) => {
       state.token = action.payload.token;
       state.isAuthenticated = true;
     },
-    disconnectWallet: (state) => {
+    disconnectWalletRedux: (state) => {
       state.token = null;
       state.isAuthenticated = false;
     },
   },
 });
 
-export const { connectWallet, disconnectWallet } = authSlice.actions;
+export const { connectWalletRedux, disconnectWalletRedux } = authSlice.actions;
 
 export default authSlice.reducer;
