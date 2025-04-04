@@ -113,7 +113,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
         <VisuallyHidden>
           <DialogTitle>Connect Wallet</DialogTitle>
         </VisuallyHidden>
-        <DialogDescription>
+        <DialogDescription className="hidden">
           Select a wallet to connect to this application
         </DialogDescription>
 

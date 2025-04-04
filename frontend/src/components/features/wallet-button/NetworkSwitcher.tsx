@@ -192,7 +192,6 @@ export function NetworkSwitcher() {
           clearInterval(checkChainInterval);
         }, 10000);
       } catch (error) {
-        console.error("[NetworkSwitcher] Direct chain switch error:", error);
 
         // Try the regular method as fallback
         const success = await switchNetwork(targetChainId);
@@ -311,7 +310,6 @@ export function NetworkSwitcher() {
           clearInterval(checkChainInterval);
         }, 10000);
       } catch (error) {
-        console.error("[NetworkSwitcher] Direct chain switch error:", error);
 
         // Use the triggerChainSwitch function to manually trigger the chain switch
         const success = await triggerChainSwitch(targetChainId);
