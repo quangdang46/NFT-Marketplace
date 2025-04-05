@@ -21,49 +21,54 @@ export function useWalletModalLogic({
   isConnectPending,
   isAuthenticated,
   isAuthenticating,
-  authenticateWithSiwe, // Giữ để dùng thủ công nếu cần
   signatureRejected,
   setPendingVerification,
   onClose,
 }: WalletModalLogicProps) {
   const [modalStep, setModalStep] = useState<ModalStep>("select");
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasClosedRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) {
       setModalStep("select");
+      hasClosedRef.current = false;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       return;
     }
 
-    switch (connectionState) {
-      case "connecting":
-      case "isConnectPending":
-        setModalStep("connecting");
-        timeoutRef.current = setTimeout(() => {
-          if (modalStep === "connecting") {
-            setModalStep("failed");
-            toast.error("Connection timeout", {
-              description: "Please check your wallet.",
-            });
+    if (connectionState === "authenticated" && !hasClosedRef.current) {
+      setModalStep("success");
+      setPendingVerification(false);
+      timeoutRef.current = setTimeout(() => {
+        onClose();
+        hasClosedRef.current = true;
+      }, 1000);
+    } else {
+      switch (connectionState) {
+        case "connecting":
+        case "isConnectPending":
+          setModalStep("connecting");
+          timeoutRef.current = setTimeout(() => {
+            if (modalStep === "connecting") {
+              setModalStep("failed");
+              toast.error("Connection timeout", {
+                description: "Please check your wallet.",
+              });
+            }
+          }, 10000);
+          break;
+        case "connected":
+          if (!isAuthenticated) {
+            setModalStep("signing");
           }
-        }, 10000);
-        break;
-      case "connected":
-        if (!isAuthenticated) {
-          setModalStep("signing"); // Chỉ hiển thị UI, không gọi authenticateWithSiwe
-        }
-        break;
-      case "authenticated":
-        setModalStep("success");
-        setPendingVerification(false);
-        setTimeout(onClose, 1000);
-        break;
-      case "authentication_failed":
-        setModalStep("failed");
-        break;
-      default:
-        setModalStep("select");
+          break;
+        case "authentication_failed":
+          setModalStep("failed");
+          break;
+        default:
+          setModalStep("select");
+      }
     }
 
     return () => {

@@ -395,27 +395,29 @@ const connectWallet = useCallback(
 
     try {
       await connect({ connector });
-      if (isConnected && address && chainId) {
-        console.log("connectWallet: Wallet connected", { address, chainId });
-        setState({ status: "connected", address, chainId });
-        toast.success("Wallet connected", {
-          description: "Please verify your wallet.",
-        });
-        const verified = await authenticateWithSiwe();
-        if (!verified) {
-          console.log("connectWallet: Verification failed");
-          // Không disconnect ngay, để người dùng thử lại
-          setState({ status: "connected", address, chainId });
-          setPendingVerification(true);
-          setSignatureRejected(true); // Nếu thất bại do "Cancel"
-          return false;
-        }
-        console.log("connectWallet: Connection and verification successful");
-        return true;
+      if (!isConnected || !address || !chainId) {
+        console.log("connectWallet: Connection failed - no address or chainId");
+        setState({ status: "disconnected" });
+        return false;
       }
-      console.log("connectWallet: Connection failed");
-      setState({ status: "disconnected" });
-      return false;
+
+      console.log("connectWallet: Wallet connected", { address, chainId });
+      setState({ status: "connected", address, chainId });
+      toast.success("Wallet connected", {
+        description: "Please verify your wallet.",
+      });
+
+      const verified = await authenticateWithSiwe();
+      if (!verified) {
+        console.log("connectWallet: Verification failed");
+        setState({ status: "connected", address, chainId });
+        setPendingVerification(true);
+        setSignatureRejected(true);
+        return false;
+      }
+
+      console.log("connectWallet: Connection and verification successful");
+      return true; // Trả về true khi cả connect và verify thành công
     } catch (error) {
       console.log("connectWallet: Error during connection", error);
       handleError(error, "Connection failed");

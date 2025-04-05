@@ -23,8 +23,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     connectionState,
     signatureRejected,
     address,
-    pendingVerification,
-    setPendingVerification, // Thêm từ useWallet
+    setPendingVerification,
   } = useWallet();
   const { modalStep, setModalStep } = useWalletModalLogic({
     isOpen,
@@ -38,28 +37,50 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     onClose,
   });
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
-  const [signatureRetryCount, setSignatureRetryCount] = useState(0); // Theo dõi số lần retry
+  const [signatureRetryCount, setSignatureRetryCount] = useState(0);
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedWallet(null);
       setSignatureRetryCount(0);
     }
-  }, [isOpen]);
+    // Đóng modal nếu đã authenticated
+    if (isOpen && isAuthenticated) {
+      setModalStep("success");
+      setPendingVerification(false);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    }
+  }, [isOpen, isAuthenticated, onClose, setPendingVerification]);
 
   const handleConnect = async (walletId: string) => {
     setSelectedWallet(walletId);
     setModalStep("connecting");
-    await connectWallet(walletId);
+    const success = await connectWallet(walletId);
+    // Kiểm tra cả success từ connectWallet và trạng thái isAuthenticated
+    if (success || isAuthenticated) {
+      setModalStep("success");
+      setPendingVerification(false);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } else if (signatureRejected) {
+      setModalStep("signing");
+    } else {
+      setModalStep("failed");
+    }
   };
 
   const handleManualSignature = async () => {
     setSignatureRetryCount((prev) => prev + 1);
     const success = await authenticateWithSiwe();
-    if (success) {
+    if (success || isAuthenticated) {
       setModalStep("success");
       setPendingVerification(false);
-      setTimeout(onClose, 1000);
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } else if (signatureRejected) {
       setModalStep("signing");
     } else {
