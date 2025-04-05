@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/useWallet";
 import { useWalletModal } from "@/components/providers/WalletProvider";
 import { WalletInfo } from "./WalletInfo";
-import { Shield, ShieldAlert, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WalletModal } from "./WalletModal";
 import { toast } from "sonner";
@@ -20,7 +20,6 @@ interface ConnectButtonProps {
   size?: "default" | "sm" | "lg" | "icon";
   className?: string;
   label?: string;
-  requireAuth?: boolean;
 }
 
 export function ConnectButton({
@@ -28,7 +27,6 @@ export function ConnectButton({
   size = "default",
   className = "",
   label = "Connect Wallet",
-  requireAuth = false,
 }: ConnectButtonProps) {
   const {
     isConnected,
@@ -78,18 +76,6 @@ export function ConnectButton({
     <>
       {isConnected ? (
         <div className="flex items-center gap-2">
-          {requireAuth && !isAuthenticated && (
-            <div className="flex items-center text-amber-600 text-xs mr-2">
-              <ShieldAlert className="h-4 w-4 mr-1" />
-              Not verified
-            </div>
-          )}
-          {isAuthenticated && (
-            <div className="flex items-center text-green-600 text-xs mr-2">
-              <Shield className="h-4 w-4 mr-1" />
-              Verified
-            </div>
-          )}
           <WalletInfo />
         </div>
       ) : (
