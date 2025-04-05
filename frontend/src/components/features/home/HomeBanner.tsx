@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { Stats } from "@/lib/api/graphql/generated";
+import type { Stats } from "@/lib/api/graphql/generated";
 
 // Slide interface
 interface Slide {
@@ -120,7 +120,7 @@ function SlideContent({
           {slide.title}
         </span>
       </h1>
-      <p className="text-lg md:text-xl mb-8 text-muted-foreground max-w-lg">
+      <p className="text-lg md:text-xl mb-8 text-gray-700 dark:text-gray-300 max-w-lg">
         {slide.description}
       </p>
     </motion.div>
@@ -156,7 +156,7 @@ function StatsDisplay({
               ? `${stat.value.toLocaleString()}+`
               : "N/A"}
           </p>
-          <p className="text-muted-foreground">{stat.label}</p>
+          <p className="text-gray-600 dark:text-gray-400">{stat.label}</p>
         </div>
       ))}
     </div>
@@ -180,8 +180,8 @@ function NavigationDots({
           key={index}
           className={`w-2 h-2 rounded-full transition-all duration-300 ${
             currentSlide === index
-              ? "w-6 bg-white"
-              : "bg-white/50 hover:bg-white/80"
+              ? "w-6 bg-primary"
+              : "bg-gray-400/50 hover:bg-gray-400/80 dark:bg-white/50 dark:hover:bg-white/80"
           }`}
           onClick={() => onDotClick(index)}
           aria-label={`Go to slide ${index + 1}`}
@@ -214,7 +214,7 @@ const Background = ({
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-transparent"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent dark:from-[#121620]/90 dark:via-[#121620]/70 dark:to-transparent"></div>
     </motion.div>
   );
 };
@@ -232,7 +232,11 @@ const Buttons = () => {
         </Button>
       </Link>
       <Link href="/auctions" className="w-fit">
-        <Button size="lg" variant="outline">
+        <Button
+          size="lg"
+          variant="outline"
+          className="border-gray-300  hover:bg-gray-100 dark:border-white/10 text-white dark:hover:bg-white/5"
+        >
           <Sparkles className="mr-2 h-4 w-4" />
           Live Auctions
         </Button>
@@ -268,7 +272,7 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
   }
 
   return (
-    <div className="relative w-full h-[500px] rounded-xl overflow-hidden mb-12 group">
+    <div className="relative w-full h-[500px] rounded-xl overflow-hidden mb-12 group bg-gray-50 dark:bg-[#1A1F2C] border border-gray-200 dark:border-white/10">
       {/* Background with gradient overlay */}
       {slides.map((slide, index) => (
         <Background
@@ -348,3 +352,4 @@ export function HomeBanner({ stats, chain }: HomeBannerProps) {
     </div>
   );
 }
+
