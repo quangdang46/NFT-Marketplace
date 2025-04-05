@@ -26,6 +26,8 @@ export function HomeContent() {
   const { collections, stats } = useHomeData({
     chainId: selectedChain,
   });
+  console.log("collections", collections);
+  console.log("stats", stats);
   return (
     <div className="pt-4">
       <ul>

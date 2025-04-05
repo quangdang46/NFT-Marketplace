@@ -73,7 +73,7 @@ export function ConnectButton({
       <Button
         variant={variant}
         size={size}
-        className={className}
+        className={`${className} bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90`}
         onClick={handleOpenModal}
         disabled={isConnecting || isSigning}
       >

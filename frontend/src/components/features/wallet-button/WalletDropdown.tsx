@@ -38,7 +38,6 @@ export function WalletDropdown() {
     }
   }, [chainId, currentChainId]);
 
-
   // Close dropdown when switching chain
   useEffect(() => {
     if (isSwitchingChain) {
@@ -91,48 +90,65 @@ export function WalletDropdown() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 bg-white border-gray-200 hover:bg-gray-50 text-gray-900 dark:bg-[#1A1F2C] dark:border-white/10 dark:hover:bg-[#232836] dark:text-white"
+        >
           {address && shortenAddress(address)}
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>My Wallet</DropdownMenuLabel>
+      <DropdownMenuContent
+        align="end"
+        className="w-56 bg-white border border-gray-200 dark:bg-[#1A1F2C] dark:border-white/10"
+      >
+        <DropdownMenuLabel className="text-gray-900 dark:text-white">
+          My Wallet
+        </DropdownMenuLabel>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-white/10" />
 
         <div className="px-2 py-2">
-          <p className="text-sm font-medium">Balance</p>
-          <p className="text-lg font-bold">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Balance
+          </p>
+          <p className="text-lg font-bold text-gray-900 dark:text-white">
             {walletBalance
               ? `${walletBalance} ${walletBalanceSymbol}`
               : "Loading..."}
           </p>
         </div>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-white/10" />
 
         <NetworkSwitcher />
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-white/10" />
 
-        <DropdownMenuItem onClick={copyToClipboard}>
+        <DropdownMenuItem
+          onClick={copyToClipboard}
+          className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white cursor-pointer"
+        >
           <Copy className="mr-2 h-4 w-4" />
           <span>Copy Address</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={openExplorer}>
+        <DropdownMenuItem
+          onClick={openExplorer}
+          className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white cursor-pointer"
+        >
           <ExternalLink className="mr-2 h-4 w-4" />
           <span>View on Explorer</span>
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-white/10" />
 
         <DropdownMenuItem
           onClick={() => {
             disconnectWallet();
             setIsOpen(false);
           }}
+          className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Disconnect</span>

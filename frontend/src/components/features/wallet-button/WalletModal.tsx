@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -48,13 +50,13 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogTitle className="hidden">Connect Wallet</DialogTitle>
-      <DialogContent className="max-w-[360px] p-5 bg-[#111111] rounded-xl">
+      <DialogContent className="max-w-[360px] p-5 bg-white dark:bg-[#111111] rounded-xl border border-gray-200 dark:border-white/10">
         <DialogDescription className="hidden">
           Modal to connect and authenticate your blockchain wallet.
         </DialogDescription>
         {walletState === "disconnected" ? (
           <div>
-            <h2 className="text-lg font-bold text-white mb-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               Connect Wallet
             </h2>
             <ul className="space-y-2">
@@ -62,15 +64,19 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                 <li key={wallet.id}>
                   <Button
                     variant="outline"
-                    className="w-full flex items-center justify-between text-left h-auto py-3 px-4 bg-[#1A1A1A] border-[#2A2A2A] hover:bg-[#222222]"
+                    className="w-full flex items-center justify-between text-left h-auto py-3 px-4 bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-[#1A1A1A] dark:border-[#2A2A2A] dark:hover:bg-[#222222]"
                     onClick={() => handleConnect(wallet.id)}
                     disabled={isConnecting}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{wallet.logo}</span>
                       <div>
-                        <p className="text-white font-medium">{wallet.name}</p>
-                        <p className="text-gray-500 text-xs">{wallet.status}</p>
+                        <p className="text-gray-900 dark:text-white font-medium">
+                          {wallet.name}
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          {wallet.status}
+                        </p>
                       </div>
                     </div>
                     {(isConnecting || isAuthenticated) &&
@@ -109,51 +115,51 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
 
             {walletState === "connecting" && (
               <>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   Connecting Wallet
                 </h3>
-                <p className="text-gray-400 text-center mb-4">
+                <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
                   Check your wallet to approve the connection
                 </p>
               </>
             )}
             {walletState === "signing" && (
               <>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   Waiting for Signature
                 </h3>
-                <p className="text-gray-400 text-center mb-4">
+                <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
                   Please sign the message in your wallet to verify ownership
                 </p>
-                <p className="text-amber-400 text-xs text-center mb-2">
+                <p className="text-amber-600 dark:text-amber-400 text-xs text-center mb-2">
                   Signature is required to connect
                 </p>
               </>
             )}
             {walletState === "authenticated" && (
               <>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   Connected!
                 </h3>
-                <p className="text-gray-400 text-center mb-4">
+                <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
                   <span className="flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-green-400 mr-2" />
+                    <Shield className="h-5 w-5 text-green-500 dark:text-green-400 mr-2" />
                     Wallet verified successfully
                   </span>
                 </p>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
                   Wallet {shortenAddress(address || "")} successfully connected
                 </p>
               </>
             )}
             {walletState === "failed" && (
               <>
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                   Connection Failed
                 </h3>
-                <p className="text-gray-400 text-center mb-8">
+                <p className="text-gray-600 dark:text-gray-400 text-center mb-8">
                   <span className="flex items-center justify-center">
-                    <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                    <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400 mr-2" />
                     <span>Failed to verify wallet ownership</span>
                   </span>
                 </p>
@@ -163,7 +169,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
                     onClick={() =>
                       handleConnect(selectedWalletId || "metaMask")
                     }
-                    className="text-blue-400 hover:text-blue-300 text-sm"
+                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
                   >
                     Retry
                   </Button>

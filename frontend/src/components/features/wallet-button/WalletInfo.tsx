@@ -103,7 +103,7 @@ export function WalletInfo() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className={`flex items-center gap-2 bg-foreground border-gray-200 hover:bg-gray-50 rounded-xl px-4 h-10 shadow-sm transition-colors ${
+          className={`flex items-center gap-2 bg-white border-gray-200 hover:bg-gray-50 text-gray-900 dark:bg-[#1A1F2C] dark:border-white/10 dark:hover:bg-[#232836] dark:text-white rounded-xl px-4 h-10 shadow-sm transition-colors ${
             isLoading ? "opacity-80" : ""
           }`}
           disabled={isLoading}
@@ -111,30 +111,32 @@ export function WalletInfo() {
           <RefreshCw
             className={`h-4 w-4 animate-spin mr-1 ${isLoading ? "" : "hidden"}`}
           />
-          <span className="font-medium text-gray-800">
+          <span className="font-medium text-gray-800 dark:text-white">
             {shortenAddress(address)}
           </span>
-          <ChevronDown fill="#000" />
+          <ChevronDown className="text-gray-800 dark:text-white" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-72 rounded-xl p-1 shadow-xl border border-gray-200 mt-5"
+        className="w-72 rounded-xl p-1 shadow-xl border border-gray-200 mt-5 bg-white dark:bg-[#1A1F2C] dark:border-white/10"
       >
         <DropdownMenuLabel className="px-4 py-3">
           <div className="flex flex-col">
             <div className="flex items-center">
-              <span className="font-bold text-gray-800">My Wallet</span>
-              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+              <span className="font-bold text-gray-800 dark:text-white">
+                My Wallet
+              </span>
+              <span className="ml-2 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full">
                 MetaMask
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500 mt-1 font-normal">
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-normal">
                 {shortenAddress(address)}
               </span>
               {isAuthenticated && (
-                <div className="flex items-center text-green-600 text-xs">
+                <div className="flex items-center text-green-600 dark:text-green-400 text-xs">
                   <Shield className="h-3 w-3 mr-1" />
                   Verified
                 </div>
@@ -142,13 +144,15 @@ export function WalletInfo() {
             </div>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="my-1" />
-        <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 mx-1 rounded-lg">
-          <p className="text-sm font-medium text-gray-500 mb-1">Balance</p>
-          <p className="text-xl font-bold text-gray-800">
+        <DropdownMenuSeparator className="my-1 bg-gray-200 dark:bg-white/10" />
+        <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 mx-1 rounded-lg">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+            Balance
+          </p>
+          <p className="text-xl font-bold text-gray-800 dark:text-white">
             {isBalanceLoading ? (
               <span className="flex items-center">
-                <Loader2 className="h-3 w-3 text-blue-500 animate-spin mr-2" />
+                <Loader2 className="h-3 w-3 text-blue-500 dark:text-blue-400 animate-spin mr-2" />
                 Loading...
               </span>
             ) : walletBalance ? (
@@ -158,16 +162,16 @@ export function WalletInfo() {
             )}
           </p>
         </div>
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-1 bg-gray-200 dark:bg-white/10" />
         <NetworkSwitcher />
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-1 bg-gray-200 dark:bg-white/10" />
         <DropdownMenuItem
           onClick={copyToClipboard}
-          className="cursor-pointer rounded-lg mx-1 px-3 py-2.5 text-gray-700 hover:text-gray-900 transition-colors"
+          className="cursor-pointer rounded-lg mx-1 px-3 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-white/5 transition-colors"
         >
           {showCopiedToast ? (
             <>
-              <Check className="mr-2 h-4 w-4 text-green-500" />
+              <Check className="mr-2 h-4 w-4 text-green-500 dark:text-green-400" />
               Copied!
             </>
           ) : (
@@ -179,15 +183,15 @@ export function WalletInfo() {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={openExplorer}
-          className="cursor-pointer rounded-lg mx-1 px-3 py-2.5 text-gray-700 hover:text-gray-900 transition-colors"
+          className="cursor-pointer rounded-lg mx-1 px-3 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-white/5 transition-colors"
         >
           <ExternalLink className="mr-2 h-4 w-4" />
           View on Explorer
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="my-1" />
+        <DropdownMenuSeparator className="my-1 bg-gray-200 dark:bg-white/10" />
         <DropdownMenuItem
           onClick={handleDisconnect}
-          className="cursor-pointer rounded-lg mx-1 px-3 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+          className="cursor-pointer rounded-lg mx-1 px-3 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 transition-colors"
           disabled={isDisconnecting}
         >
           {isDisconnecting ? (
