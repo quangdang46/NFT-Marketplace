@@ -21,6 +21,7 @@ export function useWalletModalLogic({
   isConnectPending,
   isAuthenticated,
   isAuthenticating,
+  authenticateWithSiwe,
   signatureRejected,
   setPendingVerification,
   onClose,
@@ -37,38 +38,42 @@ export function useWalletModalLogic({
       return;
     }
 
-    if (connectionState === "authenticated" && !hasClosedRef.current) {
+    if (isAuthenticated && !hasClosedRef.current) {
       setModalStep("success");
       setPendingVerification(false);
       timeoutRef.current = setTimeout(() => {
         onClose();
         hasClosedRef.current = true;
       }, 1000);
-    } else {
-      switch (connectionState) {
-        case "connecting":
-        case "isConnectPending":
-          setModalStep("connecting");
-          timeoutRef.current = setTimeout(() => {
-            if (modalStep === "connecting") {
-              setModalStep("failed");
-              toast.error("Connection timeout", {
-                description: "Please check your wallet.",
-              });
-            }
-          }, 10000);
-          break;
-        case "connected":
-          if (!isAuthenticated) {
-            setModalStep("signing");
+      return;
+    }
+
+    switch (connectionState) {
+      case "connecting":
+        setModalStep("connecting");
+        timeoutRef.current = setTimeout(() => {
+          if (modalStep === "connecting") {
+            setModalStep("failed");
+            toast.error("Connection timeout");
           }
-          break;
-        case "authentication_failed":
-          setModalStep("failed");
-          break;
-        default:
-          setModalStep("select");
-      }
+        }, 10000);
+        break;
+      case "connected":
+        setModalStep("signing");
+        break;
+      case "authenticated":
+        setModalStep("success");
+        setPendingVerification(false);
+        timeoutRef.current = setTimeout(() => {
+          onClose();
+          hasClosedRef.current = true;
+        }, 1000);
+        break;
+      case "authentication_failed":
+        setModalStep("failed");
+        break;
+      default:
+        setModalStep("select");
     }
 
     return () => {
@@ -83,7 +88,6 @@ export function useWalletModalLogic({
     signatureRejected,
     setPendingVerification,
     onClose,
-    modalStep,
   ]);
 
   return { modalStep, setModalStep };
