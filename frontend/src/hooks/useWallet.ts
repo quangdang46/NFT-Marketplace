@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import {
   useAccount,
   useBalance,
@@ -39,30 +39,14 @@ type ConnectionState =
   | "authentication_failed"
   | "switching_chain";
 
-export function useWallet() {
-  const dispatch = useDispatch();
-  const { address, isConnected } = useAccount();
-  const {
-    connect,
-    connectors,
-    isPending: isConnectPending,
-    error: connectError,
-  } = useConnect();
-  const { disconnect } = useDisconnect();
-  const chainId = useChainId();
-  const {
-    switchChain,
-    isPending: isSwitchPending,
-    error: switchError,
-  } = useSwitchChain();
+interface WalletBalance {
+  formatted: string | null;
+  symbol: string | null;
+}
 
-  const {
-    data: balanceData,
-    isLoading: isBalanceLoading,
-    isError: isBalanceError,
-    error: balanceError,
-    refetch: refetchBalance,
-  } = useBalance({
+// Custom hook để quản lý balance caching
+const useWalletBalance = (address?: Address, chainId?: number) => {
+  const { data, isLoading, isError, error, refetch } = useBalance({
     address,
     chainId,
     query: {
@@ -70,9 +54,8 @@ export function useWallet() {
       staleTime: 10 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
       initialData: () => {
-        const stored = localStorage.getItem(
-          `walletBalance_${address}_${chainId}`
-        );
+        const key = `walletBalance_${address}_${chainId}`;
+        const stored = localStorage.getItem(key);
         if (stored) {
           const { value, decimals, symbol } = JSON.parse(stored);
           return {
@@ -88,14 +71,50 @@ export function useWallet() {
       retryDelay: 1000,
     },
   });
-  const {
-    signMessageAsync,
-    isPending: isSignPending,
-    error: signError,
-  } = useSignMessage();
 
-  const [connectionState, setConnectionState] =
-    useState<ConnectionState>("disconnected");
+  const [cachedBalance, setCachedBalance] = useState<WalletBalance>({
+    formatted: null,
+    symbol: null,
+  });
+
+  useEffect(() => {
+    if (data && address && chainId) {
+      const formatted = Number.parseFloat(data.formatted).toFixed(4);
+      setCachedBalance({ formatted, symbol: data.symbol });
+      localStorage.setItem(
+        `walletBalance_${address}_${chainId}`,
+        JSON.stringify({
+          value: data.value.toString(),
+          decimals: data.decimals,
+          symbol: data.symbol,
+        })
+      );
+    }
+    if (isError) {
+      toast.error("Failed to load balance", {
+        description: error?.message || "Unable to connect to RPC.",
+      });
+    }
+  }, [data, address, chainId, isError, error]);
+
+  return { balance: data, cachedBalance, isLoading, isError, refetch };
+};
+
+// Utility để xử lý toast
+const showErrorToast = (title: string, description?: string) =>
+  toast.error(title, { description });
+
+// Main hook
+export function useWallet() {
+  const dispatch = useDispatch();
+  const { address, isConnected } = useAccount();
+  const { connect, connectors, isPending: isConnectPending, error: connectError } = useConnect();
+  const { disconnect } = useDisconnect();
+  const chainId = useChainId();
+  const { switchChain, isPending: isSwitchPending, error: switchError } = useSwitchChain();
+  const { signMessageAsync, isPending: isSignPending, error: signError } = useSignMessage();
+
+  const [connectionState, setConnectionState] = useState<ConnectionState>("disconnected");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -104,153 +123,79 @@ export function useWallet() {
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const authInProgressRef = useRef(false);
   const chainSwitchInProgressRef = useRef(false);
-  const [cachedBalance, setCachedBalance] = useState<string | null>(null);
-  const [cachedSymbol, setCachedSymbol] = useState<string | null>(null);
 
+  const { balance, cachedBalance, isLoading: isBalanceLoading, refetch: refetchBalance } =
+    useWalletBalance(address, chainId);
+
+  // Utility để update state
   const updateState = useCallback(
-    (
-      newState: Partial<{
-        connectionState: ConnectionState;
-        isAuthenticated: boolean;
-        pendingVerification: boolean;
-      }>
-    ) => {
-      if (newState.connectionState)
-        setConnectionState(newState.connectionState);
-      if (typeof newState.isAuthenticated === "boolean")
-        setIsAuthenticated(newState.isAuthenticated);
-      if (typeof newState.pendingVerification === "boolean")
-        setPendingVerification(newState.pendingVerification);
+    (newState: Partial<{
+      connectionState: ConnectionState;
+      isAuthenticated: boolean;
+      pendingVerification: boolean;
+    }>) => {
+      if (newState.connectionState) setConnectionState(newState.connectionState);
+      if (typeof newState.isAuthenticated === "boolean") setIsAuthenticated(newState.isAuthenticated);
+      if (typeof newState.pendingVerification === "boolean") setPendingVerification(newState.pendingVerification);
     },
     []
   );
 
+  // Kiểm tra trạng thái ban đầu
   useEffect(() => {
-    if (balanceData && address && chainId) {
-      const formattedBalance = Number.parseFloat(balanceData.formatted).toFixed(
-        4
-      );
-      setCachedBalance(formattedBalance);
-      setCachedSymbol(balanceData.symbol);
-      localStorage.setItem(
-        `walletBalance_${address}_${chainId}`,
-        JSON.stringify({
-          value: balanceData.value.toString(),
-          decimals: balanceData.decimals,
-          symbol: balanceData.symbol,
-        })
-      );
-    }
-    if (isBalanceError) {
-      toast.error("Failed to load balance", {
-        description:
-          balanceError?.message ||
-          "Unable to connect to RPC. Please try again.",
-      });
-    }
-  }, [
-    balanceData,
-    address,
-    chainId,
-    isBalanceLoading,
-    isBalanceError,
-    balanceError,
-  ]);
-
-  useEffect(() => {
-    if (!isConnected) {
-      setCachedBalance(null);
-      setCachedSymbol(null);
-    }
-  }, [isConnected]);
-
-  // Kiểm tra trạng thái ban đầu và buộc verify nếu không có token
-  useEffect(() => {
-    const storedAuthenticated =
-      localStorage.getItem("walletAuthenticated") === "true";
+    const storedAuthenticated = localStorage.getItem("walletAuthenticated") === "true";
     const storedAddress = localStorage.getItem("authenticatedAddress");
     const accessToken = Cookies.get("auth_token");
 
     if (isConnected && address) {
-      // Nếu không có accessToken hoặc address thay đổi, yêu cầu verify lại
       if (!accessToken || storedAddress !== address) {
-        updateState({
-          connectionState: "connected",
-          isAuthenticated: false,
-          pendingVerification: true,
-        });
+        updateState({ connectionState: "connected", isAuthenticated: false, pendingVerification: true });
         localStorage.removeItem("walletAuthenticated");
         localStorage.removeItem("authenticatedAddress");
         Cookies.remove("auth_token");
         Cookies.remove("refresh_token");
         dispatch(disconnectWalletRedux());
-      } else if (
-        storedAuthenticated &&
-        storedAddress === address &&
-        accessToken
-      ) {
-        updateState({
-          connectionState: "authenticated",
-          isAuthenticated: true,
-          pendingVerification: false,
-        });
+      } else if (storedAuthenticated && storedAddress === address && accessToken) {
+        updateState({ connectionState: "authenticated", isAuthenticated: true, pendingVerification: false });
       } else {
-        updateState({
-          connectionState: "connected",
-          isAuthenticated: false,
-          pendingVerification: true,
-        });
+        updateState({ connectionState: "connected", isAuthenticated: false, pendingVerification: true });
       }
     } else {
-      updateState({
-        connectionState: "disconnected",
-        isAuthenticated: false,
-        pendingVerification: false,
-      });
+      updateState({ connectionState: "disconnected", isAuthenticated: false, pendingVerification: false });
     }
   }, [isConnected, address, updateState, dispatch]);
 
+  // Kiểm tra chain không hỗ trợ
   useEffect(() => {
     if (isConnected && chainId && !getChainById(chainId)) {
-      toast.error("Unsupported network", {
-        description: "Please switch to a supported network.",
-      });
+      showErrorToast("Unsupported network", "Please switch to a supported network.");
       setPendingVerification(true);
     }
   }, [chainId, isConnected]);
 
+  // Hàm lấy nonce
   const getNonce = async (): Promise<string> => {
-    try {
-      const { data } = await client.query({ query: NonceDocument });
-      if (!data?.nonce) throw new Error("Failed to fetch nonce");
-      return data.nonce;
-    } catch (error) {
-      toast.error("Nonce fetch failed", {
-        description: error instanceof Error ? error.message : "Server error",
-      });
-      throw error;
-    }
+    const { data } = await client.query({ query: NonceDocument });
+    if (!data?.nonce) throw new Error("Failed to fetch nonce");
+    return data.nonce;
   };
 
-  const createMessage = ({
-    nonce,
-    address,
-    chainId,
-  }: {
-    nonce: string;
-    address: Address;
-    chainId: number;
-  }) =>
-    createSiweMessage({
-      domain: window.location.host,
-      address,
-      statement: "Sign in with Ethereum to the app.",
-      uri: window.location.origin,
-      version: "1",
-      chainId,
-      nonce,
-    });
+  // Hàm tạo SIWE message
+  const createMessage = useCallback(
+    ({ nonce, address, chainId }: { nonce: string; address: Address; chainId: number }) =>
+      createSiweMessage({
+        domain: window.location.host,
+        address,
+        statement: "Sign in with Ethereum to the app.",
+        uri: window.location.origin,
+        version: "1",
+        chainId,
+        nonce,
+      }),
+    []
+  );
 
+  // Hàm verify signature
   const verify = async ({
     message,
     signature,
@@ -258,212 +203,118 @@ export function useWallet() {
     message: string;
     signature: string;
   }): Promise<boolean> => {
-    try {
-      const { data } = await client.mutate({
-        mutation: VerifyDocument,
-        variables: { message, signature },
-      });
-      const { accessToken, refreshToken } = data.verify;
-      if (!accessToken || !refreshToken)
-        throw new Error("Invalid tokens received");
-      Cookies.set("auth_token", accessToken, {
-        expires: 1 / 24,
-        secure: true,
-        sameSite: "strict",
-      });
-      Cookies.set("refresh_token", refreshToken, {
-        expires: 7,
-        secure: true,
-        sameSite: "strict",
-      });
-      dispatch(connectWalletRedux({ token: accessToken }));
-      return true;
-    } catch (error) {
-      toast.error("Verification failed", {
-        description: error instanceof Error ? error.message : "Server error",
-      });
-      Cookies.remove("auth_token");
-      Cookies.remove("refresh_token");
-      dispatch(disconnectWalletRedux());
-      return false;
-    }
+    const { data } = await client.mutate({
+      mutation: VerifyDocument,
+      variables: { message, signature },
+    });
+    const { accessToken, refreshToken } = data.verify;
+    if (!accessToken || !refreshToken) throw new Error("Invalid tokens received");
+
+    Cookies.set("auth_token", accessToken, { expires: 1 / 24, secure: true, sameSite: "strict" });
+    Cookies.set("refresh_token", refreshToken, { expires: 7, secure: true, sameSite: "strict" });
+    dispatch(connectWalletRedux({ token: accessToken }));
+    return true;
   };
 
+  // Hàm xác thực SIWE
   const authenticateWithSiwe = useCallback(async (): Promise<boolean> => {
     if (!address || !chainId || authInProgressRef.current) return false;
     authInProgressRef.current = true;
     setIsAuthenticating(true);
     setAuthError(null);
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Authentication timeout")), 10000)
-    );
-
     try {
       const nonce = await getNonce();
       const message = createMessage({ nonce, address, chainId });
       const signature = await Promise.race([
         signMessageAsync({ message, account: address }),
-        timeoutPromise,
-      ]);
-      const isVerified = await verify({
-        message,
-        signature: signature as string,
-      });
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Authentication timeout")), 10000)),
+      ]) as string;
+      const isVerified = await verify({ message, signature });
+
       if (isVerified) {
-        updateState({
-          connectionState: "authenticated",
-          isAuthenticated: true,
-          pendingVerification: false,
-        });
+        updateState({ connectionState: "authenticated", isAuthenticated: true, pendingVerification: false });
         localStorage.setItem("walletAuthenticated", "true");
         localStorage.setItem("authenticatedAddress", address);
         toast.success("Wallet verified");
       } else {
         disconnect();
-        toast.error("Verification failed, disconnected", {
-          description: "Please reconnect and verify again.",
-        });
+        showErrorToast("Verification failed, disconnected", "Please reconnect and verify again.");
       }
       return isVerified;
     } catch (error) {
-      const errMsg =
-        error instanceof Error ? error.message : "Authentication failed";
+      const errMsg = error instanceof Error ? error.message : "Authentication failed";
       setAuthError(errMsg);
       if (errMsg.includes("rejected")) {
         setSignatureRejected(true);
-        updateState({
-          connectionState: "connected",
-          pendingVerification: true,
-        });
-        toast.error("Signature rejected", {
-          description: "Please sign to verify your wallet.",
-        });
+        updateState({ connectionState: "connected", pendingVerification: true });
+        showErrorToast("Signature rejected", "Please sign to verify your wallet.");
       } else {
         disconnect();
-        updateState({
-          connectionState: "disconnected",
-          isAuthenticated: false,
-          pendingVerification: false,
-        });
-        toast.error("Authentication failed, disconnected", {
-          description: "Please reconnect and verify again.",
-        });
+        updateState({ connectionState: "disconnected", isAuthenticated: false, pendingVerification: false });
+        showErrorToast("Authentication failed, disconnected", "Please reconnect and verify again.");
       }
       return false;
     } finally {
       setIsAuthenticating(false);
       authInProgressRef.current = false;
     }
-  }, [address, chainId, signMessageAsync, updateState, disconnect]);
+  }, [address, chainId, signMessageAsync, updateState, disconnect, createMessage]);
 
+  // Hàm sign out
   const signOut = useCallback(async () => {
-    try {
-      await client.mutate({ mutation: LogoutDocument });
-      Cookies.remove("auth_token");
-      Cookies.remove("refresh_token");
-      dispatch(disconnectWalletRedux());
-      localStorage.clear();
-      updateState({
-        connectionState: "disconnected",
-        isAuthenticated: false,
-        pendingVerification: false,
-      });
-    } catch (error) {
-      toast.error("Sign out failed", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+    await client.mutate({ mutation: LogoutDocument });
+    Cookies.remove("auth_token");
+    Cookies.remove("refresh_token");
+    dispatch(disconnectWalletRedux());
+    localStorage.clear();
+    updateState({ connectionState: "disconnected", isAuthenticated: false, pendingVerification: false });
   }, [dispatch, updateState]);
 
+  // Hàm kết nối ví
   const connectWallet = useCallback(
     async (walletId: string): Promise<boolean> => {
-      try {
-        setConnectionState("connecting");
-        const connector =
-          connectors.find((c) => c.id === walletId) ||
-          connectors.find((c) => c.id === "metaMaskSDK");
-        if (!connector) {
-          if (walletId === "metaMask" && !window.ethereum) {
-            toast.error("MetaMask not detected", {
-              description: "Please install MetaMask extension.",
-            });
-            throw new Error("MetaMask not detected");
-          }
-          toast.error("Wallet not supported", {
-            description: `${walletId} is not available.`,
-          });
-          throw new Error("Wallet not supported");
+      setConnectionState("connecting");
+      const connector = connectors.find((c) => c.id === walletId) || connectors.find((c) => c.id === "metaMaskSDK");
+      if (!connector) {
+        if (walletId === "metaMask" && !window.ethereum) {
+          showErrorToast("MetaMask not detected", "Please install MetaMask extension.");
+        } else {
+          showErrorToast("Wallet not supported", `${walletId} is not available.`);
         }
-
-        await connect({ connector });
-        if (isConnected) {
-          updateState({
-            connectionState: "connected",
-            isAuthenticated: false, // Buộc verify lại mỗi khi connect
-            pendingVerification: true,
-          });
-          toast.success("Wallet connected", {
-            description: "Please verify your wallet.",
-          });
-          const verified = await authenticateWithSiwe();
-          if (!verified) {
-            disconnect();
-            updateState({
-              connectionState: "disconnected",
-              isAuthenticated: false,
-              pendingVerification: false,
-            });
-            toast.error("Verification required", {
-              description: "Disconnected due to verification failure.",
-            });
-            return false;
-          }
-          return true;
-        }
-        return false;
-      } catch (error) {
-        const errMsg =
-          error instanceof Error ? error.message : "Connection failed";
-        toast.error("Connection failed", { description: errMsg });
-        updateState({ connectionState: "disconnected" });
+        setConnectionState("disconnected");
         return false;
       }
+
+      await connect({ connector });
+      if (isConnected) {
+        updateState({ connectionState: "connected", isAuthenticated: false, pendingVerification: true });
+        toast.success("Wallet connected", { description: "Please verify your wallet." });
+        const verified = await authenticateWithSiwe();
+        if (!verified) {
+          disconnect();
+          updateState({ connectionState: "disconnected", isAuthenticated: false, pendingVerification: false });
+          showErrorToast("Verification required", "Disconnected due to verification failure.");
+          return false;
+        }
+        return true;
+      }
+      return false;
     },
-    [
-      connect,
-      connectors,
-      isConnected,
-      updateState,
-      authenticateWithSiwe,
-      disconnect,
-    ]
+    [connect, connectors, isConnected, updateState, authenticateWithSiwe, disconnect]
   );
 
+  // Hàm ngắt kết nối
   const disconnectWallet = useCallback(async () => {
-    try {
-      await signOut();
-      disconnect();
-      updateState({
-        connectionState: "disconnected",
-        isAuthenticated: false,
-        pendingVerification: false,
-      });
-    } catch (error) {
-      toast.error("Disconnect failed", {
-        description: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
+    await signOut();
+    disconnect();
+    updateState({ connectionState: "disconnected", isAuthenticated: false, pendingVerification: false });
   }, [disconnect, signOut, updateState]);
 
+  // Hàm chuyển chain
   const switchNetwork = useCallback(
     async (targetChainId: number): Promise<boolean> => {
-      if (
-        !isConnected ||
-        chainId === targetChainId ||
-        chainSwitchInProgressRef.current
-      )
-        return false;
+      if (!isConnected || chainId === targetChainId || chainSwitchInProgressRef.current) return false;
       chainSwitchInProgressRef.current = true;
       setIsSwitchingChain(true);
 
@@ -474,33 +325,19 @@ export function useWallet() {
           method: "wallet_switchEthereumChain",
           params: [{ chainId: chainIdHex }],
         });
-        updateState({
-          connectionState: "connected",
-          isAuthenticated: false, // Buộc verify lại sau khi switch
-          pendingVerification: true,
-        });
+        updateState({ connectionState: "connected", isAuthenticated: false, pendingVerification: true });
         refetchBalance();
         toast.success("Network switched", {
-          description: `Switched to ${getChainName(
-            targetChainId
-          )}. Please verify again.`,
+          description: `Switched to ${getChainName(targetChainId)}. Please verify again.`,
         });
-        const verified = await authenticateWithSiwe();
-        return verified;
+        return await authenticateWithSiwe();
       } catch (error) {
-        toast.error("Network switch failed", {
-          description: error instanceof Error ? error.message : "Unknown error",
-        });
+        showErrorToast("Network switch failed", error instanceof Error ? error.message : "Unknown error");
         try {
           await switchChain({ chainId: targetChainId });
-          updateState({
-            connectionState: "connected",
-            isAuthenticated: false,
-            pendingVerification: true,
-          });
+          updateState({ connectionState: "connected", isAuthenticated: false, pendingVerification: true });
           refetchBalance();
-          const verified = await authenticateWithSiwe();
-          return verified;
+          return await authenticateWithSiwe();
         } catch {
           return false;
         }
@@ -509,61 +346,61 @@ export function useWallet() {
         chainSwitchInProgressRef.current = false;
       }
     },
-    [
-      isConnected,
-      chainId,
-      switchChain,
-      refetchBalance,
-      updateState,
-      authenticateWithSiwe,
-    ]
+    [isConnected, chainId, switchChain, refetchBalance, updateState, authenticateWithSiwe]
   );
 
-  const formattedBalance = balanceData
-    ? Number.parseFloat(balanceData.formatted).toFixed(4)
-    : null;
-  const getFallbackBalance = () => {
-    if (isBalanceError && address && chainId) {
-      const stored = localStorage.getItem(
-        `walletBalance_${address}_${chainId}`
-      );
-      if (stored) {
-        const { value, decimals } = JSON.parse(stored);
-        return Number(value) / 10 ** decimals.toFixed(4);
-      }
-    }
-    return null;
-  };
-
-  return {
-    address,
-    isConnected,
-    chainId,
-    currentChain: getChainById(chainId),
-    walletBalance: isBalanceLoading
-      ? cachedBalance || getFallbackBalance()
-      : balanceData
-      ? formattedBalance
-      : getFallbackBalance(),
-    walletBalanceSymbol: isBalanceLoading ? cachedSymbol : balanceData?.symbol,
-    isAuthenticated,
-    authError,
-    connectionState,
-    isAuthenticating,
-    isConnectPending,
-    isSwitchingChain,
-    pendingVerification,
-    setPendingVerification,
-    signatureRejected,
-    connectWallet,
-    disconnectWallet,
-    switchNetwork,
-    authenticateWithSiwe,
-    isBalanceLoading,
-    isSignPending,
-    connectError,
-    switchError,
-    signError,
-    supportedChains,
-  };
+  // Memoized return object
+  return useMemo(
+    () => ({
+      address,
+      isConnected,
+      chainId,
+      currentChain: getChainById(chainId),
+      walletBalance: isBalanceLoading ? cachedBalance.formatted : balance?.formatted,
+      walletBalanceSymbol: isBalanceLoading ? cachedBalance.symbol : balance?.symbol,
+      isAuthenticated,
+      authError,
+      connectionState,
+      isAuthenticating,
+      isConnectPending,
+      isSwitchingChain,
+      pendingVerification,
+      setPendingVerification,
+      signatureRejected,
+      connectWallet,
+      disconnectWallet,
+      switchNetwork,
+      authenticateWithSiwe,
+      isBalanceLoading,
+      isSignPending,
+      connectError,
+      switchError,
+      signError,
+      supportedChains,
+    }),
+    [
+      address,
+      isConnected,
+      chainId,
+      balance,
+      cachedBalance,
+      isAuthenticated,
+      authError,
+      connectionState,
+      isAuthenticating,
+      isConnectPending,
+      isSwitchingChain,
+      pendingVerification,
+      signatureRejected,
+      connectWallet,
+      disconnectWallet,
+      switchNetwork,
+      authenticateWithSiwe,
+      isBalanceLoading,
+      isSignPending,
+      connectError,
+      switchError,
+      signError,
+    ]
+  );
 }
