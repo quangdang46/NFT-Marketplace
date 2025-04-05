@@ -84,8 +84,8 @@ export function useWallet() {
         }
         return undefined;
       },
-      retry: 3, // Thử lại 3 lần nếu RPC lỗi
-      retryDelay: 1000, // Chờ 1 giây giữa các lần thử
+      retry: 3,
+      retryDelay: 1000,
     },
   });
   const {
@@ -106,6 +106,7 @@ export function useWallet() {
   const chainSwitchInProgressRef = useRef(false);
   const [cachedBalance, setCachedBalance] = useState<string | null>(null);
   const [cachedSymbol, setCachedSymbol] = useState<string | null>(null);
+
   const updateState = useCallback(
     (
       newState: Partial<{
@@ -123,7 +124,7 @@ export function useWallet() {
     },
     []
   );
-  // Debug và cập nhật cache
+
   useEffect(() => {
     if (balanceData && address && chainId) {
       const formattedBalance = Number.parseFloat(balanceData.formatted).toFixed(
@@ -156,52 +157,59 @@ export function useWallet() {
     balanceError,
   ]);
 
-  // Xóa cache khi ngắt kết nối
   useEffect(() => {
     if (!isConnected) {
       setCachedBalance(null);
       setCachedSymbol(null);
     }
   }, [isConnected]);
-  // Kiểm tra trạng thái ban đầu từ localStorage
+
+  // Kiểm tra trạng thái ban đầu và buộc verify nếu không có token
   useEffect(() => {
-    const wasAuthenticated =
+    const storedAuthenticated =
       localStorage.getItem("walletAuthenticated") === "true";
     const storedAddress = localStorage.getItem("authenticatedAddress");
-    if (
-      wasAuthenticated &&
-      storedAddress &&
-      isConnected &&
-      address === storedAddress
-    ) {
-      setIsAuthenticated(true);
-      setConnectionState("authenticated");
-      setPendingVerification(false);
-    }
-  }, [isConnected, address]);
+    const accessToken = Cookies.get("auth_token");
 
-  // Đồng bộ trạng thái kết nối
-  useEffect(() => {
     if (isConnected && address) {
-      if (
-        connectionState === "disconnected" ||
-        connectionState === "connecting"
-      ) {
+      // Nếu không có accessToken hoặc address thay đổi, yêu cầu verify lại
+      if (!accessToken || storedAddress !== address) {
         updateState({
           connectionState: "connected",
-          pendingVerification: !isAuthenticated,
+          isAuthenticated: false,
+          pendingVerification: true,
+        });
+        localStorage.removeItem("walletAuthenticated");
+        localStorage.removeItem("authenticatedAddress");
+        Cookies.remove("auth_token");
+        Cookies.remove("refresh_token");
+        dispatch(disconnectWalletRedux());
+      } else if (
+        storedAuthenticated &&
+        storedAddress === address &&
+        accessToken
+      ) {
+        updateState({
+          connectionState: "authenticated",
+          isAuthenticated: true,
+          pendingVerification: false,
+        });
+      } else {
+        updateState({
+          connectionState: "connected",
+          isAuthenticated: false,
+          pendingVerification: true,
         });
       }
-    } else if (!isConnected && connectionState !== "disconnected") {
+    } else {
       updateState({
         connectionState: "disconnected",
-        pendingVerification: false,
         isAuthenticated: false,
+        pendingVerification: false,
       });
     }
-  }, [isConnected, address, connectionState, isAuthenticated, updateState]);
+  }, [isConnected, address, updateState, dispatch]);
 
-  // Kiểm tra mạng không được hỗ trợ
   useEffect(() => {
     if (isConnected && chainId && !getChainById(chainId)) {
       toast.error("Unsupported network", {
@@ -211,7 +219,6 @@ export function useWallet() {
     }
   }, [chainId, isConnected]);
 
-  // Hàm xử lý SIWE
   const getNonce = async (): Promise<string> => {
     try {
       const { data } = await client.query({ query: NonceDocument });
@@ -312,6 +319,11 @@ export function useWallet() {
         localStorage.setItem("walletAuthenticated", "true");
         localStorage.setItem("authenticatedAddress", address);
         toast.success("Wallet verified");
+      } else {
+        disconnect();
+        toast.error("Verification failed, disconnected", {
+          description: "Please reconnect and verify again.",
+        });
       }
       return isVerified;
     } catch (error) {
@@ -327,31 +339,23 @@ export function useWallet() {
         toast.error("Signature rejected", {
           description: "Please sign to verify your wallet.",
         });
-      } else if (errMsg.includes("insufficient funds")) {
-        updateState({
-          connectionState: "connected",
-          pendingVerification: true,
-        });
-        toast.error("Insufficient funds", {
-          description: "You need ETH to sign the message.",
-        });
-      } else if (errMsg.includes("timeout")) {
-        updateState({
-          connectionState: "connected",
-          pendingVerification: true,
-        });
-        toast.error("Authentication timeout", {
-          description: "Please try again.",
-        });
       } else {
-        updateState({ connectionState: "authentication_failed" });
+        disconnect();
+        updateState({
+          connectionState: "disconnected",
+          isAuthenticated: false,
+          pendingVerification: false,
+        });
+        toast.error("Authentication failed, disconnected", {
+          description: "Please reconnect and verify again.",
+        });
       }
       return false;
     } finally {
       setIsAuthenticating(false);
       authInProgressRef.current = false;
     }
-  }, [address, chainId, signMessageAsync, updateState]);
+  }, [address, chainId, signMessageAsync, updateState, disconnect]);
 
   const signOut = useCallback(async () => {
     try {
@@ -376,60 +380,64 @@ export function useWallet() {
     async (walletId: string): Promise<boolean> => {
       try {
         setConnectionState("connecting");
-
-        // Debug connectors
-        console.log(
-          "Available connectors:",
-          connectors.map((c) => ({ id: c.id, name: c.name }))
-        );
-        let connector = connectors.find((c) => c.id === walletId);
-
-        // Xử lý trường hợp connector không khớp với walletId
+        const connector =
+          connectors.find((c) => c.id === walletId) ||
+          connectors.find((c) => c.id === "metaMaskSDK");
         if (!connector) {
-          // Nếu dùng metaMaskSDK nhưng walletId là "metaMask"
-          connector = connectors.find((c) => c.id === "metaMaskSDK");
-          if (!connector) {
-            if (walletId === "metaMask" && !window.ethereum) {
-              toast.error("MetaMask not detected", {
-                description: "Please install MetaMask extension.",
-              });
-              throw new Error("MetaMask not detected");
-            }
-            toast.error("Wallet not supported", {
-              description: `${walletId} is not available.`,
+          if (walletId === "metaMask" && !window.ethereum) {
+            toast.error("MetaMask not detected", {
+              description: "Please install MetaMask extension.",
             });
-            throw new Error("Wallet not supported");
+            throw new Error("MetaMask not detected");
           }
+          toast.error("Wallet not supported", {
+            description: `${walletId} is not available.`,
+          });
+          throw new Error("Wallet not supported");
         }
 
-        // Thử kết nối, sẽ tự động yêu cầu mở khóa nếu MetaMask bị khóa
         await connect({ connector });
         if (isConnected) {
           updateState({
             connectionState: "connected",
+            isAuthenticated: false, // Buộc verify lại mỗi khi connect
             pendingVerification: true,
           });
           toast.success("Wallet connected", {
-            description: "MetaMask connected successfully.",
+            description: "Please verify your wallet.",
           });
+          const verified = await authenticateWithSiwe();
+          if (!verified) {
+            disconnect();
+            updateState({
+              connectionState: "disconnected",
+              isAuthenticated: false,
+              pendingVerification: false,
+            });
+            toast.error("Verification required", {
+              description: "Disconnected due to verification failure.",
+            });
+            return false;
+          }
           return true;
         }
         return false;
       } catch (error) {
         const errMsg =
           error instanceof Error ? error.message : "Connection failed";
-        if (errMsg.includes("rejected")) {
-          toast.error("Connection rejected", {
-            description: "You rejected the connection request in MetaMask.",
-          });
-        } else {
-          toast.error("Connection failed", { description: errMsg });
-        }
+        toast.error("Connection failed", { description: errMsg });
         updateState({ connectionState: "disconnected" });
         return false;
       }
     },
-    [connect, connectors, isConnected, updateState]
+    [
+      connect,
+      connectors,
+      isConnected,
+      updateState,
+      authenticateWithSiwe,
+      disconnect,
+    ]
   );
 
   const disconnectWallet = useCallback(async () => {
@@ -468,14 +476,17 @@ export function useWallet() {
         });
         updateState({
           connectionState: "connected",
-          isAuthenticated: false,
+          isAuthenticated: false, // Buộc verify lại sau khi switch
           pendingVerification: true,
         });
         refetchBalance();
         toast.success("Network switched", {
-          description: `Switched to ${getChainName(targetChainId)}`,
+          description: `Switched to ${getChainName(
+            targetChainId
+          )}. Please verify again.`,
         });
-        return true;
+        const verified = await authenticateWithSiwe();
+        return verified;
       } catch (error) {
         toast.error("Network switch failed", {
           description: error instanceof Error ? error.message : "Unknown error",
@@ -488,7 +499,8 @@ export function useWallet() {
             pendingVerification: true,
           });
           refetchBalance();
-          return true;
+          const verified = await authenticateWithSiwe();
+          return verified;
         } catch {
           return false;
         }
@@ -497,7 +509,14 @@ export function useWallet() {
         chainSwitchInProgressRef.current = false;
       }
     },
-    [isConnected, chainId, switchChain, refetchBalance, updateState]
+    [
+      isConnected,
+      chainId,
+      switchChain,
+      refetchBalance,
+      updateState,
+      authenticateWithSiwe,
+    ]
   );
 
   const formattedBalance = balanceData
@@ -515,6 +534,7 @@ export function useWallet() {
     }
     return null;
   };
+
   return {
     address,
     isConnected,
