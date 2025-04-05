@@ -1,5 +1,15 @@
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAccount, useConnect, useDisconnect, useSignMessage } from "wagmi";
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useSignMessage,
+  useBalance,
+  useSwitchChain,
+  useChainId,
+} from "wagmi";
 import { createSiweMessage } from "viem/siwe";
 import Cookies from "js-cookie";
 import { toast } from "sonner";
@@ -11,6 +21,7 @@ import {
   connectWalletRedux,
   disconnectWalletRedux,
 } from "@/store/slices/authSlice";
+import { supportedChains, getChainById } from "@/lib/blockchain/walletConfig";
 
 type WalletState =
   | "disconnected"
@@ -22,10 +33,19 @@ type WalletState =
 export function useWallet() {
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
-  const { address, isConnected, chainId } = useAccount();
+  const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
+  const chainId = useChainId();
+  const { switchChain, isPending: isSwitchingChain } = useSwitchChain();
+  const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
+    address,
+    chainId,
+    query: {
+      enabled: !!address && !!chainId,
+    },
+  });
 
   const [walletState, setWalletState] = useState<WalletState>("disconnected");
 
@@ -48,7 +68,7 @@ export function useWallet() {
     mutationFn: async (walletId: string) => {
       const connector =
         connectors.find((c) => c.id === walletId) ||
-        connectors.find((c) => c.id === "metaMaskSDK");
+        connectors.find((c) => c.id === "metaMask");
       if (!connector) throw new Error("Wallet not supported");
       await connect({ connector });
       if (!address || !chainId)
@@ -133,6 +153,17 @@ export function useWallet() {
     queryClient.setQueryData(["walletState"], "disconnected");
   };
 
+  // Hàm switchNetwork trả về Promise<boolean> để xử lý kết quả
+  const switchNetwork = async (chainId: number): Promise<boolean> => {
+    try {
+      await switchChain({ chainId });
+      return true; // Thành công
+    } catch (error) {
+      console.error("Switch chain failed:", error);
+      return false; // Thất bại
+    }
+  };
+
   const isAuthenticated =
     walletState === "authenticated" && !!Cookies.get("auth_token");
 
@@ -140,6 +171,8 @@ export function useWallet() {
     walletState,
     isAuthenticated,
     isConnected,
+    chainId,
+    balance: balanceData?.formatted,
   });
 
   return {
@@ -152,5 +185,12 @@ export function useWallet() {
     isAuthenticated,
     connectWallet,
     disconnectWallet,
+    walletBalance: balanceData?.formatted,
+    walletBalanceSymbol: balanceData?.symbol,
+    isBalanceLoading,
+    currentChain: getChainById(chainId),
+    supportedChains,
+    switchNetwork, // Trả về hàm async thay vì biểu thức điều kiện
+    isSwitchingChain,
   };
 }
