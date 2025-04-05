@@ -5,7 +5,7 @@ import Cookies from "js-cookie";
 import { toast } from "sonner";
 import client from "@/lib/api/apolloClient";
 import { NonceDocument, VerifyDocument } from "@/lib/api/graphql/generated";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import {
   connectWalletRedux,
@@ -28,6 +28,22 @@ export function useWallet() {
   const { signMessageAsync } = useSignMessage();
 
   const [walletState, setWalletState] = useState<WalletState>("disconnected");
+
+  // Đồng bộ walletState với isConnected và token
+  useEffect(() => {
+    const hasToken = !!Cookies.get("auth_token");
+    if (isConnected && hasToken && walletState !== "authenticated") {
+      setWalletState("authenticated");
+    } else if (
+      !isConnected &&
+      !hasToken &&
+      walletState !== "connecting" &&
+      walletState !== "signing"
+    ) {
+      setWalletState("disconnected");
+    }
+  }, [isConnected, walletState]);
+
   const connectMutation = useMutation({
     mutationFn: async (walletId: string) => {
       const connector =
@@ -35,7 +51,6 @@ export function useWallet() {
         connectors.find((c) => c.id === "metaMaskSDK");
       if (!connector) throw new Error("Wallet not supported");
       await connect({ connector });
-      await new Promise((resolve) => setTimeout(resolve, 100));
       if (!address || !chainId)
         throw new Error("Connection failed: No address or chainId");
       return { address, chainId };
@@ -96,7 +111,7 @@ export function useWallet() {
     },
     onMutate: () => setWalletState("signing"),
     onSuccess: () => {
-      console.log("verifyMutation: Success, setting authenticated"); // Debug log
+      console.log("verifyMutation: Success, setting authenticated");
       setWalletState("authenticated");
       toast.success("Wallet verified");
       queryClient.setQueryData(["walletState"], "authenticated");
@@ -118,10 +133,15 @@ export function useWallet() {
     queryClient.setQueryData(["walletState"], "disconnected");
   };
 
+  const isAuthenticated =
+    walletState === "authenticated" && !!Cookies.get("auth_token");
+
   console.log("useWallet: Current state", {
     walletState,
-    isAuthenticated: walletState === "authenticated",
-  }); // Debug log
+    isAuthenticated,
+    isConnected,
+  });
+
   return {
     address,
     chainId,
@@ -129,7 +149,7 @@ export function useWallet() {
     walletState,
     isConnecting: connectMutation.isPending,
     isSigning: verifyMutation.isPending,
-    isAuthenticated: walletState === "authenticated",
+    isAuthenticated,
     connectWallet,
     disconnectWallet,
   };

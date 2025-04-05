@@ -29,12 +29,17 @@ export function ConnectButton({
     useWallet();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Đồng bộ button text với trạng thái ví
   const getButtonText = useCallback(() => {
-    console.log("walletState", walletState);
+    console.log(
+      "walletState",
+      walletState,
+      "isAuthenticated",
+      isAuthenticated,
+      "isConnected",
+      isConnected
+    );
+    if (isAuthenticated) return "Connected"; // Ưu tiên isAuthenticated
     switch (walletState) {
-      case "authenticated":
-        return "Connected";
       case "connecting":
         return "Connecting...";
       case "signing":
@@ -44,9 +49,8 @@ export function ConnectButton({
       default:
         return isConnected ? "Verification Required" : label;
     }
-  }, [walletState, isConnected, label]);
+  }, [walletState, isConnected, isAuthenticated, label]);
 
-  // Sử dụng useEffect để cập nhật UI sau khi verify
   useEffect(() => {
     console.log("ConnectButton: State change", {
       isConnected,
