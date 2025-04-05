@@ -10,7 +10,7 @@ export default function Wrapper({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main content with padding to account for fixed header and footer */}
-      <main className="container mx-auto pt-16 md:pt-24 pb-24 px-4 flex-grow">
+      <main className="container mx-auto pt-35 md:pt-30 pb-24 px-4 flex-grow">
         {children}
       </main>
 
