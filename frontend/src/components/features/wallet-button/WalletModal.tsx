@@ -23,8 +23,9 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     connectionState,
     signatureRejected,
     address,
+    pendingVerification,
+    setPendingVerification, // Thêm từ useWallet
   } = useWallet();
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const { modalStep, setModalStep } = useWalletModalLogic({
     isOpen,
     connectionState,
@@ -33,12 +34,17 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     isAuthenticating: false,
     authenticateWithSiwe,
     signatureRejected,
-    setPendingVerification: () => {},
+    setPendingVerification,
     onClose,
   });
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const [signatureRetryCount, setSignatureRetryCount] = useState(0); // Theo dõi số lần retry
 
   useEffect(() => {
-    if (!isOpen) setSelectedWallet(null);
+    if (!isOpen) {
+      setSelectedWallet(null);
+      setSignatureRetryCount(0);
+    }
   }, [isOpen]);
 
   const handleConnect = async (walletId: string) => {
@@ -47,7 +53,19 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
     await connectWallet(walletId);
   };
 
-  const handleManualSignature = () => authenticateWithSiwe();
+  const handleManualSignature = async () => {
+    setSignatureRetryCount((prev) => prev + 1);
+    const success = await authenticateWithSiwe();
+    if (success) {
+      setModalStep("success");
+      setPendingVerification(false);
+      setTimeout(onClose, 1000);
+    } else if (signatureRejected) {
+      setModalStep("signing");
+    } else {
+      setModalStep("failed");
+    }
+  };
 
   const handleBack = () => {
     if (["connecting", "signing", "failed"].includes(modalStep)) {
@@ -103,7 +121,7 @@ export function WalletModal({ isOpen, onClose }: WalletModalProps) {
             address={address}
             onManualSignature={handleManualSignature}
             onBack={handleBack}
-            signatureRetryCount={0}
+            signatureRetryCount={signatureRetryCount}
           />
         )}
       </DialogContent>

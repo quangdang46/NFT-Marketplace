@@ -21,7 +21,7 @@ export function useWalletModalLogic({
   isConnectPending,
   isAuthenticated,
   isAuthenticating,
-  authenticateWithSiwe,
+  authenticateWithSiwe, // Giữ để dùng thủ công nếu cần
   signatureRejected,
   setPendingVerification,
   onClose,
@@ -50,17 +50,8 @@ export function useWalletModalLogic({
         }, 10000);
         break;
       case "connected":
-        if (!isAuthenticated && !isAuthenticating) {
-          setModalStep("signing");
-          authenticateWithSiwe().then((success) => {
-            setModalStep(
-              success ? "success" : signatureRejected ? "signing" : "failed"
-            );
-            if (success) {
-              setPendingVerification(false);
-              setTimeout(onClose, 1000);
-            }
-          });
+        if (!isAuthenticated) {
+          setModalStep("signing"); // Chỉ hiển thị UI, không gọi authenticateWithSiwe
         }
         break;
       case "authenticated":
@@ -84,7 +75,6 @@ export function useWalletModalLogic({
     isConnectPending,
     isAuthenticated,
     isAuthenticating,
-    authenticateWithSiwe,
     signatureRejected,
     setPendingVerification,
     onClose,

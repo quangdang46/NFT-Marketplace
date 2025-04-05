@@ -97,6 +97,11 @@ const useWalletBalance = (address?: Address, chainId?: number) => {
   });
 
   useEffect(() => {
+    console.log("useWalletBalance: Checking balance update", {
+      address,
+      chainId,
+      data,
+    });
     if (data && address && chainId) {
       const formatted = Number.parseFloat(data.formatted).toFixed(4);
       setCachedBalance({ formatted, symbol: data.symbol });
@@ -160,6 +165,11 @@ export function useWallet() {
 
   // Kiểm tra trạng thái ban đầu
   useEffect(() => {
+    console.log("useEffect: Checking initial state", {
+      isConnected,
+      address,
+      chainId,
+    });
     const storedAuthenticated =
       localStorage.getItem("walletAuthenticated") === "true";
     const storedAddress = localStorage.getItem("authenticatedAddress");
@@ -167,6 +177,7 @@ export function useWallet() {
 
     if (isConnected && address && chainId) {
       if (!accessToken || storedAddress !== address) {
+        console.log("useEffect: Setting connected state, clearing auth");
         setState({ status: "connected", address, chainId });
         localStorage.removeItem("walletAuthenticated");
         localStorage.removeItem("authenticatedAddress");
@@ -179,6 +190,7 @@ export function useWallet() {
         storedAddress === address &&
         accessToken
       ) {
+        console.log("useEffect: Setting authenticated state");
         setState({
           status: "authenticated",
           address,
@@ -186,10 +198,12 @@ export function useWallet() {
           token: accessToken,
         });
       } else {
+        console.log("useEffect: Setting connected state, pending verification");
         setState({ status: "connected", address, chainId });
         setPendingVerification(true);
       }
     } else {
+      console.log("useEffect: Setting disconnected state");
       setState({ status: "disconnected" });
       setPendingVerification(false);
     }
@@ -197,6 +211,7 @@ export function useWallet() {
 
   // Kiểm tra chain không hỗ trợ
   useEffect(() => {
+    console.log("useEffect: Checking chain support", { chainId, isConnected });
     if (isConnected && chainId && !getChainById(chainId)) {
       handleError(new Error("Unsupported network"), "Unsupported network", {
         "Unsupported network": "Please switch to a supported network.",
@@ -207,6 +222,7 @@ export function useWallet() {
 
   // Hàm lấy nonce
   const getNonce = async (): Promise<string> => {
+    console.log("getNonce: Fetching nonce");
     const { data } = await client.query({ query: NonceDocument });
     if (!data?.nonce) throw new Error("Failed to fetch nonce");
     return data.nonce;
@@ -222,8 +238,13 @@ export function useWallet() {
       nonce: string;
       address: Address;
       chainId: number;
-    }) =>
-      createSiweMessage({
+    }) => {
+      console.log("createMessage: Creating SIWE message", {
+        nonce,
+        address,
+        chainId,
+      });
+      return createSiweMessage({
         domain: window.location.host,
         address,
         statement: "Sign in with Ethereum to the app.",
@@ -231,7 +252,8 @@ export function useWallet() {
         version: "1",
         chainId,
         nonce,
-      }),
+      });
+    },
     []
   );
 
@@ -243,6 +265,7 @@ export function useWallet() {
     message: string;
     signature: string;
   }): Promise<boolean> => {
+    console.log("verify: Verifying signature", { message, signature });
     const { data } = await client.mutate({
       mutation: VerifyDocument,
       variables: { message, signature },
@@ -267,13 +290,23 @@ export function useWallet() {
 
   // Hàm xác thực SIWE
   const authenticateWithSiwe = useCallback(async (): Promise<boolean> => {
-    if (!address || !chainId || authInProgressRef.current) return false;
+    console.log("authenticateWithSiwe: Starting authentication", {
+      address,
+      chainId,
+    });
+    if (!address || !chainId || authInProgressRef.current) {
+      console.log(
+        "authenticateWithSiwe: Aborted due to invalid state or in progress"
+      );
+      return false;
+    }
     authInProgressRef.current = true;
     setIsAuthenticating(true);
 
     try {
       const nonce = await getNonce();
       const message = createMessage({ nonce, address, chainId });
+      console.log("authenticateWithSiwe: Requesting signature");
       const signature = (await Promise.race([
         signMessageAsync({ message, account: address }),
         new Promise((_, reject) =>
@@ -283,6 +316,7 @@ export function useWallet() {
       const isVerified = await verify({ message, signature });
 
       if (isVerified) {
+        console.log("authenticateWithSiwe: Verification successful");
         setState({
           status: "authenticated",
           address,
@@ -294,6 +328,7 @@ export function useWallet() {
         localStorage.setItem("authenticatedAddress", address);
         toast.success("Wallet verified");
       } else {
+        console.log("authenticateWithSiwe: Verification failed");
         disconnect();
         setState({ status: "disconnected" });
         handleError(new Error("Verification failed"), "Verification failed", {
@@ -308,15 +343,18 @@ export function useWallet() {
         "Authentication timeout": "Signature request timed out.",
       });
       if (errMsg.includes("rejected")) {
+        console.log("authenticateWithSiwe: Signature rejected by user");
         setSignatureRejected(true);
         setState({ status: "connected", address, chainId });
         setPendingVerification(true);
       } else {
+        console.log("authenticateWithSiwe: Other error, disconnecting");
         disconnect();
         setState({ status: "disconnected" });
       }
       return false;
     } finally {
+      console.log("authenticateWithSiwe: Finished");
       setIsAuthenticating(false);
       authInProgressRef.current = false;
     }
@@ -324,6 +362,7 @@ export function useWallet() {
 
   // Hàm sign out
   const signOut = useCallback(async () => {
+    console.log("signOut: Signing out");
     await client.mutate({ mutation: LogoutDocument });
     Cookies.remove("auth_token");
     Cookies.remove("refresh_token");
@@ -333,62 +372,71 @@ export function useWallet() {
   }, [dispatch]);
 
   // Hàm kết nối ví
-  const connectWallet = useCallback(
-    async (walletId: string): Promise<boolean> => {
-      setState({ status: "connecting" });
-      const connector =
-        connectors.find((c) => c.id === walletId) ||
-        connectors.find((c) => c.id === "metaMaskSDK");
-      if (!connector) {
-        handleError(
-          new Error(`${walletId} not supported`),
-          "Wallet not supported",
-          {
-            "metaMask not supported":
-              "MetaMask not detected. Please install MetaMask extension.",
-          }
-        );
-        setState({ status: "disconnected" });
-        return false;
-      }
+const connectWallet = useCallback(
+  async (walletId: string): Promise<boolean> => {
+    console.log("connectWallet: Starting connection", { walletId });
+    setState({ status: "connecting" });
+    const connector =
+      connectors.find((c) => c.id === walletId) ||
+      connectors.find((c) => c.id === "metaMaskSDK");
+    if (!connector) {
+      console.log("connectWallet: Connector not found");
+      handleError(
+        new Error(`${walletId} not supported`),
+        "Wallet not supported",
+        {
+          "metaMask not supported":
+            "MetaMask not detected. Please install MetaMask extension.",
+        }
+      );
+      setState({ status: "disconnected" });
+      return false;
+    }
 
+    try {
       await connect({ connector });
       if (isConnected && address && chainId) {
+        console.log("connectWallet: Wallet connected", { address, chainId });
         setState({ status: "connected", address, chainId });
         toast.success("Wallet connected", {
           description: "Please verify your wallet.",
         });
         const verified = await authenticateWithSiwe();
         if (!verified) {
-          disconnect();
-          setState({ status: "disconnected" });
-          handleError(
-            new Error("Verification required"),
-            "Verification required",
-            {
-              "Verification required":
-                "Disconnected due to verification failure.",
-            }
-          );
+          console.log("connectWallet: Verification failed");
+          // Không disconnect ngay, để người dùng thử lại
+          setState({ status: "connected", address, chainId });
+          setPendingVerification(true);
+          setSignatureRejected(true); // Nếu thất bại do "Cancel"
           return false;
         }
+        console.log("connectWallet: Connection and verification successful");
         return true;
       }
+      console.log("connectWallet: Connection failed");
+      setState({ status: "disconnected" });
       return false;
-    },
-    [
-      connect,
-      connectors,
-      isConnected,
-      address,
-      chainId,
-      authenticateWithSiwe,
-      disconnect,
-    ]
-  );
+    } catch (error) {
+      console.log("connectWallet: Error during connection", error);
+      handleError(error, "Connection failed");
+      setState({ status: "disconnected" });
+      return false;
+    }
+  },
+  [
+    connect,
+    connectors,
+    isConnected,
+    address,
+    chainId,
+    authenticateWithSiwe,
+    disconnect,
+  ]
+);
 
   // Hàm ngắt kết nối
   const disconnectWallet = useCallback(async () => {
+    console.log("disconnectWallet: Disconnecting");
     await signOut();
     disconnect();
     setState({ status: "disconnected" });
@@ -398,12 +446,17 @@ export function useWallet() {
   // Hàm chuyển chain
   const switchNetwork = useCallback(
     async (targetChainId: number): Promise<boolean> => {
+      console.log("switchNetwork: Starting chain switch", { targetChainId });
       if (
         !isConnected ||
         chainId === targetChainId ||
         chainSwitchInProgressRef.current
-      )
+      ) {
+        console.log(
+          "switchNetwork: Aborted due to invalid state or in progress"
+        );
         return false;
+      }
       chainSwitchInProgressRef.current = true;
       setState({ status: "switching_chain", targetChainId });
 
@@ -414,6 +467,7 @@ export function useWallet() {
           method: "wallet_switchEthereumChain",
           params: [{ chainId: chainIdHex }],
         });
+        console.log("switchNetwork: Chain switched via provider");
         setState({
           status: "connected",
           address: address!,
@@ -430,6 +484,7 @@ export function useWallet() {
       } catch (error) {
         handleError(error, "Network switch failed");
         try {
+          console.log("switchNetwork: Falling back to switchChain");
           await switchChain({ chainId: targetChainId });
           setState({
             status: "connected",
@@ -440,10 +495,12 @@ export function useWallet() {
           refetchBalance();
           return await authenticateWithSiwe();
         } catch (innerError) {
+          console.log("switchNetwork: Fallback failed");
           handleError(innerError, "Network switch failed via fallback");
           return false;
         }
       } finally {
+        console.log("switchNetwork: Finished");
         chainSwitchInProgressRef.current = false;
       }
     },
