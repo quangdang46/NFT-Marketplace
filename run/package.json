@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "concurrently -n GATEWAY,AUTH,COLLECTION,USER,FILE,FRONTEND -c magenta,cyan,yellow,green,blue,red \"npm run dev:gateway\" \"npm run dev:auth\" \"npm run dev:collection\" \"npm run dev:user\" \"npm run dev:file\" \"npm run dev:frontend\"",
+    "dev:gateway": "cd ../microservice/project-root/api-gateway && npm run start:dev",
+    "dev:auth": "cd ../microservice/project-root/services/auth-service && npm run start:dev",
+    "dev:collection": "cd ../microservice/project-root/services/collection-service && npm run start:dev",
+    "dev:user": "cd ../microservice/project-root/services/user-service && npm run start:dev",
+    "dev:file": "cd ../microservice/project-root/services/file-service && npm run start:dev",
+    "dev:frontend": "cd ../frontend && npm run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

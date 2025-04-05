@@ -1,3 +1,7 @@
+"use client";
+
+import type React from "react";
+
 import { ChevronDown } from "lucide-react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -17,7 +21,6 @@ export interface NavLinkProps {
   dropdownItems?: { label: string; href: string }[];
 }
 
-
 export const NavLink = ({
   href,
   children,
@@ -26,32 +29,31 @@ export const NavLink = ({
   dropdownItems = [],
 }: NavLinkProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null); // Thêm ref để quản lý timeout
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleOpen = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current); // Xóa timeout cũ
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsOpen(true);
   };
 
   const handleClose = () => {
     timeoutRef.current = setTimeout(() => {
       setIsOpen(false);
-    }, 150); // Đóng sau 200ms
+    }, 150);
   };
 
   if (hasDropdown) {
     return (
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <div
-            onPointerEnter={handleOpen} // Mở ngay lập tức
-            onPointerLeave={handleClose} // Đóng sau delay
-          >
+          <div onPointerEnter={handleOpen} onPointerLeave={handleClose}>
             <Link
               href={href}
               className={cn(
-                "px-4 py-2 text-white/70 hover:text-white transition-colors flex items-center gap-1",
-                active && "text-white font-medium"
+                "px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-1",
+                "dark:text-white/70 dark:hover:text-white",
+                active &&
+                  "text-gray-900 font-medium dark:text-white dark:font-medium"
               )}
             >
               {children}
@@ -61,14 +63,14 @@ export const NavLink = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="bg-[#1A1F2C]/95 border-white/10 text-white w-48 dropdown-slide-down z-[100]"
-          onPointerEnter={handleOpen} // Giữ mở khi hover vào content
-          onPointerLeave={handleClose} // Đóng sau delay khi rời content
+          className="bg-white border border-gray-200 text-gray-900 w-48 dropdown-slide-down z-[100] dark:bg-[#1A1F2C] dark:border-white/10 dark:text-white"
+          onPointerEnter={handleOpen}
+          onPointerLeave={handleClose}
         >
           {dropdownItems.map((item) => (
             <DropdownMenuItem
               key={item.label}
-              className="hover:bg-white/5 focus:bg-white/5"
+              className="hover:bg-gray-50 focus:bg-gray-50 dark:hover:bg-white/5 dark:focus:bg-white/5"
             >
               <Link href={item.href} className="w-full py-1">
                 {item.label}
@@ -84,8 +86,9 @@ export const NavLink = ({
     <Link
       href={href}
       className={cn(
-        "px-4 py-2 text-white/70 hover:text-white transition-colors",
-        active && "text-white font-medium"
+        "px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors",
+        "dark:text-white/70 dark:hover:text-white",
+        active && "text-gray-900 font-medium dark:text-white dark:font-medium"
       )}
     >
       {children}

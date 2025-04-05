@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { HomeBanner } from "./HomeBanner";
 import { mockChains } from "@/lib/constant/chains";
 import { useHomeData } from "@/hooks/useHomeData";
+import CarouselNFT from "@/components/features/home/CarouselNFT/CarouselNFT";
 export function HomeContent() {
   const searchParams = useSearchParams();
   const [selectedChain, setSelectedChain] = useState<string | null>(null);
@@ -35,7 +36,8 @@ export function HomeContent() {
         ))}
       </ul>
       <HomeBanner stats={stats} chain={selectedChain} />
-      {/* <CarouselNFT ></CarouselNFT>
+      <CarouselNFT></CarouselNFT>
+      {/* 
       <NFTCollections />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-8">
         <h2 className="text-2xl font-bold">Hot Collections</h2>
