@@ -18,7 +18,6 @@ import {
   ChevronDown,
   RefreshCw,
   Shield,
-  KeyRound,
   Loader2,
   Check,
 } from "lucide-react";
@@ -29,18 +28,17 @@ import { toast } from "sonner";
 export function WalletInfo() {
   const {
     address,
+    isConnected,
+    isAuthenticated,
+    disconnectWallet,
+    isConnecting,
+    isSigning,
     walletBalance,
     walletBalanceSymbol,
-    disconnectWallet,
-    chainId,
-    currentChain,
-    isAuthenticated,
     isBalanceLoading,
-    authenticateWithSiwe,
-    connectionState,
+    currentChain,
     isSwitchingChain,
   } = useWallet();
-  const [isVerifying, setIsVerifying] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [showCopiedToast, setShowCopiedToast] = useState(false);
@@ -80,30 +78,6 @@ export function WalletInfo() {
     }
   };
 
-  const handleVerify = async () => {
-    if (!address) return;
-    setIsVerifying(true);
-    setIsOpen(false); // Đóng dropdown trước khi ký
-    try {
-      const success = await authenticateWithSiwe();
-      if (success) {
-        toast("Wallet verified", {
-          description: "Your wallet has been successfully verified",
-        });
-      } else {
-        toast("Verification failed", {
-          description: "Failed to verify your wallet",
-        });
-      }
-    } catch (error) {
-      toast("Verification error", {
-        description: "An error occurred during verification",
-      });
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
   const handleDisconnect = async () => {
     setIsDisconnecting(true);
     try {
@@ -120,16 +94,16 @@ export function WalletInfo() {
   };
 
   const isLoading =
-    isBalanceLoading ||
-    isSwitchingChain ||
-    connectionState === "switching_chain";
+    isBalanceLoading || isConnecting || isSigning || isSwitchingChain;
+
+  if (!isConnected || !isAuthenticated) return null;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className={`flex items-center gap-2 bg-foreground border-gray-200  hover:bg-gray-50 rounded-xl px-4 h-10 shadow-sm transition-colors ${
+          className={`flex items-center gap-2 bg-foreground border-gray-200 hover:bg-gray-50 rounded-xl px-4 h-10 shadow-sm transition-colors ${
             isLoading ? "opacity-80" : ""
           }`}
           disabled={isLoading}
@@ -159,24 +133,11 @@ export function WalletInfo() {
               <span className="text-xs text-gray-500 mt-1 font-normal">
                 {shortenAddress(address)}
               </span>
-              {isAuthenticated ? (
+              {isAuthenticated && (
                 <div className="flex items-center text-green-600 text-xs">
                   <Shield className="h-3 w-3 mr-1" />
                   Verified
                 </div>
-              ) : (
-                <button
-                  onClick={handleVerify}
-                  className="flex items-center text-blue-600 text-xs hover:text-blue-800 transition-colors"
-                  disabled={isVerifying}
-                >
-                  {isVerifying ? (
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  ) : (
-                    <KeyRound className="h-3 w-3 mr-1" />
-                  )}
-                  Verify now
-                </button>
               )}
             </div>
           </div>

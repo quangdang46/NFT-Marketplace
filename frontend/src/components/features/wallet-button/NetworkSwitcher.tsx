@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useWallet } from "@/hooks/useWallet";
-import { getChainName, chainColors } from "@/lib/blockchain/walletConfig";
+import { chainColors, getChainName } from "@/lib/blockchain/walletConfig";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,11 +25,16 @@ export function NetworkSwitcher() {
   const handleSwitchNetwork = async (targetChainId: number) => {
     if (chainId === targetChainId) return;
     setIsOpen(false);
-    const success = await switchNetwork(targetChainId);
-    if (!success)
-      toast.error("Network switch failed", {
-        description: "Please try again.",
+    const success = await switchNetwork(targetChainId); // Gọi async
+    if (success) {
+      toast.success("Network switched", {
+        description: `Switched to ${getChainName(targetChainId)}`,
       });
+    } else {
+      toast.error("Network switch failed", {
+        description: "Please try again or switch manually in your wallet.",
+      });
+    }
   };
 
   return (
@@ -59,7 +64,7 @@ export function NetworkSwitcher() {
           <DropdownMenuItem
             key={chain.id}
             disabled={isSwitchingChain || chainId === chain.id}
-            onClick={() => handleSwitchNetwork(chain.id)}
+            onClick={() => handleSwitchNetwork(chain.id)} // Gọi hàm async
             className={chainId === chain.id ? "bg-secondary" : ""}
           >
             <div className="flex items-center justify-between w-full">

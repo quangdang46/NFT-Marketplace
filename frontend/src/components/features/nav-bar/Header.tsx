@@ -10,7 +10,7 @@ import { ModeToggle } from "@/components/ui/darkmode";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { ConnectButton } from "@/components/features/wallet-button/ConnectButton";
+import { WalletSection } from "@/components/features/wallet-button/WalletSection";
 
 export function Header() {
   const [activeTab] = useState("collections");
@@ -56,13 +56,8 @@ export function Header() {
 
         {/* Wallet & Earn Buttons */}
         <div className="flex items-center space-x-2 ml-auto">
-          <ConnectButton
-            variant="outline"
-            size="default"
-            className="rounded-lg border-gray-200 shadow-sm"
-          />
+          <WalletSection></WalletSection>
           <ModeToggle></ModeToggle>
-
           {/* Mobile Menu */}
           {isMobile && <MobileMenu navItems={navItems} />}
         </div>
