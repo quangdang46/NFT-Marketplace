@@ -49,6 +49,17 @@ export function useWallet() {
 
   const [walletState, setWalletState] = useState<WalletState>("disconnected");
 
+  // Debug connectors ngay khi component mount
+  useEffect(() => {
+    console.log(
+      "Available connectors:",
+      connectors.map((c) => ({ id: c.id, name: c.name }))
+    );
+    if (connectors.length === 0) {
+      console.error("No connectors available. Check walletConfig.ts.");
+    }
+  }, [connectors]);
+
   // Đồng bộ walletState với isConnected và token
   useEffect(() => {
     const hasToken = !!Cookies.get("auth_token");
@@ -66,10 +77,21 @@ export function useWallet() {
 
   const connectMutation = useMutation({
     mutationFn: async (walletId: string) => {
-      const connector =
-        connectors.find((c) => c.id === walletId) ||
-        connectors.find((c) => c.id === "metaMask");
-      if (!connector) throw new Error("Wallet not supported");
+      console.log("Attempting to connect with walletId:", walletId);
+      const connector = connectors.find((c) => c.id === walletId);
+      if (!connector) {
+        console.error(
+          "Connector not found for walletId:",
+          walletId,
+          "Available connectors:",
+          connectors.map((c) => c.id)
+        );
+        throw new Error("Wallet not supported");
+      }
+      console.log("Connecting with connector:", {
+        id: connector.id,
+        name: connector.name,
+      });
       await connect({ connector });
       if (!address || !chainId)
         throw new Error("Connection failed: No address or chainId");
@@ -153,14 +175,13 @@ export function useWallet() {
     queryClient.setQueryData(["walletState"], "disconnected");
   };
 
-  // Hàm switchNetwork trả về Promise<boolean> để xử lý kết quả
   const switchNetwork = async (chainId: number): Promise<boolean> => {
     try {
       await switchChain({ chainId });
-      return true; // Thành công
+      return true;
     } catch (error) {
       console.error("Switch chain failed:", error);
-      return false; // Thất bại
+      return false;
     }
   };
 
@@ -190,7 +211,7 @@ export function useWallet() {
     isBalanceLoading,
     currentChain: getChainById(chainId),
     supportedChains,
-    switchNetwork, // Trả về hàm async thay vì biểu thức điều kiện
+    switchNetwork,
     isSwitchingChain,
   };
 }

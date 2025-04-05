@@ -49,8 +49,8 @@ export const getChainName = (chainId: number): string =>
 
 export const wallets = [
   {
-    id: "metaMask",
-    name: "MetaMask",
+    id: "metaMaskSDK",
+    name: "metaMaskSDK",
     status: "Installed",
     color: "#E2761B",
     logo: "🦊",
